@@ -59,6 +59,7 @@ enum GameContainerMigration {
         guard !didRunThisLaunch else { return }
         didRunThisLaunch = true
         migrateLegacyContainers()
+        migratePlayerDataDirectories()
     }
 
     /// App-side context for a planner candidate, keyed by the
@@ -404,5 +405,38 @@ enum GameContainerMigration {
         var record = MigrationRecord.load(at: url)
         guard record.games.removeValue(forKey: id) != nil else { return }
         record.save(to: url)
+    }
+
+    /// Renames pre–XP Pocket `EmpoState/` folders to `PlayerData/`.
+    /// Idempotent and safe to run on every launch before discovery.
+    static func migratePlayerDataDirectories(fm: FileManager = .default) {
+        guard
+            let entries = try? fm.contentsOfDirectory(
+                at: GameContainer.rootURL,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [.skipsHiddenFiles]
+            )
+        else { return }
+
+        for containerURL in entries {
+            let isDirectory =
+                (try? containerURL.resourceValues(forKeys: [.isDirectoryKey]))?
+                .isDirectory == true
+            guard isDirectory else { continue }
+
+            let legacyURL = GameContainerPaths.legacyPlayerDataURL(in: containerURL)
+            let targetURL = GameContainerPaths.playerDataURL(in: containerURL)
+            guard fm.fileExists(atPath: legacyURL.path),
+                !fm.fileExists(atPath: targetURL.path)
+            else { continue }
+
+            do {
+                try fm.moveItem(at: legacyURL, to: targetURL)
+            } catch {
+                NSLog(
+                    "GameContainerMigration: could not rename \(legacyURL.path) -> \(targetURL.path): \(error)"
+                )
+            }
+        }
     }
 }

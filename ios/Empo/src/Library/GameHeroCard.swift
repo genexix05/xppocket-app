@@ -106,7 +106,9 @@ struct GameHeroCard: View {
                     .onGeometryChange(for: CGFloat.self) { proxy in
                         proxy.size.height
                     } action: { newHeight in
-                        labelHeight = newHeight
+                        if abs(newHeight - labelHeight) > 1 {
+                            labelHeight = newHeight
+                        }
                     }
                 }
                 .overlay(alignment: .bottomTrailing) {

@@ -132,7 +132,7 @@ final class PlayerRuntimeState {
             fastForwardMultiplier = nil
             return
         }
-        let settings = GameSettings.load(from: container.empoStateURL)
+        let settings = GameSettings.load(from: container.playerDataURL)
         fastForwardMultiplier = settings.speedMultiplier
         // `eventthread.cpp` reads this atomic on every synthesized
         // mouse event, so the next frame sees the new value.

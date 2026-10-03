@@ -198,7 +198,7 @@ struct BindingsView: View {
             return
                 "Remove all button overrides for \(gameTitle). Game defaults and global settings will apply again."
         case .allGames:
-            return "Remove every global button change. Empo's defaults apply until you set new buttons."
+            return "Remove every global button change. Built-in defaults apply until you set new buttons."
         }
     }
 
@@ -234,7 +234,7 @@ struct BindingsView: View {
                             .font(.caption)
                             .foregroundStyle(.tertiary)
                     } else if provenance == .empoDefault {
-                        Text("Empo default")
+                        Text(AppInfo.builtInLayoutName)
                             .font(.caption)
                             .foregroundStyle(.tertiary)
                     }

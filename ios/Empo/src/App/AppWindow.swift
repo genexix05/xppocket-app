@@ -4,6 +4,17 @@ import UIKit
 private class AppRootViewController: UIViewController {
 
     private let hostingController: UIHostingController<RootView>
+    private let loadingOverlay = UIView()
+    private let loadingIndicator = UIActivityIndicatorView(style: .large)
+    private let loadingLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Loading library…"
+        label.font = .preferredFont(forTextStyle: .body)
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        return label
+    }()
+    private var didRevealHostedContent = false
 
     init(rootView: RootView) {
         self.hostingController = UIHostingController(rootView: rootView)
@@ -16,34 +27,107 @@ private class AppRootViewController: UIViewController {
 
     override func loadView() {
         let v = UIView()
-        v.backgroundColor = .clear
+        v.backgroundColor = AppState.shared.phase == .playing ? .clear : .systemBackground
         view = v
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         addChild(hostingController)
-        // UIHostingController defaults to an opaque systemBackground.
-        // Set clear + isOpaque=false so the SDL/ANGLE window under
-        // AppWindow can show through during gameplay (PlayerView is
-        // mostly clear).
+
+        applyHostingBackdrop()
         let hosted = hostingController.view!
-        hosted.backgroundColor = .clear
-        hosted.isOpaque = false
-        hosted.layer.isOpaque = false
-        hosted.frame = view.bounds
-        hosted.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        hosted.translatesAutoresizingMaskIntoConstraints = false
+        hosted.alpha = 0
         view.addSubview(hosted)
+        NSLayoutConstraint.activate([
+            hosted.topAnchor.constraint(equalTo: view.topAnchor),
+            hosted.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            hosted.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hosted.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
         hostingController.didMove(toParent: self)
+
+        loadingOverlay.backgroundColor = .systemBackground
+        loadingOverlay.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(loadingOverlay)
+        NSLayoutConstraint.activate([
+            loadingOverlay.topAnchor.constraint(equalTo: view.topAnchor),
+            loadingOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            loadingOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            loadingOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+
+        let loadingStack = UIStackView(arrangedSubviews: [loadingIndicator, loadingLabel])
+        loadingStack.axis = .vertical
+        loadingStack.spacing = 12
+        loadingStack.alignment = .center
+        loadingStack.translatesAutoresizingMaskIntoConstraints = false
+        loadingOverlay.addSubview(loadingStack)
+        NSLayoutConstraint.activate([
+            loadingStack.centerXAnchor.constraint(equalTo: loadingOverlay.centerXAnchor),
+            loadingStack.centerYAnchor.constraint(equalTo: loadingOverlay.centerYAnchor),
+        ])
+        loadingIndicator.startAnimating()
+
+        // If SwiftUI never commits onAppear (Xcode Play + blocked SDL_main),
+        // still peel the UIKit loading sheet so the library can show.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
+            self?.revealHostedContent()
+        }
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // SwiftUI can reintroduce an opaque hosting background after
-        // hierarchy updates. Keep the pass-through contract intact.
+        applyHostingBackdrop()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        EmpoUIBootstrap.markSwiftUIShellReady()
+    }
+
+    /// RootView.onAppear calls this once SwiftUI has a real tree to show.
+    func revealHostedContent() {
+        guard !didRevealHostedContent else { return }
+        didRevealHostedContent = true
+        applyHostingBackdrop()
+        UIView.animate(withDuration: 0.2) {
+            self.hostingController.view.alpha = 1
+            self.loadingOverlay.alpha = 0
+        } completion: { _ in
+            self.loadingOverlay.removeFromSuperview()
+            self.loadingIndicator.stopAnimating()
+        }
+        EmpoUIBootstrap.markSwiftUIShellReady()
+    }
+
+    /// Invoked on every mkxp_waitForGamePath pump so cold starts under
+    /// Xcode Play still reach a laid-out SwiftUI tree.
+    func refreshShellDuringWait() {
+        if viewIfLoaded?.window == nil {
+            view.setNeedsLayout()
+            view.layoutIfNeeded()
+        } else {
+            view.setNeedsLayout()
+            view.layoutIfNeeded()
+        }
+        hostingController.view.setNeedsLayout()
+        hostingController.view.layoutIfNeeded()
+    }
+
+    private func applyHostingBackdrop() {
+        let playing = AppState.shared.phase == .playing
+        view.backgroundColor = playing ? .clear : .systemBackground
         let hosted = hostingController.view!
-        if hosted.backgroundColor != .clear || hosted.isOpaque {
+        if playing {
+            hosted.backgroundColor = .clear
+            hosted.isOpaque = false
+            hosted.layer.isOpaque = false
+        } else {
+            // Keep the UIKit hosting layer clear in library mode. RootView
+            // paints its own opaque background; an opaque hosting backdrop
+            // here showed a blank white sheet when SwiftUI hadn't ticked yet.
             hosted.backgroundColor = .clear
             hosted.isOpaque = false
             hosted.layer.isOpaque = false
@@ -81,9 +165,10 @@ class AppWindow: UIWindow {
 
     override init(windowScene: UIWindowScene) {
         super.init(windowScene: windowScene)
-        backgroundColor = .clear
-        windowLevel = .normal + 1  // above SDL window
-        isOpaque = false
+        windowLevel = .normal + 2
+        isOpaque = true
+        backgroundColor = .systemBackground
+        layer.isOpaque = true
     }
 
     required init?(coder: NSCoder) {
@@ -171,6 +256,23 @@ class AppWindow: UIWindow {
 
     static var hostView: UIView? { instance?.rootViewController?.view }
 
+    /// True once the SwiftUI overlay window has been created.
+    static var isInstalled: Bool { instance != nil }
+
+    /// Top view controller for AdMob presentation.
+    static var topViewController: UIViewController? { instance?.rootViewController }
+
+    @objc static func pumpShellWhileWaiting() {
+        guard let root = instance?.rootViewController as? AppRootViewController else { return }
+        root.refreshShellDuringWait()
+    }
+
+    /// RootView.onAppear — SwiftUI has committed its first frame.
+    @objc static func revealSwiftUIShell() {
+        guard let root = instance?.rootViewController as? AppRootViewController else { return }
+        root.revealHostedContent()
+    }
+
     static var currentSafeArea: EdgeInsets {
         guard let window = instance else { return .init() }
         let insets = window.safeAreaInsets
@@ -230,14 +332,23 @@ class AppWindow: UIWindow {
         }
 
         let recovering = AppState.shared.pendingCrashRecovery
+        var fallbackScene: UIWindowScene?
 
         for scene in UIApplication.shared.connectedScenes {
-            if let windowScene = scene as? UIWindowScene,
-                recovering || scene.activationState == .foregroundActive
-            {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+            if recovering || scene.activationState == .foregroundActive {
                 createWindow(in: windowScene)
                 return
             }
+            fallbackScene = windowScene
+        }
+
+        // Cold launch under Xcode Play: a scene often exists before UIKit
+        // marks it foregroundActive. Waiting only on didActivate leaves a
+        // blank SDL launch screen indefinitely on some runs.
+        if let fallbackScene {
+            createWindow(in: fallbackScene)
+            return
         }
 
         NotificationCenter.default.addObserver(
@@ -253,6 +364,7 @@ class AppWindow: UIWindow {
     }
 
     private static func createWindow(in scene: UIWindowScene) {
+        NSLog("XPPocket: AppWindow.createWindow scene=%@", String(describing: scene.activationState.rawValue))
         let window = AppWindow(windowScene: scene)
         window.frame = scene.screen.bounds
 
@@ -262,6 +374,8 @@ class AppWindow: UIWindow {
 
         window.makeKeyAndVisible()
         instance = window
+
+        vc.loadViewIfNeeded()
 
         let insets = window.safeAreaInsets
         mkxp_setSafeAreaInsets(
@@ -277,6 +391,17 @@ class AppWindow: UIWindow {
         observePhase(window: window)
         observeTheme(window: window)
         applyOverlayPresentationMode(window: window)
+
+        // Force an initial layout pass while mkxp_waitForGamePath is still
+        // pumping the run loop. Without this, Xcode Play sometimes leaves the
+        // hosting controller at zero size until the first external event.
+        vc.view.setNeedsLayout()
+        vc.view.layoutIfNeeded()
+        DispatchQueue.main.async {
+            vc.view.setNeedsLayout()
+            vc.view.layoutIfNeeded()
+            EmpoUIBootstrap.dismissSDLLaunchScreenIfShellReady()
+        }
     }
 
     private static func observePhase(window: AppWindow) {
@@ -310,12 +435,11 @@ class AppWindow: UIWindow {
         } else {
             GameViewEmbedder.detach()
             window.isHidden = false
-            window.isOpaque = false
-            window.backgroundColor = .clear
-            window.layer.isOpaque = false
-            if let root = window.rootViewController?.view {
-                clearPassThroughBackdrop(in: root)
-            }
+            // Opaque in library/loading so a cleared SwiftUI hosting
+            // stack cannot reveal SDL's empty window underneath.
+            window.isOpaque = true
+            window.backgroundColor = .systemBackground
+            window.layer.isOpaque = true
         }
     }
 

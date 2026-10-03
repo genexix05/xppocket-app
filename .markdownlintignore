@@ -15,7 +15,7 @@
 
 mkxp-z-apple-mobile/
 ios/Empo/build/
-ios/Empo/Empo.xcodeproj/
+ios/Empo/XPPocket.xcodeproj/
 ios/Dependencies/
 .cache/
 node_modules/

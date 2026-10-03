@@ -13,6 +13,12 @@
 // Optional: override PRODUCT_BUNDLE_IDENTIFIER here when your personal
 // team cannot register the shipping bundle ID (use a *.dev suffix).
 //
+// Production AdMob (optional — copy Ads.xcconfig.example → Ads.xcconfig):
+// #include "Ads.xcconfig"
+//
+// Default for local dev without your own AdMob app:
+#include "Ads.test.xcconfig"
+//
 // Uncomment and fill in:
 // DEVELOPMENT_TEAM = YOUR10CHARID
-// PRODUCT_BUNDLE_IDENTIFIER = sh.mateo.empo.dev
+// PRODUCT_BUNDLE_IDENTIFIER = app.xppocket.player.dev

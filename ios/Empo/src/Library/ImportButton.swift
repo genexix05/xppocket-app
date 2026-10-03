@@ -47,10 +47,16 @@ struct ImportButton: View {
     var phase: Phase = .idle
     var onRequestCancelValidation: (() -> Void)?
 
+    @Environment(\.colorScheme) private var colorScheme
     @State private var importShimmer: CGFloat = -1
     @State private var importMoveTrigger = 0
-    @State private var buttonHeight: CGFloat = AppSize.minTapTarget
     @State private var revealed = false
+
+    /// Fixed estimate for expanded label height. Measuring via
+    /// `onGeometryChange` and feeding it back into `.position`
+    /// caused an AttributeGraph layout loop that tripped the
+    /// scene-create watchdog (0x8BADF00D) on iOS 27 review devices.
+    private static let expandedButtonHeight: CGFloat = 52
 
     var body: some View {
         GeometryReader { geo in
@@ -62,7 +68,7 @@ struct ImportButton: View {
             let collapsedY = headerHeight / 2
             let expandedX = geo.size.width / 2
             let emptyStateBottom = geo.size.height / 2 + emptyStateOffset + emptyStateHeight / 2
-            let expandedY = emptyStateBottom + Spacing._4xl + buttonHeight / 2
+            let expandedY = emptyStateBottom + Spacing._4xl + Self.expandedButtonHeight / 2
 
             // Arc: find center of rotation on perpendicular bisector
             let chordDX = collapsedX - expandedX
@@ -90,19 +96,9 @@ struct ImportButton: View {
                 importButtonLabel(collapsed: collapsed)
             }
             .buttonStyle(.plain)
-            // Label text is either hidden ("+" only, collapsed state)
-            // or localised to "Import game". Either way VoiceOver
-            // needs a stable announcement that doesn't flip between
-            // "Plus button" and "Import game button" during the
-            // collapsed<->expanded morph.
             .accessibilityLabel(phase.accessibilityLabel)
             .onChange(of: collapsed) { _, _ in
                 Haptics.tap()
-            }
-            .onGeometryChange(for: CGFloat.self) {
-                $0.size.height
-            } action: {
-                buttonHeight = $0
             }
             .overlay {
                 Capsule()
@@ -136,16 +132,9 @@ struct ImportButton: View {
                     SpringKeyframe(1.0, duration: 0.3, spring: .smooth)
                 }
             }
-            // Entrance reveal (before arc transforms so it's in local space)
             .opacity(revealed ? 1 : 0)
             .scaleEffect(revealed ? 1 : 0.8)
             .blur(radius: revealed ? 0 : 10)
-            // Counter-rotate to keep content upright through the
-            // sweep. The three modifiers below step the button
-            // from the expanded anchor to the collapsed anchor
-            // along an arc: offset to the expanded position
-            // relative to the arc center, rotate by the sweep
-            // angle, then place at the arc center.
             .rotationEffect(.degrees(collapsed ? -arcDeg : 0))
             .offset(x: offX, y: offY)
             .rotationEffect(.degrees(collapsed ? arcDeg : 0))
@@ -197,7 +186,7 @@ struct ImportButton: View {
             width: collapsed ? AppSize.toolbarButton : nil,
             height: collapsed ? AppSize.toolbarButton : nil
         )
-        .glassEffect(.regular.tint(.brand).interactive(), in: .capsule)
+        .xpGlassChrome(tint: Color.brand(for: colorScheme), in: Capsule())
         .darkGlass()
     }
 

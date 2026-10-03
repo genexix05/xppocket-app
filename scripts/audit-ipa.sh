@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Verify a Release iphoneos Empo.app or unsigned .ipa before publishing.
+# Verify a Release iphoneos XP Pocket.app or unsigned .ipa before publishing.
 #
 # Usage:
-#   scripts/audit-ipa.sh path/to/Empo.app
+#   scripts/audit-ipa.sh path/to/XP\ Pocket.app
 #   scripts/audit-ipa.sh [--version X.Y.Z] path/to/Empo-unsigned.ipa
 set -euo pipefail
 
@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         -h | --help)
-            echo "usage: $0 [--version X.Y.Z] <Empo.app | Empo-unsigned.ipa>"
+            echo "usage: $0 [--version X.Y.Z] <XP Pocket.app | *.ipa>"
             exit 0
             ;;
         *)
@@ -34,7 +34,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-[[ -n "$INPUT" ]] || fail "missing path to Empo.app or .ipa"
+[[ -n "$INPUT" ]] || fail "missing path to XP Pocket.app or .ipa"
 
 TMPDIR=""
 cleanup() {
@@ -50,7 +50,7 @@ case "$INPUT" in
         [[ -f "$INPUT" ]] || fail "ipa not found: $INPUT"
         TMPDIR=$(mktemp -d)
         unzip -q "$INPUT" -d "$TMPDIR"
-        APP="$TMPDIR/Payload/Empo.app"
+        APP="$(find "$TMPDIR/Payload" -maxdepth 1 -name '*.app' -print -quit)"
         ;;
     *.app)
         APP="$INPUT"
@@ -60,14 +60,16 @@ case "$INPUT" in
         ;;
 esac
 
-[[ -d "$APP" ]] || fail "Empo.app not found in $INPUT"
-BIN="$APP/Empo"
-[[ -f "$BIN" ]] || fail "Empo binary missing in $APP"
+[[ -n "$APP" && -d "$APP" ]] || fail "app bundle not found in $INPUT"
+
+EXEC_NAME=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP/Info.plist")
+BIN="$APP/$EXEC_NAME"
+[[ -f "$BIN" ]] || fail "$EXEC_NAME binary missing in $APP"
 
 echo "==> auditing $(basename "$INPUT")"
 
 file "$BIN" | grep -Eq "Mach-O 64-bit executable arm64" ||
-    fail "Empo is not an arm64 device executable"
+    fail "$EXEC_NAME is not an arm64 device executable"
 
 has_platform() {
     local path="$1" platform="$2"
@@ -77,24 +79,24 @@ has_platform() {
 }
 
 if ! has_platform "$BIN" 2; then
-    fail "Empo binary is not device (platform 2)"
+    fail "$EXEC_NAME binary is not device (platform 2)"
 fi
 if has_platform "$BIN" 7; then
-    fail "Empo binary contains simulator objects"
+    fail "$EXEC_NAME binary contains simulator objects"
 fi
 
 for ver in 18 19 31; do
     sym="_mkxp_get_script_binding_${ver}"
     nm "$BIN" 2>/dev/null | awk -v sym="$sym" '$3 == sym {found=1} END {exit !found}' ||
-        fail "Empo binary missing ${sym}"
+        fail "$EXEC_NAME binary missing ${sym}"
 done
 
 BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Info.plist")
 VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Info.plist")
 BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP/Info.plist")
 
-[[ "$BUNDLE_ID" == "sh.mateo.empo" ]] ||
-    fail "unexpected bundle id: $BUNDLE_ID (expected sh.mateo.empo for release IPA)"
+[[ "$BUNDLE_ID" == "app.xppocket.player" ]] ||
+    fail "unexpected bundle id: $BUNDLE_ID (expected app.xppocket.player for release IPA)"
 
 if [[ -n "$EXPECTED_VERSION" && "$VERSION" != "$EXPECTED_VERSION" ]]; then
     fail "Info.plist version $VERSION != expected $EXPECTED_VERSION"
@@ -111,7 +113,7 @@ if grep -Eq ' \(dirty\)' < <(strings "$BIN"); then
 fi
 
 SIZE=$(stat -f%z "$BIN")
-[[ "$SIZE" -ge 25000000 ]] || fail "Empo binary suspiciously small (${SIZE} bytes)"
+[[ "$SIZE" -ge 25000000 ]] || fail "$EXEC_NAME binary suspiciously small (${SIZE} bytes)"
 
 echo "OK: release artifact audit passed"
 echo "    bundle: $BUNDLE_ID"

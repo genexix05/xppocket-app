@@ -1,16 +1,19 @@
-name: Empo
+name: XPPocket
 packages:
   GameProbe:
     path: ../GameProbe
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads.git
+    from: 11.13.0
 options:
-  bundleIdPrefix: sh.mateo
+  bundleIdPrefix: app.xppocket
   deploymentTarget:
     iOS: "26.0"
   createIntermediateGroups: true
 settings:
   base:
-    MARKETING_VERSION: 0.6.4
-    CURRENT_PROJECT_VERSION: 650
+    MARKETING_VERSION: 1.0.0
+    CURRENT_PROJECT_VERSION: 8
     CLANG_CXX_LANGUAGE_STANDARD: c++14
     # `YES` / `NO` are Xcode's canonical boolean tokens for build
     # settings. xcodebuild's parser treats them specially. yamllint
@@ -94,13 +97,13 @@ settings:
     Debug:
       # Local device installs: use a dev bundle ID a personal team can
       # register. Override in the gitignored Signing.xcconfig if needed.
-      PRODUCT_BUNDLE_IDENTIFIER: sh.mateo.empo.dev
+      PRODUCT_BUNDLE_IDENTIFIER: app.xppocket.player.dev
       ENABLE_TESTABILITY: YES # yamllint disable-line rule:truthy
     Release:
       OTHER_CFLAGS: "-fdeclspec -O3"
-      PRODUCT_BUNDLE_IDENTIFIER: sh.mateo.empo
+      PRODUCT_BUNDLE_IDENTIFIER: app.xppocket.player
 targets:
-  Empo:
+  XPPocket:
     type: application
     platform: iOS
     preBuildScripts:
@@ -244,8 +247,8 @@ targets:
           ORIGIN_URL="${ORIGIN_URL%.git}"
           # Fall back to the marketing homepage if no origin is set
           # (e.g. a fresh checkout used as a vendored source).
-          [ -z "$ORIGIN_URL" ] && ORIGIN_URL="https://github.com/mateo-m/empo-app"
-          ISSUES_URL="$ORIGIN_URL/issues"
+          [ -z "$ORIGIN_URL" ] && ORIGIN_URL="https://xppocket.app"
+          ISSUES_URL="https://xppocket.app/support"
 
           # Engine fingerprints for the active SDK. The debug log
           # prints them next to the commit so stale engine code is
@@ -332,23 +335,17 @@ targets:
     settings:
       base:
         INFOPLIST_FILE: $(PROJECT_DIR)/Info.plist
-        PRODUCT_NAME: Empo
+        PRODUCT_NAME: XP Pocket
+        INFOPLIST_KEY_CFBundleDisplayName: XP Pocket
+        INFOPLIST_KEY_GADApplicationIdentifier: $(ADMOB_APP_ID)
+        INFOPLIST_KEY_XPPocketAdMobBannerUnitID: $(ADMOB_BANNER_UNIT_ID)
+        INFOPLIST_KEY_XPPocketAdMobInterstitialUnitID: $(ADMOB_INTERSTITIAL_UNIT_ID)
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         TARGETED_DEVICE_FAMILY: "1,2"
         CODE_SIGN_STYLE: Automatic
-        # Empty entitlements file by design: the app has no special
-        # capabilities, but having SOME .entitlements file in the
-        # build means the signed binary always has an entitlements
-        # blob present. Naive resigners (notably ESign) read this
-        # blob as their template. Without it they synthesize an
-        # incomplete blob that breaks document picker's sandbox-
-        # extension grants on the picked URL (Open does nothing for
-        # files, spinner-forever for folders). Sideloadly + AltStore
-        # synthesize correctly so they work regardless, but shipping
-        # an explicit file unblocks ESign too.
-        CODE_SIGN_ENTITLEMENTS: Empo.entitlements
+        CODE_SIGN_ENTITLEMENTS: XPPocket.entitlements
         SWIFT_VERSION: "5.0"
-        SWIFT_OBJC_BRIDGING_HEADER: $(PROJECT_DIR)/src/Empo-Bridging-Header.h
+        SWIFT_OBJC_BRIDGING_HEADER: $(PROJECT_DIR)/src/XPPocket-Bridging-Header.h
         OTHER_LDFLAGS:
           - -lSDL2
           - -lSDL2main
@@ -427,13 +424,18 @@ targets:
           - -lGLESv2_static
     dependencies:
       - package: GameProbe
+      - package: GoogleMobileAds
+        product: GoogleMobileAds
 schemes:
-  Empo:
+  XPPocket:
     build:
       targets:
-        Empo: all
+        XPPocket: all
     run:
       config: Debug
+      # Local StoreKit testing (simulator + Xcode on device). TestFlight
+      # uses App Store Connect / sandbox instead — see docs/product/04-monetizacion.md.
+      storeKitConfiguration: XPPocket.storekit
     profile:
       config: Release
     analyze:

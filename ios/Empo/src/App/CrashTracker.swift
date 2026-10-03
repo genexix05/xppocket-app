@@ -2,7 +2,7 @@ import Foundation
 
 /// Tracks unclean engine terminations via per-game marker files.
 ///
-/// While a session runs, the marker `<container>/EmpoState/.session-active`
+/// While a session runs, the marker `<container>/PlayerData/.session-active`
 /// is present. A clean exit removes it. If it is still present on
 /// the next launch, the previous session died unexpectedly (user
 /// force-kill, OOM, C++ crash). Exception: when an update replaced
@@ -65,7 +65,7 @@ final class CrashTracker {
     }
 
     func writeMarker(for container: GameContainer) {
-        container.ensureEmpoStateDirectory()
+        container.ensurePlayerDataDirectory()
         FileManager.default.createFile(
             atPath: container.sessionActiveMarkerURL.path,
             contents: nil

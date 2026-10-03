@@ -5,26 +5,50 @@ import SwiftUI
 //   30% secondary: tinted surfaces, cards, badges, supporting elements
 //   10% accent: CTAs, toggles, active/highlighted states
 //
-// Accent is brand orange. Secondary is a warm-tinted neutral derived
-// from the accent for cohesion.
+// XP Pocket palette — accent and surface swap by appearance:
+//   Dark:  brand (accent) = sand (#EDE0CC), surface = navy (#1F2E4F)
+//   Light: brand (accent) = navy, surface = sand
+
+private enum XPocketPalette {
+    /// Deep navy — accent in light mode, secondary surface in dark.
+    static let navy = UIColor(red: 0.12, green: 0.18, blue: 0.31, alpha: 1.0)
+
+    /// Warm sand — accent in dark mode, secondary surface in light.
+    static let sand = UIColor(red: 0.93, green: 0.88, blue: 0.80, alpha: 1.0)
+}
 
 extension Color {
-    /// Brand orange as fixed RGB. `Color.orange` drifts yellow on
-    /// inverted sheets, which read inconsistently across contexts.
-    static let brand = Color(red: 0.98, green: 0.56, blue: 0.16)
+    /// Primary accent — toggles, links, highlights, global tint.
+    static let brand = Color(
+        uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? XPocketPalette.sand : XPocketPalette.navy
+        })
 
-    /// Warm dark amber, or warm off-white peach in light mode.
+    /// Secondary tinted surface — cards, badges, supporting fills.
     static let surface = Color(
         uiColor: UIColor { traits in
-            traits.userInterfaceStyle == .dark
-                ? UIColor(red: 0.16, green: 0.13, blue: 0.10, alpha: 1.0)
-                : UIColor(red: 1.00, green: 0.97, blue: 0.93, alpha: 1.0)
+            traits.userInterfaceStyle == .dark ? XPocketPalette.navy : XPocketPalette.sand
         })
+
+    /// Readable foreground on top of `brand` (splash, filled buttons).
+    static let onBrand = Color(
+        uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? XPocketPalette.navy : XPocketPalette.sand
+        })
+
+    /// Brand accent for a specific appearance, ignoring the view's
+    /// current `colorScheme` environment. Use when a subtree applies
+    /// `.darkGlass()` but the tint should still follow system appearance
+    /// (otherwise dynamic `brand` resolves to sand under forced dark).
+    static func brand(for colorScheme: ColorScheme) -> Color {
+        Color(uiColor: colorScheme == .dark ? XPocketPalette.sand : XPocketPalette.navy)
+    }
 }
 
 extension ShapeStyle where Self == Color {
     static var brand: Color { .brand }
     static var surface: Color { .surface }
+    static var onBrand: Color { .onBrand }
     static var destructive: Color { .destructive }
     static var success: Color { .success }
     static var warning: Color { .warning }
@@ -137,13 +161,33 @@ extension View {
     func darkGlass() -> some View {
         environment(\.colorScheme, .dark)
     }
+
+    /// Library / control chrome without Liquid Glass.
+    ///
+    /// `glassEffect` hung AttributeGraph during `scene-create` on
+    /// iOS 27 review devices (watchdog `0x8BADF00D`, blank launch).
+    /// Material + optional tint keeps the first frame within budget.
+    func xpGlassChrome<S: Shape>(
+        tint: Color? = nil,
+        tintOpacity: Double = 1,
+        in shape: S
+    ) -> some View {
+        background {
+            ZStack {
+                shape.fill(.ultraThinMaterial)
+                if let tint {
+                    shape.fill(tint.opacity(tintOpacity))
+                }
+            }
+        }
+    }
 }
 
 /// Typography tokens for sites that don't fit a SwiftUI semantic
 /// text style. Prefer `.body` / `.headline` first. Use these
 /// only when the design needs a specific size/weight/design.
 enum AppFont {
-    /// The Empo wordmark - splash and settings header.
+    /// The XP Pocket wordmark - splash and settings header.
     static let wordmark = Font.system(size: 40, weight: .bold, design: .rounded)
 
     /// A small bold button label (used by inline CTAs and chips).

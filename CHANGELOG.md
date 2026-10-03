@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.0 - 2026-08-25
+
+### Features
+
+- First XP Pocket App Store release (rebrand from Empo)
+- Sign in with Apple, XP Pocket Pro subscription, cloud save
+- AdMob banner and interstitials for free tier
+
 ## 0.6.4 - 2026-08-18
 
 ### Bug Fixes

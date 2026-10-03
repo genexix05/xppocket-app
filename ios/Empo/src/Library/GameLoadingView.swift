@@ -167,27 +167,31 @@ struct GameLoadingView: View {
                 .fontWeight(.bold)
                 .foregroundStyle(.white)
 
-            Text("An unexpected error happened when Empo tried to start \(game.title).")
+            Text("An unexpected error happened when \(AppInfo.name) tried to start \(game.title).")
                 .font(.system(size: 15))
                 .foregroundStyle(.white.opacity(0.85))
                 .multilineTextAlignment(.center)
 
-            Text("Please restart Empo and try again.")
+            Text("Please restart \(AppInfo.name) and try again.")
                 .font(.system(size: 15))
                 .foregroundStyle(.white.opacity(0.85))
                 .multilineTextAlignment(.center)
 
-            // The GitHub link routes to the issues page since that is
-            // where the user can act on "the error keeps happening":
-            // filing a bug report, not browsing the repo.
-            (Text("If the error keeps happening, please open an issue on ")
-                + Text("[GitHub](\(GitInfo.issuesURL))")
-                .foregroundColor(.brand)
-                + Text("."))
+            Text("If the error keeps happening, send us a report so we can look into it.")
                 .font(.system(size: 15))
                 .foregroundStyle(.white.opacity(0.85))
                 .multilineTextAlignment(.center)
-                .tint(.brand)
+
+            FeedbackShareButton(
+                label: "Send report",
+                systemImage: "exclamationmark.bubble",
+                context: FeedbackReporter.Context(
+                    gameTitle: game.title,
+                    errorSummary: "Game failed to start during loading.",
+                    container: game.container
+                ),
+                prominentStyle: true
+            )
         }
         .padding(.horizontal, Spacing.xl)
         .transition(.opacity)
@@ -219,7 +223,7 @@ struct GameLoadingView: View {
             // app switcher, which is the iOS-sanctioned way to
             // force-close. Same pattern RootView uses for
             // engineHung errors.
-            Text("If loading is stuck, close Empo from the app switcher and reopen.")
+            Text("If loading is stuck, close \(AppInfo.name) from the app switcher and reopen.")
                 .font(.system(size: 14))
                 .foregroundStyle(.white.opacity(0.8))
                 .multilineTextAlignment(.center)

@@ -42,7 +42,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .foregroundStyle(.white)
             .padding(.horizontal, size.horizontalPadding)
             .padding(.vertical, size.verticalPadding)
-            .glassEffect(.regular.tint(tint).interactive(), in: .capsule)
+            .xpGlassChrome(tint: tint, in: Capsule())
             .opacity(isEnabled ? 1 : Alpha.disabled)
             .onChange(of: configuration.isPressed) { _, pressed in
                 if pressed { Haptics.tap() }
@@ -71,7 +71,7 @@ struct SecondaryButtonStyle: ButtonStyle {
             .foregroundStyle(tint)
             .padding(.horizontal, size.horizontalPadding)
             .padding(.vertical, size.verticalPadding)
-            .glassEffect(.regular.tint(tint.opacity(Alpha.brandTintBackground)).interactive(), in: .capsule)
+            .xpGlassChrome(tint: tint, tintOpacity: Alpha.brandTintBackground, in: Capsule())
             .opacity(isEnabled ? 1 : Alpha.disabled)
             .onChange(of: configuration.isPressed) { _, pressed in
                 if pressed { Haptics.tap() }

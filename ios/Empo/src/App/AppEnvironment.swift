@@ -45,6 +45,10 @@ private struct HintStoreKey: EnvironmentKey {
     static let defaultValue: HintStore = MainActor.assumeIsolated { .shared }
 }
 
+private struct AccountSessionKey: EnvironmentKey {
+    static let defaultValue: AccountSession = MainActor.assumeIsolated { .shared }
+}
+
 extension EnvironmentValues {
     var appState: AppState {
         get { self[AppStateKey.self] }
@@ -79,5 +83,10 @@ extension EnvironmentValues {
     var hintStore: HintStore {
         get { self[HintStoreKey.self] }
         set { self[HintStoreKey.self] = newValue }
+    }
+
+    var accountSession: AccountSession {
+        get { self[AccountSessionKey.self] }
+        set { self[AccountSessionKey.self] = newValue }
     }
 }

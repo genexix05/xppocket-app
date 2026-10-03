@@ -120,7 +120,7 @@ jobs:
             major | minor | patch)
               LATEST_TAG=$(git tag --list "v*.*.*" --sort=-v:refname | head -n 1)
               if [ -z "$LATEST_TAG" ]; then
-                VERSION="0.1.0"
+                VERSION="1.0.0"
               else
                 CURRENT="${LATEST_TAG#v}"
                 MAJOR="${CURRENT%%.*}"
@@ -323,18 +323,18 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild \
-            -project ios/Empo/Empo.xcodeproj \
-            -scheme Empo \
+            -project ios/Empo/XPPocket.xcodeproj \
+            -scheme XPPocket \
             -destination 'generic/platform=iOS' \
             -configuration Release \
             CODE_SIGNING_ALLOWED=NO \
-            PRODUCT_BUNDLE_IDENTIFIER=sh.mateo.empo \
+            PRODUCT_BUNDLE_IDENTIFIER=app.xppocket.player \
             CONFIGURATION_BUILD_DIR="$PWD/build/Release-iphoneos" \
             build 2>&1 | tail -n 40
-          test -d build/Release-iphoneos/Empo.app
+          test -d "build/Release-iphoneos/XP Pocket.app"
 
       - name: Audit binary
-        run: scripts/audit-ipa.sh --version "${{ steps.meta.outputs.version }}" build/Release-iphoneos/Empo.app
+        run: scripts/audit-ipa.sh --version "${{ steps.meta.outputs.version }}" "build/Release-iphoneos/XP Pocket.app"
 
       # Ad-hoc signature with our entitlements blob embedded. The
       # template sideloaders (AltStore/Sideloadly/ESign) re-sign over.
@@ -345,10 +345,10 @@ jobs:
           set -e
           codesign --force --sign - \
             --generate-entitlement-der \
-            --entitlements ios/Empo/Empo.entitlements \
-            build/Release-iphoneos/Empo.app
+            --entitlements ios/Empo/XPPocket.entitlements \
+            "build/Release-iphoneos/XP Pocket.app"
           mkdir -p build/ipa/Payload
-          cp -R build/Release-iphoneos/Empo.app build/ipa/Payload/Empo.app
+          cp -R "build/Release-iphoneos/XP Pocket.app" "build/ipa/Payload/XP Pocket.app"
           IPA_NAME="Empo-${{ steps.meta.outputs.version }}-unsigned.ipa"
           (cd build/ipa && zip -qr "$IPA_NAME" Payload)
           IPA_SIZE="$(stat -f%z "build/ipa/$IPA_NAME")"

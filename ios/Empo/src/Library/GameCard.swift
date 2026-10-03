@@ -85,7 +85,9 @@ struct GameCard: View {
                 .onGeometryChange(for: CGFloat.self) { proxy in
                     proxy.size.height
                 } action: { newHeight in
-                    titleHeight = newHeight
+                    if abs(newHeight - titleHeight) > 1 {
+                        titleHeight = newHeight
+                    }
                 }
             }
             .overlay { centerOverlay }
@@ -149,7 +151,12 @@ struct GameCard: View {
             artworkPath: game.artworkPath,
             importing: game.status == .importing || game.status == .deleting,
             shimmer: game.justImported,
-            onShimmerFinished: { game.justImported = false },
+            onShimmerFinished: {
+                game.justImported = false
+                Task {
+                    await AdCoordinator.shared.showInterstitialIfNeeded(reason: .importComplete)
+                }
+            },
             reloadToken: game.artworkRevision
         )
     }
@@ -179,7 +186,12 @@ struct GameListRow: View {
                 cornerRadius: Radius.sm,
                 importing: game.status == .importing || game.status == .deleting,
                 shimmer: game.justImported,
-                onShimmerFinished: { game.justImported = false },
+                onShimmerFinished: {
+                game.justImported = false
+                Task {
+                    await AdCoordinator.shared.showInterstitialIfNeeded(reason: .importComplete)
+                }
+            },
                 reloadToken: game.artworkRevision
             )
             .matchedTransitionSource(id: "\(game.id)-item", in: heroNamespace ?? fallbackNamespace) {
@@ -313,9 +325,9 @@ struct GameStatusIndicator: View {
         case .paused:
             // Inverted scheme tint so the paused badge reads stronger
             // than the ambient ready state.
-            core.glassEffect(.regular.tint(pausedBackgroundTint), in: .circle)
+            core.xpGlassChrome(tint: pausedBackgroundTint, in: Circle())
         case .ready, .invalid:
-            core.glassEffect(.regular, in: .circle)
+            core.xpGlassChrome(in: Circle())
         }
     }
 

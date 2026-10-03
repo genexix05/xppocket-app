@@ -331,11 +331,11 @@ struct ImportRootChoiceArtworkView: View {
     }
 
     private var placeholderIcon: some View {
-        Image(.empoMark)
+        Image(.pocketMark)
             .resizable()
             .scaledToFit()
             .frame(width: 16, height: 16)
-            .foregroundStyle(.quaternary)
+            .opacity(0.45)
     }
 
     private var placeholderBackground: some View {

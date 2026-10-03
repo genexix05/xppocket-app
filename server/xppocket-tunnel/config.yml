@@ -1,0 +1,11 @@
+tunnel: 73633483-0b5b-40db-9a61-6a22f9c5edd4
+credentials-file: /home/genexix05/.cloudflared/73633483-0b5b-40db-9a61-6a22f9c5edd4.json
+
+ingress:
+  - hostname: api.xppocket.app
+    service: http://127.0.0.1:8787
+  - hostname: xppocket.app
+    service: http://127.0.0.1:8081
+  - hostname: www.xppocket.app
+    service: http://127.0.0.1:8081
+  - service: http_status:404

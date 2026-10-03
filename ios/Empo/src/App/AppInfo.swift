@@ -4,10 +4,10 @@ import Foundation
 ///
 /// The source of truth is `PRODUCT_NAME` in `project.yml`, which xcodegen
 /// substitutes into `CFBundleName`. This helper holds all user-facing
-/// name strings. An app rename is then a one-line change in
+/// name strings and public URLs. An app rename is then a one-line change in
 /// `project.yml`, not a repo-wide sed.
 enum AppInfo {
-    /// The app's display name (e.g. "Empo"). Falls back to a literal
+    /// The app's display name (e.g. "XP Pocket"). Falls back to a literal
     /// when the plist key is missing. That case should not occur in
     /// practice, but the fallback avoids crashes in unusual linker
     /// configurations.
@@ -31,4 +31,24 @@ enum AppInfo {
     static let build: String = {
         Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
     }()
+
+    // MARK: - Public URLs
+
+    /// Product landing page.
+    static let websiteURL = URL(string: "https://xppocket.app")!
+
+    /// Privacy policy (App Store requirement).
+    static let privacyURL = URL(string: "https://xppocket.app/privacy")!
+
+    /// Terms of Use / EULA (required with auto-renewable subscriptions).
+    static let termsURL = URL(string: "https://xppocket.app/terms")!
+
+    /// GPL source code offer. Update when the public fork is published.
+    static let sourceCodeURL = URL(string: "https://xppocket.app")!
+
+    /// Support inbox for feedback shared from the system sheet.
+    static let supportEmail = "support@xppocket.app"
+
+    /// Label for the built-in control layout shipped with the app.
+    static let builtInLayoutName = "Built-in default"
 }

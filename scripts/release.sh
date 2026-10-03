@@ -358,19 +358,19 @@ if [[ "$LOCAL_BUILD" == "1" ]]; then
     BUILD_DIR="$PROJECT_DIR/build/Release-iphoneos"
     rm -rf "$BUILD_DIR"
     xcodebuild \
-        -project "$PROJECT_DIR/Empo.xcodeproj" \
-        -target Empo \
+        -project "$PROJECT_DIR/XPPocket.xcodeproj" \
+        -target XPPocket \
         -sdk iphoneos \
         -arch arm64 \
         -configuration Release \
         CODE_SIGNING_ALLOWED=NO \
-        PRODUCT_BUNDLE_IDENTIFIER=sh.mateo.empo \
+        PRODUCT_BUNDLE_IDENTIFIER=app.xppocket.player \
         CONFIGURATION_BUILD_DIR="$BUILD_DIR" \
         build 2>&1 | grep -E "^(Build|error:|warning: |CompileSwift|Ld )" || true
 
-    APP_PATH="$BUILD_DIR/Empo.app"
+    APP_PATH="$BUILD_DIR/XP Pocket.app"
     if [[ ! -d "$APP_PATH" ]]; then
-        echo "error: build failed - Empo.app not found at $BUILD_DIR"
+        echo "error: build failed - XP Pocket.app not found at $BUILD_DIR"
         exit 1
     fi
 
@@ -379,11 +379,11 @@ if [[ "$LOCAL_BUILD" == "1" ]]; then
     echo "==> ad-hoc signing with entitlements"
     codesign --force --sign - \
         --generate-entitlement-der \
-        --entitlements "$PROJECT_DIR/Empo.entitlements" \
+        --entitlements "$PROJECT_DIR/XPPocket.entitlements" \
         "$APP_PATH"
 
     mkdir -p "$IPA_DIR/Payload"
-    cp -R "$APP_PATH" "$IPA_DIR/Payload/Empo.app"
+    cp -R "$APP_PATH" "$IPA_DIR/Payload/XP Pocket.app"
     IPA_NAME="Empo-${VERSION}-unsigned.ipa"
     (cd "$IPA_DIR" && zip -qr "$IPA_NAME" Payload)
     rm -rf "$IPA_DIR/Payload"

@@ -245,8 +245,8 @@ class AppSettings {
         self.controllerHaptics = ud.object(forKey: DefaultsKey.controllerHaptics) as? Bool ?? true
         let raw = ud.string(forKey: DefaultsKey.titlePosition) ?? TitlePosition.inside.rawValue
         self.titlePosition = TitlePosition(rawValue: raw) ?? .inside
-        let modeRaw = ud.string(forKey: DefaultsKey.libraryDisplayMode) ?? LibraryDisplayMode.grid.rawValue
-        self.libraryDisplayMode = LibraryDisplayMode(rawValue: modeRaw) ?? .grid
+        let modeRaw = ud.string(forKey: DefaultsKey.libraryDisplayMode) ?? LibraryDisplayMode.list.rawValue
+        self.libraryDisplayMode = LibraryDisplayMode(rawValue: modeRaw) ?? .list
         self.showContinuePlaying = ud.object(forKey: DefaultsKey.showContinuePlaying) as? Bool ?? true
         let sortRaw = ud.string(forKey: DefaultsKey.librarySortOption) ?? LibrarySortOption.titleAZ.rawValue
         self.librarySortOption = LibrarySortOption(rawValue: sortRaw) ?? .titleAZ

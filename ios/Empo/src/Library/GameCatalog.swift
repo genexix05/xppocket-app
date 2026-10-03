@@ -145,7 +145,7 @@ enum GameCatalog {
 
         var metadata = GameMetadata.load(from: container)
         if !quick {
-            let settings = GameSettings.load(from: container.empoStateURL)
+            let settings = GameSettings.load(from: container.playerDataURL)
             if settings.allowsRubyAutoDetectRefresh {
                 metadata.refreshDetectedProfile(in: container)
             }

@@ -1,0 +1,23 @@
+services:
+  xppocket-api:
+    build: .
+    container_name: xppocket-api
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    environment:
+      XPPOCKET_DATA_DIR: /data
+      XPPOCKET_ADMIN_KEY: ${XPPOCKET_ADMIN_KEY:-change-me-on-first-boot}
+      XPPOCKET_JWT_SECRET: ${XPPOCKET_JWT_SECRET:-change-me-jwt-secret-on-first-boot}
+      XPPOCKET_APPLE_CLIENT_ID: ${XPPOCKET_APPLE_CLIENT_ID:-app.xppocket.player}
+      XPPOCKET_APPLE_CLIENT_ID_DEV: ${XPPOCKET_APPLE_CLIENT_ID_DEV:-app.xppocket.player.dev}
+      XPPOCKET_DEV_AUTH: ${XPPOCKET_DEV_AUTH:-false}
+      XPPOCKET_CORS_ORIGINS: ${XPPOCKET_CORS_ORIGINS:-*}
+    volumes:
+      - ${XPPOCKET_DATA_MOUNT:-./data}:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8787/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

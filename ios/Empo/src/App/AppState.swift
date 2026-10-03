@@ -26,13 +26,6 @@ class AppState {
     /// view reads this after the user dismisses the alert, then
     /// switches from the spinner to the error content.
     var sessionHadError = false
-    /// The latest release-check result for sideload/dev builds.
-    /// `RootView` fills it at launch. Settings and the library banner
-    /// read it.
-    var updateStatus: UpdateChecker.Status = .unknown
-    /// True when the user dismissed the library update banner.
-    /// Applies to this launch only.
-    var updateBannerDismissed = false
 
     // Assigned in init AFTER the container migration runs:
     // `EngineSessionCoordinator.init` builds a `CrashTracker`,
@@ -44,24 +37,6 @@ class AppState {
     private let session: EngineSessionCoordinator
 
     var pendingCrashRecovery: Bool { session.pendingCrashRecovery }
-
-    func checkForUpdatesIfStale() async {
-        guard UpdateChecker.isSideloadOrDevBuild else { return }
-        updateStatus = .checking
-        let result = await UpdateChecker.checkIfStale()
-        withAnimation(Motion.standard) {
-            updateStatus = result
-        }
-    }
-
-    func checkForUpdatesNow() async {
-        guard UpdateChecker.isSideloadOrDevBuild else { return }
-        updateStatus = .checking
-        let result = await UpdateChecker.checkNow()
-        withAnimation(Motion.standard) {
-            updateStatus = result
-        }
-    }
 
     private init() {
         GameContainerMigration.migrateLegacyContainersIfNeeded()
@@ -106,7 +81,7 @@ class AppState {
         // `engineSpelling` for the /var vs /private/var trap).
         let userDataDir = DataDirectory.engineSpelling(
             of: DataDirectory.resolveAndPrepare(for: container))
-        let stateDir = container.empoStateURL
+        let stateDir = container.playerDataURL
 
         GameSettings.migrateLegacyEngineSettingsIfNeeded(
             stateDirectory: stateDir,

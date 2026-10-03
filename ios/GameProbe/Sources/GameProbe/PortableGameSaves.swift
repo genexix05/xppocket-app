@@ -66,7 +66,7 @@ public enum PortableGameSaves {
     }
 
     /// First two bytes are Ruby Marshal's version magic `0x04 0x08`.
-    static func hasMarshalMagic(_ url: URL) -> Bool {
+    public static func hasMarshalMagic(_ url: URL) -> Bool {
         guard let handle = try? FileHandle(forReadingFrom: url) else { return false }
         defer { try? handle.close() }
         guard let bytes = try? handle.read(upToCount: 2), bytes.count == 2 else {

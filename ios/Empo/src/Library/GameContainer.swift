@@ -22,7 +22,7 @@ import GameProbe
 ///   │                      `DataDirectory` drains it into the shared
 ///   │                      `Documents/Data/` tree at launch. Absent
 ///   │                      on fresh containers.
-///   ├── EmpoState/         Empo-managed state:
+///   ├── PlayerData/        App-managed state:
 ///   │                        - mkxp.json (generated config, merged
 ///   │                          from Game/mkxp.json + per-game settings)
 ///   │                        - game_settings.json (per-game UI prefs)
@@ -73,8 +73,9 @@ struct GameContainer: Equatable, Hashable {
         url.appendingPathComponent("Game", isDirectory: true)
     }
 
-    var empoStateURL: URL {
-        url.appendingPathComponent("EmpoState", isDirectory: true)
+    var playerDataURL: URL {
+        url.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
     }
 
     var userDataURL: URL {
@@ -96,24 +97,24 @@ struct GameContainer: Equatable, Hashable {
     }
 
     var mkxpConfigURL: URL {
-        empoStateURL.appendingPathComponent("mkxp.json")
+        playerDataURL.appendingPathComponent("mkxp.json")
     }
 
     var gameSettingsURL: URL {
-        empoStateURL.appendingPathComponent("game_settings.json")
+        playerDataURL.appendingPathComponent("game_settings.json")
     }
 
     /// Player-edited touch layout + per-game controller overrides (SPEC section 3).
     var userControlsURL: URL {
-        empoStateURL.appendingPathComponent("controls.json")
+        playerDataURL.appendingPathComponent("controls.json")
     }
 
     var peDetectedMarkerURL: URL {
-        empoStateURL.appendingPathComponent(".pokemon_essentials_detected")
+        playerDataURL.appendingPathComponent(".pokemon_essentials_detected")
     }
 
     var sessionActiveMarkerURL: URL {
-        empoStateURL.appendingPathComponent(".session-active")
+        playerDataURL.appendingPathComponent(".session-active")
     }
 
     var sessionHistoryURL: URL {
@@ -214,7 +215,7 @@ struct GameContainer: Equatable, Hashable {
     func ensureSubdirs() throws {
         let fm = FileManager.default
         try fm.createDirectory(at: gameURL, withIntermediateDirectories: true)
-        try fm.createDirectory(at: empoStateURL, withIntermediateDirectories: true)
+        try fm.createDirectory(at: playerDataURL, withIntermediateDirectories: true)
         try fm.createDirectory(at: logsURL, withIntermediateDirectories: true)
         try fm.createDirectory(at: metadataURL, withIntermediateDirectories: true)
         excludeFromBackup()
@@ -259,16 +260,16 @@ struct GameContainer: Equatable, Hashable {
     }
 
     @discardableResult
-    func ensureEmpoStateDirectory() -> URL {
-        Self.ensureDirectory(empoStateURL)
+    func ensurePlayerDataDirectory() -> URL {
+        Self.ensureDirectory(playerDataURL)
         // Older builds wrote a snapshot of the developer's
         // mkxp.json as `mkxp.original.json` here and used it as a
         // merge base. We now read directly from `Game/mkxp.json`
         // (the host never edits it, the game may), so the
         // snapshot is dead state. Clean it up opportunistically.
-        let staleSnapshot = empoStateURL.appendingPathComponent("mkxp.original.json")
+        let staleSnapshot = playerDataURL.appendingPathComponent("mkxp.original.json")
         try? FileManager.default.removeItem(at: staleSnapshot)
-        return empoStateURL
+        return playerDataURL
     }
 
     @discardableResult

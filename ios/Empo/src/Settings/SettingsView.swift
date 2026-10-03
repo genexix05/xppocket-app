@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Environment(\.appState) private var appState
     @Environment(\.appSettings) private var settings
     @Environment(\.dismiss) private var dismiss
     @State private var showBuildInfo = false
@@ -16,6 +15,8 @@ struct SettingsView: View {
         return NavigationStack {
             Form {
                 settingsHeader
+
+                AccountSettingsSection()
 
                 Section {
                     SettingsPicker(
@@ -79,6 +80,14 @@ struct SettingsView: View {
                             "Create and edit saved layouts for the on-screen controls and the game screen."
                     ) {
                         LayoutProfilesSettingsView()
+                    }
+
+                    SettingsNavigationRow(
+                        title: "Community layouts",
+                        description:
+                            "Browse and install touch-control layouts shared by the XP Pocket community."
+                    ) {
+                        CommunityLayoutsView()
                     }
 
                     SettingsToggle(
@@ -160,81 +169,52 @@ struct SettingsView: View {
 
                 Section {
                     NavigationLink {
+                        ChangelogView()
+                    } label: {
+                        Label("Changelog", systemImage: "list.bullet.rectangle")
+                    }
+
+                    NavigationLink {
+                        CreditsView()
+                    } label: {
+                        Label("Credits", systemImage: "person.2")
+                    }
+
+                    NavigationLink {
                         LicensesView()
                     } label: {
                         Label("Open-source licenses", systemImage: "doc.text")
                     }
 
-                    Link(
-                        destination: URL(string: "https://github.com/mateo-m/empo-app/wiki/privacy-policy")
-                            ?? URL.empoHomepage
-                    ) {
-                        Label {
-                            HStack {
-                                Text("Privacy Policy")
-                                Spacer()
-                                Image(systemName: "arrow.up.forward")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        } icon: {
-                            Image(systemName: "hand.raised")
-                        }
-                    }
-                    .tint(.primary)
+                    externalLink(
+                        title: "Privacy Policy",
+                        systemImage: "hand.raised",
+                        url: AppInfo.privacyURL)
 
-                    Link(
-                        destination: URL(string: "https://github.com/mateo-m/empo-app")
-                            ?? URL.empoHomepage
-                    ) {
-                        Label {
-                            HStack {
-                                Text("GitHub")
-                                Spacer()
-                                Image(systemName: "arrow.up.forward")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        } icon: {
-                            Image(.gitHubMark)
-                                .resizable()
-                                .scaledToFit()
-                        }
-                    }
-                    .tint(.primary)
+                    externalLink(
+                        title: "Terms of Use",
+                        systemImage: "doc.plaintext",
+                        url: AppInfo.termsURL)
 
-                    Link(
-                        destination: URL(string: "https://twitter.com/gridplay_")
-                            ?? URL.empoHomepage
-                    ) {
-                        Label {
-                            HStack {
-                                Text("Twitter")
-                                Spacer()
-                                Image(systemName: "arrow.up.forward")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        } icon: {
-                            Image(.twitterMark)
-                                .resizable()
-                                .scaledToFit()
-                        }
-                    }
-                    .tint(.primary)
+                    externalLink(
+                        title: "Source code (GPL)",
+                        systemImage: "chevron.left.forwardslash.chevron.right",
+                        url: AppInfo.sourceCodeURL)
+
+                    FeedbackShareButton(
+                        label: "Send feedback",
+                        systemImage: "exclamationmark.bubble",
+                        formRowStyle: true
+                    )
+
+                    externalLink(
+                        title: "Website",
+                        systemImage: "globe",
+                        url: AppInfo.websiteURL)
                 } header: {
                     Text("About")
-                }
-
-                Section {
-                    // SwiftUI's Text initializer parses markdown in
-                    // string literals, so the [Grid] link renders as
-                    // tappable with the .tint(.brand) the form uses.
-                    Text("Made with ☕ by [**Grid**](https://twitter.com/gridplay_)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .listRowBackground(Color.clear)
+                } footer: {
+                    Text("\(AppInfo.name) is free software. You can redistribute and modify it under the terms of the GNU General Public License.")
                 }
             }
             .sheet(isPresented: $showBuildInfo) {
@@ -251,12 +231,30 @@ struct SettingsView: View {
         .tint(.brand)
     }
 
+    @ViewBuilder
+    private func externalLink(title: String, systemImage: String, url: URL) -> some View {
+        Link(destination: url) {
+            Label {
+                HStack {
+                    Text(title)
+                    Spacer()
+                    Image(systemName: "arrow.up.forward")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } icon: {
+                Image(systemName: systemImage)
+            }
+        }
+        .tint(.primary)
+    }
+
     private var buildVersionButton: some View {
         Button {
             showBuildInfo = true
         } label: {
             Text("v\(AppInfo.version)")
-                .font(.caption)
+                .font(.caption2)
                 .foregroundStyle(.secondary)
         }
         .buttonStyle(.plain)
@@ -264,560 +262,29 @@ struct SettingsView: View {
     }
 
     private var settingsHeader: some View {
-        VStack(spacing: Spacing.md) {
-            Image(.empoMark)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 64, height: 64)
-                .foregroundStyle(.brand)
-            // Match the splash screen wordmark style so the
-            // first run and the settings header feel
-            // continuous. Scale it down to fit the sheet.
-            Text(AppInfo.name)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
-
-            VStack(spacing: Spacing.xs) {
-                buildVersionButton
-                UpdateStatusIndicator(
-                    status: appState.updateStatus,
-                    onTapRetry: {
-                        await appState.checkForUpdatesNow()
-                    },
-                    size: .compact,
-                    showsManualRefresh: UpdateChecker.isSideloadOrDevBuild,
-                    onManualRefresh: {
-                        await appState.checkForUpdatesNow()
-                    }
-                )
+        VStack(spacing: Spacing.xs) {
+            HStack(spacing: Spacing.sm) {
+                Image(.pocketMark)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 28, height: 28)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                Text(AppInfo.name)
+                    .font(.headline.weight(.semibold))
+                    .fontDesign(.rounded)
+                    .foregroundStyle(.primary)
             }
+
+            buildVersionButton
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, Spacing.md)
-        .padding(.bottom, Spacing._3xl)
+        .padding(.vertical, Spacing.sm)
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
         .environment(\.headerProminence, .standard)
     }
 }
 
-private enum UpdateStatusChipPhase: Hashable {
-    case hidden
-    case checking
-    case upToDate
-    case available(version: String)
-    case failed
-
-    init(_ status: UpdateChecker.Status) {
-        switch status {
-        case .unknown:
-            self = .hidden
-        case .checking:
-            self = .checking
-        case .upToDate:
-            self = .upToDate
-        case .available(let version, _):
-            self = .available(version: version)
-        case .failed:
-            self = .failed
-        }
-    }
-
-    var title: String {
-        switch self {
-        case .hidden:
-            return ""
-        case .checking:
-            return "Checking for updates..."
-        case .upToDate:
-            return "Up to date"
-        case .available(let version):
-            return "Update available: v\(version)"
-        case .failed:
-            return "Retry update check"
-        }
-    }
-
-    var systemImage: String? {
-        switch self {
-        case .checking, .hidden:
-            return nil
-        case .upToDate:
-            return "checkmark.circle"
-        case .available:
-            return "arrow.down.circle.fill"
-        case .failed:
-            return "exclamationmark.triangle"
-        }
-    }
-
-    var usesBrandGlass: Bool {
-        if case .available = self { return true }
-        return false
-    }
-}
-
-/// Compact refresh affordance with a spring-driven spin while active.
-/// When the check completes, the icon springs forward until it has
-/// made at least one full turn from when the spin started. It then
-/// resets to 0° invisibly (360° and 0° look identical).
-private struct RefreshSpinIcon: View {
-    let spinning: Bool
-    var size: UpdateStatusIndicator.Size = .regular
-
-    private let spinPeriod: TimeInterval = 0.85
-
-    @State private var spinStart: Date?
-    @State private var spinOrigin: Double = 0
-    @State private var coastRotation: Double?
-    @State private var coastGeneration: UInt = 0
-
-    private var iconFont: Font {
-        switch size {
-        case .compact, .regular: .system(size: 11, weight: .semibold)
-        }
-    }
-
-    private var isCoasting: Bool {
-        coastRotation != nil
-    }
-
-    var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: !spinning && !isCoasting)) { context in
-            Image(systemName: "arrow.clockwise")
-                .font(iconFont)
-                .foregroundStyle(.secondary)
-                .rotationEffect(.degrees(displayedRotation(at: context.date)))
-                .animation(isCoasting ? Motion.standard : nil, value: coastRotation)
-        }
-        .onChange(of: spinning, initial: true) { _, shouldSpin in
-            if shouldSpin {
-                startSpinning()
-            } else {
-                beginCoast()
-            }
-        }
-    }
-
-    private func startSpinning() {
-        coastGeneration += 1
-        coastRotation = nil
-        spinOrigin = 0
-        spinStart = Date()
-    }
-
-    private func displayedRotation(at date: Date) -> Double {
-        if let coastRotation {
-            return coastRotation
-        }
-        return spinRotation(at: date)
-    }
-
-    private func spinRotation(at date: Date) -> Double {
-        guard let spinStart else { return spinOrigin }
-        let elapsed = date.timeIntervalSince(spinStart)
-        let revolution = elapsed / spinPeriod
-        let completed = floor(revolution)
-        let localProgress = revolution - completed
-        let sprungProgress = springRevolutionProgress(localProgress)
-        return spinOrigin + (completed + sprungProgress) * 360
-    }
-
-    /// One 0→1 spring segment per revolution while checking.
-    private func springRevolutionProgress(_ progress: Double) -> Double {
-        let t = min(max(progress, 0), 1)
-        // Critically damped spring approximation (no overshoot).
-        return 1 - (1 + 6 * t) * exp(-6 * t)
-    }
-
-    private func beginCoast() {
-        coastGeneration += 1
-        let generation = coastGeneration
-
-        let current: Double
-        if let spinStart {
-            current = spinRotation(at: Date())
-            self.spinStart = nil
-        } else if let coastRotation {
-            current = coastRotation
-        } else {
-            resetRotationSilently()
-            return
-        }
-
-        let minimumTarget = spinOrigin + 360
-        let remainder = current.truncatingRemainder(dividingBy: 360)
-        let boundaryTarget = remainder > 1 ? current + (360 - remainder) : current
-        let target = max(boundaryTarget, minimumTarget)
-
-        guard target - current > 1 else {
-            resetRotationSilently()
-            return
-        }
-
-        coastRotation = current
-        withAnimation(Motion.standard) {
-            coastRotation = target
-        } completion: {
-            finishCoast(expectedGeneration: generation)
-        }
-    }
-
-    private func resetRotationSilently() {
-        var transaction = Transaction()
-        transaction.disablesAnimations = true
-        withTransaction(transaction) {
-            spinOrigin = 0
-            spinStart = nil
-            coastRotation = nil
-        }
-    }
-
-    private func finishCoast(expectedGeneration: UInt) {
-        guard coastGeneration == expectedGeneration, coastRotation != nil else { return }
-        resetRotationSilently()
-    }
-}
-
-struct UpdateStatusIndicator: View {
-    enum Size {
-        case compact
-        case regular
-    }
-
-    let status: UpdateChecker.Status
-    let onTapRetry: () async -> Void
-    var canDismiss: Bool = false
-    var onDismiss: (() -> Void)?
-    var size: Size = .regular
-    var showsManualRefresh: Bool = false
-    var onManualRefresh: (() async -> Void)?
-
-    private var chipPhase: UpdateStatusChipPhase {
-        UpdateStatusChipPhase(status)
-    }
-
-    private var showsRefreshIcon: Bool {
-        showsManualRefresh && (chipPhase == .upToDate || chipPhase == .checking)
-    }
-
-    var body: some View {
-        if chipPhase == .hidden {
-            EmptyView()
-        } else {
-            HStack(spacing: Spacing.xs) {
-                chip
-                trailingRefreshControl
-            }
-            .geometryGroup()
-            .animation(Motion.standard, value: chipPhase)
-        }
-    }
-
-    @ViewBuilder
-    private var chip: some View {
-        let badge = UpdateStatusBadge(
-            text: chipPhase.title,
-            systemImage: chipPhase.systemImage,
-            tint: chipPhase.usesBrandGlass ? .white : .secondary,
-            background: chipPhase.usesBrandGlass ? .brand : Color.secondary.opacity(0.12),
-            actionURL: releaseURL,
-            dismissAction: canDismiss ? onDismiss : nil,
-            usesBrandGlass: chipPhase.usesBrandGlass,
-            size: size
-        )
-
-        if chipPhase == .failed {
-            Button {
-                Task { await onTapRetry() }
-            } label: {
-                badge
-            }
-            .buttonStyle(.plain)
-        } else {
-            badge
-        }
-    }
-
-    private var releaseURL: URL? {
-        guard case .available(_, let url) = status else { return nil }
-        return url
-    }
-
-    @ViewBuilder
-    private var trailingRefreshControl: some View {
-        if showsRefreshIcon {
-            Button {
-                Task { await onManualRefresh?() }
-            } label: {
-                RefreshSpinIcon(spinning: chipPhase == .checking, size: size)
-            }
-            .buttonStyle(.plain)
-            .disabled(chipPhase == .checking)
-            .accessibilityLabel(
-                chipPhase == .checking ? "Checking for updates" : "Check for updates"
-            )
-            .transition(.identity)
-        }
-    }
-}
-
-private struct BrandGlassModifier: ViewModifier {
-    let interactive: Bool
-    let tint: Color
-
-    func body(content: Content) -> some View {
-        if interactive {
-            content
-                .glassEffect(.regular.tint(tint).interactive(), in: .capsule)
-                .darkGlass()
-        } else {
-            content
-                .glassEffect(.regular.tint(tint), in: .capsule)
-                .darkGlass()
-        }
-    }
-}
-
-struct UpdateStatusBadge: View {
-    let text: String
-    let systemImage: String?
-    let tint: Color
-    let background: Color
-    var actionURL: URL?
-    var dismissAction: (() -> Void)?
-    var usesBrandGlass: Bool = false
-    var size: UpdateStatusIndicator.Size = .regular
-
-    @Environment(\.openURL) private var openURL
-    @State private var dismissDragOffset: CGFloat = 0
-    @State private var suppressTapOpen = false
-
-    private static let dismissSwipeThreshold: CGFloat = 24
-
-    /// Library banner: a tap opens the release page, and a swipe down
-    /// or the X dismisses. The settings header keeps a plain `Link`
-    /// instead.
-    private var usesDismissiblePromoInteraction: Bool {
-        actionURL != nil && dismissAction != nil
-    }
-
-    var body: some View {
-        dismissibleInteraction(styledBadge)
-            .offset(y: usesDismissiblePromoInteraction ? dismissDragOffset : 0)
-            .fixedSize(horizontal: true, vertical: false)
-    }
-
-    @ViewBuilder
-    private var styledBadge: some View {
-        if usesBrandGlass {
-            badgeContent
-                .font(brandFont)
-                .foregroundStyle(tint)
-                .shadow(color: .black.opacity(Alpha.shadow), radius: 2, y: 1)
-                .padding(.horizontal, brandHorizontalPadding)
-                .padding(.vertical, brandVerticalPadding)
-                .modifier(BrandGlassModifier(interactive: !usesDismissiblePromoInteraction, tint: background))
-        } else {
-            badgeContent
-                .font(secondaryFont)
-                .foregroundStyle(tint)
-                .padding(.horizontal, secondaryHorizontalPadding)
-                .padding(.vertical, secondaryVerticalPadding)
-                .background(background)
-                .clipShape(Capsule())
-        }
-    }
-
-    @ViewBuilder
-    private func dismissibleInteraction<Content: View>(_ content: Content) -> some View {
-        if usesDismissiblePromoInteraction, let actionURL, let dismissAction {
-            content
-                .contentShape(.capsule)
-                .gesture(promoDragGesture(url: actionURL, dismiss: dismissAction))
-                .accessibilityAddTraits(.isButton)
-                .accessibilityHint("Swipe down to dismiss")
-        } else {
-            content
-        }
-    }
-
-    @ViewBuilder
-    private var badgeContent: some View {
-        if usesDismissiblePromoInteraction, let actionURL, let dismissAction {
-            dismissiblePromoContent(url: actionURL, dismiss: dismissAction)
-        } else {
-            staticBadgeContent
-        }
-    }
-
-    private var staticBadgeContent: some View {
-        HStack(spacing: 0) {
-            if let actionURL {
-                Link(destination: actionURL) {
-                    label
-                }
-                .buttonStyle(.plain)
-            } else {
-                label
-            }
-
-            if let dismissAction {
-                dismissButton(action: dismissAction)
-            }
-        }
-    }
-
-    private func dismissiblePromoContent(url: URL, dismiss: @escaping () -> Void) -> some View {
-        HStack(spacing: 0) {
-            label
-                .frame(maxWidth: .infinity, alignment: .leading)
-            dismissButton { dismissPromo(dismiss) }
-        }
-    }
-
-    private func promoDragGesture(url: URL, dismiss: @escaping () -> Void) -> some Gesture {
-        DragGesture(minimumDistance: 0)
-            .onChanged { value in
-                let vertical = value.translation.height
-                let horizontal = abs(value.translation.width)
-                if vertical > 0, vertical > horizontal {
-                    dismissDragOffset = vertical
-                }
-            }
-            .onEnded { value in
-                let vertical = value.translation.height
-                let horizontal = abs(value.translation.width)
-                let isTap = vertical * vertical + horizontal * horizontal < 144
-
-                if vertical > 0, vertical > horizontal {
-                    let distanceDismiss = vertical > Self.dismissSwipeThreshold
-                    let flickDismiss = vertical > 8 && value.velocity.height > 400
-                    if distanceDismiss || flickDismiss {
-                        dismissPromo(dismiss, fromSwipe: true)
-                        return
-                    }
-                }
-
-                withAnimation(Motion.gentle) { dismissDragOffset = 0 }
-                guard isTap else { return }
-                guard !suppressTapOpen else {
-                    suppressTapOpen = false
-                    return
-                }
-                openURL(url)
-            }
-    }
-
-    private func dismissPromo(_ dismiss: @escaping () -> Void, fromSwipe: Bool = false) {
-        if !fromSwipe {
-            dismissDragOffset = 0
-        }
-        dismiss()
-    }
-
-    private func dismissButton(action: @escaping () -> Void) -> some View {
-        Button {
-            suppressTapOpen = true
-            action()
-        } label: {
-            Image(systemName: "xmark.circle.fill")
-                .font(dismissFont)
-                .foregroundStyle(tint)
-                .frame(width: dismissFrame, height: dismissFrame)
-                .contentShape(Rectangle())
-        }
-        .padding(.leading, dismissLeadingPadding)
-        .buttonStyle(.plain)
-        .accessibilityLabel("Dismiss update banner")
-    }
-
-    private var label: some View {
-        HStack(spacing: Spacing.sm) {
-            if let systemImage {
-                Image(systemName: systemImage)
-                    .imageScale(iconScale)
-                    .id(systemImage)
-                    .transition(.blurReplace)
-            }
-
-            Text(text)
-                .lineLimit(1)
-                .contentTransition(.numericText())
-                .transition(.blurReplace)
-        }
-    }
-
-    private var brandFont: Font {
-        switch size {
-        case .compact: .caption2.weight(.semibold)
-        case .regular: .subheadline.weight(.semibold)
-        }
-    }
-
-    private var secondaryFont: Font {
-        switch size {
-        case .compact: .caption.weight(.semibold)
-        case .regular: .caption.weight(.semibold)
-        }
-    }
-
-    private var brandHorizontalPadding: CGFloat {
-        switch size {
-        case .compact: Spacing.sm
-        case .regular: ButtonSize.md.horizontalPadding
-        }
-    }
-
-    private var brandVerticalPadding: CGFloat {
-        switch size {
-        case .compact: Spacing.xs
-        case .regular: Spacing.md
-        }
-    }
-
-    private var secondaryHorizontalPadding: CGFloat {
-        switch size {
-        case .compact: Spacing.sm
-        case .regular: Spacing.md
-        }
-    }
-
-    private var secondaryVerticalPadding: CGFloat {
-        switch size {
-        case .compact: Spacing.xxs
-        case .regular: Spacing.xs
-        }
-    }
-
-    private var dismissFont: Font {
-        switch size {
-        case .compact: .caption2.weight(.black)
-        case .regular: .subheadline.weight(.black)
-        }
-    }
-
-    private var dismissFrame: CGFloat {
-        switch size {
-        case .compact: 14
-        case .regular: 18
-        }
-    }
-
-    private var dismissLeadingPadding: CGFloat {
-        switch size {
-        case .compact: Spacing.xs
-        case .regular: Spacing.md
-        }
-    }
-
-    private var iconScale: Image.Scale {
-        switch size {
-        case .compact: .small
-        case .regular: .medium
-        }
-    }
-}
 
 /// A sheet that appears when the user taps the version label in the
 /// settings header. Shows build details as a grouped list styled to
@@ -1044,12 +511,4 @@ private struct DevicePreview: View {
             return GameRect(width: gameW, height: gameH, offsetX: 0, offsetY: offsetY)
         }
     }
-}
-
-extension URL {
-    /// Fallback for any URL literal that fails to parse. There is no
-    /// way to guarantee a non-nil URL at compile time without a
-    /// force-unwrap, so the project homepage is the safe landing page.
-    fileprivate static let empoHomepage =
-        URL(string: "https://github.com/mateo-m/empo-app") ?? URL(fileURLWithPath: "/")
 }

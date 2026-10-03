@@ -40,6 +40,7 @@ struct ActionButton: View {
     let scancode: Int32
     let size: CGFloat
     let editing: Bool
+    var skinImage: UIImage? = nil
 
     var body: some View {
         // VoiceOver: the visible glyph (`A`, `B`, `X`, `Y`, etc.) reads
@@ -49,6 +50,7 @@ struct ActionButton: View {
         CircularControlButton(
             size: size,
             editing: editing,
+            skinImage: skinImage,
             accessibilityLabel: "\(label) button",
             onPress: {
                 EngineSessionCoordinator.shared.holdKey(
@@ -59,11 +61,13 @@ struct ActionButton: View {
                     scancode: scancode, by: .touch("button:\(label)"))
             },
             face: { isPressed in
-                Text(label)
-                    .font(
-                        .system(size: size < 60 ? 12 : 16, weight: .semibold, design: .rounded)
-                    )
-                    .foregroundStyle(.white.opacity(isPressed ? 1.0 : 0.9))
+                if skinImage == nil {
+                    Text(label)
+                        .font(
+                            .system(size: size < 60 ? 12 : 16, weight: .semibold, design: .rounded)
+                        )
+                        .foregroundStyle(.white.opacity(isPressed ? 1.0 : 0.9))
+                }
             }
         )
     }
@@ -114,6 +118,8 @@ struct FunctionButton: View {
 struct CircularControlButton<Face: View>: View {
     let size: CGFloat
     let editing: Bool
+    /// Custom bitmap face; hides Liquid Glass when set.
+    var skinImage: UIImage? = nil
     /// Keeps the rim glow lit while a latched toggle is engaged.
     var isActive: Bool = false
     let accessibilityLabel: String
@@ -124,6 +130,8 @@ struct CircularControlButton<Face: View>: View {
 
     @State private var isPressed = false
 
+    private var usesSkin: Bool { skinImage != nil }
+
     var body: some View {
         // Face drawn on top of a Liquid Glass circle. `.interactive()`
         // supplies the native press-style brightness on the glass
@@ -132,33 +140,40 @@ struct CircularControlButton<Face: View>: View {
         // modifier alone only scales the glass layer, not content
         // drawn on top of it).
         ZStack {
-            // Opaque backing under glass, for the same reason as the
-            // D-pad: with the game view embedded in AppWindow, Liquid
-            // Glass otherwise samples the Metal layer on device.
-            Circle()
-                .fill(Color.black)
+            if usesSkin, let skinImage {
+                Image(uiImage: skinImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+                    .opacity(isPressed ? 0.85 : 1)
+            } else {
+                // Opaque backing under glass, for the same reason as the
+                // D-pad: with the game view embedded in AppWindow, Liquid
+                // Glass otherwise samples the Metal layer on device.
+                Circle()
+                    .fill(Color.black)
 
-            Circle()
-                .fill(.clear)
-                .glassEffect(.regular.interactive(), in: .circle)
+                Circle()
+                    .fill(.ultraThinMaterial)
 
-            // Press highlight matching the D-pad arm gradient
-            // (white 0.28 at the rim → clear toward the center).
-            // Latched toggles keep it lit so the state is visible
-            // without a label.
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [.white.opacity(0), .white.opacity(0.28)],
-                        center: .center,
-                        startRadius: size * 0.15,
-                        endRadius: size / 2
+                // Press highlight matching the D-pad arm gradient
+                // (white 0.28 at the rim → clear toward the center).
+                // Latched toggles keep it lit so the state is visible
+                // without a label.
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [.white.opacity(0), .white.opacity(0.28)],
+                            center: .center,
+                            startRadius: size * 0.15,
+                            endRadius: size / 2
+                        )
                     )
-                )
-                .opacity(isPressed || isActive ? 1 : 0)
-                .animation(Motion.instant, value: isPressed)
+                    .opacity(isPressed || isActive ? 1 : 0)
+                    .animation(Motion.instant, value: isPressed)
 
-            face(isPressed)
+                face(isPressed)
+            }
         }
         .frame(width: size, height: size)
         .scaleEffect(isPressed ? PressScale.standard : 1.0)
@@ -167,7 +182,7 @@ struct CircularControlButton<Face: View>: View {
         // Both controls pin to `.dark` so the glass material looks
         // consistent regardless of the system interface style or
         // the brightness of the game content behind them.
-        .darkGlass()
+        .modifier(DarkGlassUnlessSkin(usesSkin: usesSkin))
         .contentShape(Circle())
         .accessibilityLabel(accessibilityLabel)
         .accessibilityAddTraits(.isButton)
@@ -335,6 +350,8 @@ private struct MovementTouchHost<Visual: View>: View {
 struct DPad: View {
     let size: CGFloat
     let editing: Bool
+    var skinImage: UIImage? = nil
+    var skinPressedImage: UIImage? = nil
 
     /// Width of each arm of the plus, as a fraction of the total
     /// bounding box. 0.36 gives balanced proportions where the center
@@ -360,19 +377,39 @@ struct DPad: View {
         }
     }
 
+    @ViewBuilder
     private func visual(active: DPadTouchReducer.DirectionSet) -> some View {
+        let pressed = !active.isEmpty
+
+        if let skinImage {
+            let image = (pressed ? (skinPressedImage ?? skinImage) : skinImage)
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .frame(width: size, height: size)
+                .scaleEffect(pressed ? PressScale.standard : 1.0)
+                .animation(Motion.controlPress, value: pressed)
+                .contentShape(Circle())
+                .accessibilityLabel("Directional pad")
+                .accessibilityHint("Touch and drag to move the character")
+                .accessibilityAddTraits(.allowsDirectInteraction)
+        } else {
+            dpadGlassVisual(active: active, pressed: pressed)
+        }
+    }
+
+    @ViewBuilder
+    private func dpadGlassVisual(active: DPadTouchReducer.DirectionSet, pressed: Bool) -> some View {
         let plus = DPadPlusShape(
             armFraction: armFraction,
             cornerFraction: cornerFraction,
             innerCornerFraction: innerCornerFraction
         )
 
-        let pressed = !active.isEmpty
-
         // Everything here lives inside a single scaled ZStack so the
         // glass plus, per-arm highlights, chevrons, and center dot all
         // spring together on press (same structure as v0.2.6).
-        return ZStack {
+        ZStack {
             // Opaque backing under glass. With the game view embedded
             // in AppWindow, Liquid Glass otherwise samples the Metal
             // layer and blooms a clipped top/left highlight on device.
@@ -382,8 +419,7 @@ struct DPad: View {
                 .fill(Color.black)
 
             plus
-                .fill(.clear)
-                .glassEffect(.regular.interactive(), in: plus)
+                .fill(.ultraThinMaterial)
 
             // Frame arm highlights to each arm's local rect so
             // tip→center UnitPoints are identical for every direction.
@@ -489,8 +525,7 @@ struct Joystick: View {
                 .fill(Color.black)
 
             Circle()
-                .fill(.clear)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .fill(.ultraThinMaterial)
 
             // Direction chevrons on the base ring. The active one
             // brightens, same visual language as the D-pad's arms.
@@ -772,6 +807,18 @@ private enum DPadArmGeometry {
             return RectangleCornerRadii(
                 topLeading: innerR, bottomLeading: innerR,
                 bottomTrailing: outerR, topTrailing: outerR)
+        }
+    }
+}
+
+private struct DarkGlassUnlessSkin: ViewModifier {
+    let usesSkin: Bool
+
+    func body(content: Content) -> some View {
+        if usesSkin {
+            content
+        } else {
+            content.darkGlass()
         }
     }
 }

@@ -84,9 +84,9 @@ private struct SaveRecoverySheet: View {
             emblem: "checkmark.arrow.trianglehead.counterclockwise"
         ) {
             SheetBodyText(
-                "A defect in earlier Empo versions renamed save files on this "
+                "A defect in earlier versions of \(AppInfo.name) renamed save files on this "
                     + "device, so games showed only \u{201C}New Game\u{201D}. "
-                    + "Empo restored the most recent save file for each game "
+                    + "\(AppInfo.name) restored the most recent save file for each game "
                     + "below."
             )
 

@@ -1,0 +1,12 @@
+// Copy to Ads.xcconfig (same directory) and #include from Signing.xcconfig.
+// Ads.xcconfig is gitignored. Create one AdMob *app* and two *ad units*:
+//
+//   App ID (one, with ~)     → ADMOB_APP_ID
+//   Banner unit (with /)     → ADMOB_BANNER_UNIT_ID
+//   Interstitial (with /)    → ADMOB_INTERSTITIAL_UNIT_ID
+//
+// Test IDs stay in project.yml for builds without Ads.xcconfig.
+
+ADMOB_APP_ID = ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
+ADMOB_BANNER_UNIT_ID = ca-app-pub-XXXXXXXXXXXXXXXX/ZZZZZZZZZZ
+ADMOB_INTERSTITIAL_UNIT_ID = ca-app-pub-XXXXXXXXXXXXXXXX/WWWWWWWWWW

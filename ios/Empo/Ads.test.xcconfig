@@ -1,0 +1,7 @@
+// Google test IDs — safe for Simulator / dev without a personal AdMob app.
+// Signing.xcconfig.example includes this file by default.
+// For production, copy Ads.xcconfig.example → Ads.xcconfig and switch the include.
+
+ADMOB_APP_ID = ca-app-pub-3940256099942544~1458002511
+ADMOB_BANNER_UNIT_ID = ca-app-pub-3940256099942544/2934735716
+ADMOB_INTERSTITIAL_UNIT_ID = ca-app-pub-3940256099942544/4411468910

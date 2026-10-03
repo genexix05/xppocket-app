@@ -92,7 +92,7 @@ enum GameImporter {
     }
 
     private nonisolated static func persistModernRubySettings(in container: GameContainer) {
-        let stateDir = container.ensureEmpoStateDirectory()
+        let stateDir = container.ensurePlayerDataDirectory()
         var settings = GameSettings.load(from: stateDir)
         settings.useModernRuby = true
         settings.save(to: stateDir)
@@ -108,8 +108,8 @@ enum GameImporter {
             break
         case .unsupported(let raw):
             throw GameImportValidator.ImportError.unsupportedRuntime(
-                "This JoiPlay archive uses '\(raw)', which Empo does not support. "
-                    + "Empo currently supports only RPG Maker XP, VX, VX Ace, and mkxp-z games."
+                "This JoiPlay archive uses '\(raw)', which \(AppInfo.name) does not support. "
+                    + "\(AppInfo.name) currently supports only RPG Maker XP, VX, VX Ace, and mkxp-z games."
             )
         }
 
@@ -143,7 +143,7 @@ enum GameImporter {
                 settings.useModernRuby = true
             }
 
-            let stateDir = container.ensureEmpoStateDirectory()
+            let stateDir = container.ensurePlayerDataDirectory()
             if let engineValues = bundle.configuration?.toMkxpEngineValues() {
                 EngineConfigProjector.applyEngineValues(
                     engineValues,

@@ -33,7 +33,7 @@ struct LibrarySearchBar: View {
             }
             .padding(.horizontal, Spacing.lg)
             .frame(height: searchBarHeight)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .xpGlassChrome(in: Capsule())
 
             IconButton("arrow.up.arrow.down", style: .outline) {
                 showSortSheet = true

@@ -30,6 +30,16 @@ import Foundation
 ///     completely.
 public enum LegacyDataDrain {
 
+    /// How file-vs-file conflicts resolve when both sides carry
+    /// different bytes at the same relative path.
+    public enum MergePolicy: Sendable {
+        /// Default for launch-time UserData drains: newer mtime wins.
+        case preferNewerModificationDate
+        /// Cloud restore: the incoming tree always wins the canonical
+        /// name (local copy archived beside it).
+        case preferSource
+    }
+
     /// Marker inside displaced-copy names. Public for tests and
     /// for the app-side cleanup docs.
     public static let displacedMarker = "empo-displaced"
@@ -64,6 +74,7 @@ public enum LegacyDataDrain {
     public static func drain(
         from source: URL,
         into destination: URL,
+        policy: MergePolicy = .preferNewerModificationDate,
         fm: FileManager = .default
     ) -> Outcome {
         var outcome = Outcome()
@@ -73,7 +84,9 @@ public enum LegacyDataDrain {
         else { return outcome }
 
         try? fm.createDirectory(at: destination, withIntermediateDirectories: true)
-        drainEntries(from: source, into: destination, prefix: "", outcome: &outcome, fm: fm)
+        drainEntries(
+            from: source, into: destination, prefix: "", policy: policy,
+            outcome: &outcome, fm: fm)
 
         if outcome.isComplete,
             (try? fm.contentsOfDirectory(atPath: source.path))?.isEmpty == true,
@@ -88,6 +101,7 @@ public enum LegacyDataDrain {
         from source: URL,
         into destination: URL,
         prefix: String,
+        policy: MergePolicy,
         outcome: inout Outcome,
         fm: FileManager
     ) {
@@ -112,7 +126,8 @@ public enum LegacyDataDrain {
             }
             if entryIsDir.boolValue, targetIsDir.boolValue {
                 drainEntries(
-                    from: entry, into: target, prefix: relative, outcome: &outcome, fm: fm)
+                    from: entry, into: target, prefix: relative, policy: policy,
+                    outcome: &outcome, fm: fm)
                 if (try? fm.contentsOfDirectory(atPath: entry.path))?.isEmpty == true {
                     try? fm.removeItem(at: entry)
                 }
@@ -137,11 +152,11 @@ public enum LegacyDataDrain {
                 continue
             }
 
-            // Otherwise the newer modification time wins the
-            // canonical name. Ties go to the incoming file.
+            // Otherwise the incoming file wins when restoring from
+            // cloud, or when it is newer at launch.
             let entryDate = modificationDate(of: entry, fm: fm)
             let targetDate = modificationDate(of: target, fm: fm)
-            if entryDate >= targetDate {
+            if policy == .preferSource || entryDate >= targetDate {
                 let archived = UniqueFileName.firstAvailableURL(
                     in: destination,
                     preferring: displacedName(for: name),

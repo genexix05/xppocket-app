@@ -20,7 +20,7 @@ struct EmptyStateView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: IconSize.emptyState, height: IconSize.emptyState)
-                .foregroundStyle(.secondary)
+                .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
                 .offset(y: floating ? -3 : 3)
                 .animation(Motion.float, value: floating)
                 .opacity(iconAppeared ? 1 : 0)

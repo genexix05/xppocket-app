@@ -432,7 +432,7 @@ enum ArchiveExtractor {
     private static func openFailureMessage(_ reader: OpaquePointer, archiveURL: URL) -> String {
         if Format(extension: archiveURL.pathExtension) == .exeSfx {
             return "\(archiveURL.lastPathComponent) does not look like a "
-                + "self-extracting archive. Empo can import only .exe files "
+                + "self-extracting archive. \(AppInfo.name) can import only .exe files "
                 + "that unpack themselves (CAB, 7z, RAR, or zip based)."
         }
         return errorString(reader) ?? "Cannot open archive"

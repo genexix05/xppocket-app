@@ -59,7 +59,8 @@ final class LayoutProfilesTests: XCTestCase {
     private func makeGame(_ name: String, pin: LayoutPin?) throws -> URL {
         let folder = gamesRoot.appendingPathComponent(name, isDirectory: true)
         try FileManager.default.createDirectory(
-            at: folder.appendingPathComponent("EmpoState"), withIntermediateDirectories: true)
+            at: folder.appendingPathComponent(GameContainerPaths.playerDataDirectoryName),
+            withIntermediateDirectories: true)
         if let pin {
             store.writePin(pin, forGameFolder: folder)
         }

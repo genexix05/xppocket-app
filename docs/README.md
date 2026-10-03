@@ -6,6 +6,21 @@ to read it in a browser, or read the files below on GitHub.
 
 Start with the [project README](../README.md) for what Empo is and how to build it.
 
+## Product launch (fork / App Store)
+
+Internal checklists for rebranding this fork, GPL compliance, App Store submission, and monetization:
+
+| Doc | What it covers |
+| --- | -------------- |
+| [`product/README.md`](product/README.md) | Hub: status table and reading order |
+| [`product/00-roadmap.md`](product/00-roadmap.md) | Phases A–D toward App Store |
+| [`product/01-identidad-rebrand.md`](product/01-identidad-rebrand.md) | Name, bundle ID, visual identity |
+| [`product/02-legal-gpl.md`](product/02-legal-gpl.md) | GPL obligations, games, trademarks |
+| [`product/03-app-store.md`](product/03-app-store.md) | Connect, metadata, review |
+| [`product/04-monetizacion.md`](product/04-monetizacion.md) | Pro subscription + ads (post-v1) |
+| [`product/05-inventario-codigo.md`](product/05-inventario-codigo.md) | Files to change for rebrand |
+| [`product/06-privacidad.md`](product/06-privacidad.md) | Privacy policy, ATT, PrivacyInfo |
+
 ## For players
 
 | Doc                                          | What it covers                                                     |

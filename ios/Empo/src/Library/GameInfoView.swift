@@ -386,7 +386,7 @@ struct GameInfoView: View {
     private func rubyMajorMinorForGame() -> String? {
         // Per-game override wins.
         if let container = game.container {
-            let settings = GameSettings.load(from: container.empoStateURL)
+            let settings = GameSettings.load(from: container.playerDataURL)
             if let override = settings.rubyVersionOverride {
                 return rubyCodeToMajorMinor(override)
             }

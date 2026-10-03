@@ -4,7 +4,7 @@ demo/
 # Build artifacts
 .build/
 ios/Empo/build/
-ios/Empo/Empo.xcodeproj/
+ios/Empo/XPPocket.xcodeproj/
 *.ipa
 
 # Docs site (Blume generates .blume/ and builds into dist/)
@@ -72,6 +72,7 @@ __pycache__/
 
 # Per-contributor code signing config (see Signing.xcconfig.example)
 ios/Empo/Signing.xcconfig
+ios/Empo/Ads.xcconfig
 
 # Assets.bundle is assembled at build time from engine submodule sources.
 # Only .gitkeep is tracked to preserve the directory.

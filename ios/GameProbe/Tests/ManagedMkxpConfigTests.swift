@@ -21,7 +21,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testOverlayStringPassesSparseKeysThrough() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -43,7 +44,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testOverlayStringNeutralizesScreenKeysTheBaseDefines() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -68,7 +70,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testOverlayStringHandAddedScreenKeyBeatsNullPatch() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -91,7 +94,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testOverlayStringUnparseableBaseNeutralizesConservatively() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -114,7 +118,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testOverlayStringAppliesVsyncPatchOnlyWhenConditionsMet() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -137,7 +142,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testOverlayStringUserSyncToRefreshrateBeatsVsyncPatch() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -160,7 +166,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testOverlayStringUnparseableOverlayYieldsPatchesOnly() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -189,7 +196,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testOverlayStringNilWhenNothingToSend() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -203,7 +211,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testOverlayStringNilForPlainBaseWithoutSpecialKeys() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -221,7 +230,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testUIWritePreservesHandAddedOverlayKeys() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -261,7 +271,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testUnparseableBaseAllowsOverlayWrites() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -285,7 +296,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
     }
 
     func testWriteOverlayStoresOnlyEngineKeys() throws {
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
         XCTAssertTrue(
@@ -302,7 +314,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testResetFieldRemovesOverlayKey() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -330,7 +343,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testResetLastFieldDeletesTheEmptyOverlay() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -353,7 +367,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testResetFieldVsyncRemovesHandWrittenVsyncKey() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -377,7 +392,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testResetAllKeepsHandAddedNonEngineKeys() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -404,7 +420,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testResetAllDeletesEmptyOverlay() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -426,7 +443,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testLegacyMigrationBuildsSparseOverlayAndStripsKeys() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -498,7 +516,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testLegacyMigrationRenderScaleX1DisablesHiresWithoutFactor() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
         try """
@@ -518,7 +537,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testLegacyMigrationRenderScaleX4EnablesHiresWithFactor() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
         try """
@@ -538,7 +558,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testLegacyMigrationUnknownRenderScaleEmitsNeitherKey() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
         // pathCache keeps the rebuilt overlay non-empty, so the
@@ -561,7 +582,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testReadEffectiveMergesBaseAndOverlay() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -590,7 +612,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testReadDataPathAbsentByDefault() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
 
         let dataPath = ManagedMkxpConfig.readDataPath(
@@ -602,7 +625,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testReadDataPathFromBaseConfig() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
 
         try """
@@ -622,7 +646,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testReadDataPathOverlayWinsOverBase() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -641,7 +666,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
 
     func testReadDataPathBlankAndNonStringValuesReadAsAbsent() throws {
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
 
         try """
@@ -659,7 +685,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
         // A blank overlay string does not fall through to the base
         // value. It reads as absent for the merged pair.
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -681,7 +708,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
         // the merged dict. The null is not a string, so the key
         // reads as absent.
         let gameDir = tempRoot.appendingPathComponent("Game", isDirectory: true)
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
@@ -699,7 +727,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
     }
 
     func testOverlayDefinesRenderScaleWithOnlyScalingFactor() throws {
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: stateDir, withIntermediateDirectories: true)
 
         try """
@@ -711,7 +740,8 @@ final class ManagedMkxpConfigTests: XCTestCase {
     }
 
     func testRemoveLegacyEngineConfigDirectory() throws {
-        let stateDir = tempRoot.appendingPathComponent("EmpoState", isDirectory: true)
+        let stateDir = tempRoot.appendingPathComponent(
+            GameContainerPaths.playerDataDirectoryName, isDirectory: true)
         let engineDir = stateDir.appendingPathComponent(".engine", isDirectory: true)
         try FileManager.default.createDirectory(at: engineDir, withIntermediateDirectories: true)
         try "{\"smoothScaling\":0}".write(

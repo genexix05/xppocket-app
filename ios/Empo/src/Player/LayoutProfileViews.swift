@@ -33,7 +33,7 @@ struct LayoutProfilePickerSheet: View {
                     }
                 } footer: {
                     Text(
-                        "Automatic uses the game's own layout first. No layout? Your default profile. No default? Empo's built-in one."
+                        "Automatic uses the game's own layout first. No layout? Your default profile. No default? The built-in default."
                     )
                 }
 
@@ -80,7 +80,7 @@ struct LayoutProfilePickerSheet: View {
         case .defaultProfile(let name):
             automaticResolution = name
         default:
-            automaticResolution = "Empo default"
+            automaticResolution = AppInfo.builtInLayoutName
         }
     }
 
@@ -124,6 +124,10 @@ struct LayoutProfilesSettingsView: View {
     @State private var createText = ""
     @State private var showNameError = false
     @State private var searchText = ""
+    @State private var showImporter = false
+    @State private var importError: String?
+    @State private var importSuccess: String?
+    @State private var publishingProfile: String?
 
     private var visibleProfiles: [String] {
         LayoutProfilesManager.filtered(profiles, query: searchText)
@@ -145,7 +149,7 @@ struct LayoutProfilesSettingsView: View {
                         BuiltinLayoutViewerView()
                     } label: {
                         HStack {
-                            Text("Empo default")
+                            Text(AppInfo.builtInLayoutName)
                             Spacer()
                             Image(systemName: "lock.fill")
                                 .font(.caption)
@@ -155,7 +159,7 @@ struct LayoutProfilesSettingsView: View {
                 } header: {
                     Text("Built in profiles")
                 } footer: {
-                    Text("Empo comes with this layout. Games use it when nothing else applies.")
+                    Text("\(AppInfo.name) comes with this layout. Games use it when nothing else applies.")
                 }
             }
 
@@ -177,6 +181,14 @@ struct LayoutProfilesSettingsView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
+                    showImporter = true
+                } label: {
+                    Image(systemName: "square.and.arrow.down")
+                }
+                .accessibilityLabel("Import layout pack")
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Button {
                     createText = LayoutProfilesManager.store.uniqueName(base: "Layout")
                     showCreateDialog = true
                 } label: {
@@ -185,13 +197,27 @@ struct LayoutProfilesSettingsView: View {
                 .accessibilityLabel("Create profile")
             }
         }
+        .layoutPackImport(
+            isPresented: $showImporter,
+            errorMessage: $importError,
+            successMessage: $importSuccess)
+        .onChange(of: importSuccess) { _, message in
+            if message != nil { reload() }
+        }
+        .sheet(isPresented: publishPresented) {
+            if let publishingProfile {
+                NavigationStack {
+                    CommunityLayoutUploadView(profileName: publishingProfile)
+                }
+            }
+        }
         .onAppear(perform: reload)
         .alert("New profile", isPresented: $showCreateDialog) {
             TextField("Name", text: $createText)
             Button("Create") { createBlank() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("A new profile starts from the Empo default layout.")
+            Text("A new profile starts from the \(AppInfo.builtInLayoutName.lowercased()) layout.")
         }
         .alert("Rename profile", isPresented: renameBinding) {
             TextField("Name", text: $renameText)
@@ -235,6 +261,10 @@ struct LayoutProfilesSettingsView: View {
         Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } })
     }
 
+    private var publishPresented: Binding<Bool> {
+        Binding(get: { publishingProfile != nil }, set: { if !$0 { publishingProfile = nil } })
+    }
+
     private func reload() {
         profiles = LayoutProfilesManager.store.listProfiles()
         defaultName = LayoutProfilesManager.defaultProfileName
@@ -273,6 +303,9 @@ struct LayoutProfilesSettingsView: View {
             Button("Duplicate") {
                 _ = LayoutProfilesManager.store.duplicateProfile(name)
                 reload()
+            }
+            Button("Publish to community") {
+                publishingProfile = name
             }
             Button("Delete", role: .destructive) {
                 deleting = name
@@ -505,6 +538,22 @@ struct LayoutProfileEditorView: View {
         .navigationTitle(currentName)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationLink {
+                    ProfileSkinEditorView(profileName: currentName)
+                } label: {
+                    Image(systemName: "paintbrush")
+                }
+                .accessibilityLabel("Edit appearance")
+            }
+            ToolbarItem(placement: .primaryAction) {
+                NavigationLink {
+                    CommunityLayoutUploadView(profileName: currentName)
+                } label: {
+                    Image(systemName: "icloud.and.arrow.up")
+                }
+                .accessibilityLabel("Publish layout")
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     renameText = currentName
@@ -803,10 +852,10 @@ struct BuiltinLayoutViewerView: View {
 
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 Text(
-                    "Empo comes with this layout. A game uses it when the game has no layout of its own and no profile applies."
+                    "\(AppInfo.name) comes with this layout. A game uses it when the game has no layout of its own and no profile applies."
                 )
                 Text(
-                    "You cannot edit this layout. Empo keeps it unchanged as a fallback that works for every game. To make your own version, duplicate it as a profile and edit the copy."
+                    "You cannot edit this layout. \(AppInfo.name) keeps it unchanged as a fallback that works for every game. To make your own version, duplicate it as a profile and edit the copy."
                 )
             }
             .font(.footnote)
@@ -820,7 +869,7 @@ struct BuiltinLayoutViewerView: View {
             .font(.footnote.weight(.semibold))
             .padding(.bottom, Spacing.md)
         }
-        .navigationTitle("Empo default")
+        .navigationTitle(AppInfo.builtInLayoutName)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             layout.setOrientation(orientation)
@@ -830,7 +879,7 @@ struct BuiltinLayoutViewerView: View {
             Button("Create") { duplicateAsProfile() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("The new profile starts as a copy of the Empo default layout.")
+            Text("The new profile starts as a copy of the \(AppInfo.builtInLayoutName.lowercased()) layout.")
         }
         .profileNameErrorAlert(isPresented: $showNameError)
     }

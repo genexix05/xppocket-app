@@ -69,7 +69,7 @@ struct IconButton: View {
                     Circle().strokeBorder(.quaternary.opacity(0.5), lineWidth: 1)
                 }
             }
-            .modifier(IconGlassModifier(style: style, hasAction: action != nil))
+            .modifier(IconGlassModifier(style: style))
             // 44 pt minimum touch target: the small sizes render at
             // 32-38 pt, and a real finger (or a mouse tap with
             // drift) misses or cancels on the visible circle alone.
@@ -79,17 +79,16 @@ struct IconButton: View {
 
 private struct IconGlassModifier: ViewModifier {
     let style: IconButton.Style
-    let hasAction: Bool
 
     func body(content: Content) -> some View {
         switch style {
         case .primary:
-            content.glassEffect(.regular.tint(.brand).interactive(), in: .circle)
+            content.xpGlassChrome(tint: .brand, in: Circle())
         case .secondary:
-            content.glassEffect(
-                .regular.tint(.brand.opacity(Alpha.brandTintBackground)).interactive(), in: .circle)
+            content.xpGlassChrome(
+                tint: .brand, tintOpacity: Alpha.brandTintBackground, in: Circle())
         case .outline:
-            content.glassEffect(hasAction ? .regular.interactive() : .regular, in: .circle)
+            content.xpGlassChrome(in: Circle())
         }
     }
 }

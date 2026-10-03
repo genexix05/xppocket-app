@@ -267,6 +267,17 @@ class ControlsLayout {
         return nil
     }
 
+    /// Profile whose `skin.json` / `assets/` should style the overlay.
+    var skinProfileName: String? {
+        if let editorProfileName { return editorProfileName }
+        switch provenance {
+        case .pinnedProfile(let name), .defaultProfile(let name):
+            return name
+        default:
+            return nil
+        }
+    }
+
     /// Editor instances inject synthetic metrics. A nil override
     /// uses the live screen state.
     var metricsOverride: TouchZoneMetrics?
@@ -280,7 +291,7 @@ class ControlsLayout {
         if case .pinnedProfile = provenance {
             return "Stop using the profile"
         }
-        return hasManifestTouchSection ? "Reset to game default" : "Reset to Empo default"
+        return hasManifestTouchSection ? "Reset to game default" : "Reset to \(AppInfo.builtInLayoutName.lowercased())"
     }
 
     /// A method, not a property: building the message resolves the

@@ -421,8 +421,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild \
-            -project Empo.xcodeproj \
-            -scheme Empo \
+            -project XPPocket.xcodeproj \
+            -scheme XPPocket \
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath DerivedData \
             build 2>&1 | tail -n 60
@@ -436,8 +436,8 @@ jobs:
         continue-on-error: true
         run: |
           set -e
-          APP="$(find ios/Empo/DerivedData/Build/Products -name 'Empo.app' -maxdepth 3 | head -n 1)"
-          [ -n "$APP" ] || { echo "no Empo.app found"; exit 1; }
+          APP="$(find ios/Empo/DerivedData/Build/Products -name 'XP Pocket.app' -maxdepth 3 | head -n 1)"
+          [ -n "$APP" ] || { echo "no XP Pocket.app found"; exit 1; }
           UDID="$(xcrun simctl list devices available --json |
             /usr/bin/python3 -c 'import json,sys; d=json.load(sys.stdin)["devices"]; print(next(dev["udid"] for devs in d.values() for dev in devs if dev["isAvailable"]))')"
           echo "Using simulator $UDID"

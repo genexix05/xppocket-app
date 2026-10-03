@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "touch": {
+    "portrait": {
+      "dpad": { "x": 0.18, "y": 0.78, "size": 140, "opacity": 0.92 },
+      "buttons": [
+        { "label": "A", "key": "Enter", "x": 0.82, "y": 0.72, "size": 58, "opacity": 0.92 },
+        { "label": "B", "key": "Escape", "x": 0.68, "y": 0.78, "size": 50, "opacity": 0.88 }
+      ],
+      "actionButtons": [
+        { "label": "X", "key": "KeyX", "x": 0.92, "y": 0.55, "size": 44, "opacity": 0.85 },
+        { "label": "Y", "key": "KeyY", "x": 0.78, "y": 0.58, "size": 44, "opacity": 0.85 }
+      ]
+    },
+    "landscape": {
+      "dpad": { "x": 0.12, "y": 0.68, "size": 140, "opacity": 0.92 },
+      "buttons": [
+        { "label": "A", "key": "Enter", "x": 0.88, "y": 0.62, "size": 58, "opacity": 0.92 },
+        { "label": "B", "key": "Escape", "x": 0.76, "y": 0.68, "size": 50, "opacity": 0.88 }
+      ],
+      "actionButtons": [
+        { "label": "X", "key": "KeyX", "x": 0.94, "y": 0.42, "size": 44, "opacity": 0.85 },
+        { "label": "Y", "key": "KeyY", "x": 0.82, "y": 0.45, "size": 44, "opacity": 0.85 }
+      ]
+    }
+  },
+  "bindings": {
+    "a": "Enter",
+    "b": "Escape",
+    "x": "KeyX",
+    "y": "KeyY"
+  }
+}

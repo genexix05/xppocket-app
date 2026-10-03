@@ -2,7 +2,7 @@ import SwiftUI
 
 struct LicensesView: View {
     var body: some View {
-        List(licenses) { license in
+        List(appLicenses) { license in
             NavigationLink {
                 ScrollView {
                     Text(license.text)
@@ -23,7 +23,7 @@ struct LicensesView: View {
                 }
             }
         }
-        .navigationTitle("Open-source licenses")
+        .navigationTitle("Licenses")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
@@ -58,6 +58,15 @@ private let licenses: [LicenseEntry] = [
             3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
             THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+            """),
+
+    LicenseEntry(
+        "Empo (upstream)", license: "GPL-2.0",
+        text: """
+            Empo — RPG Maker player for iOS
+            Copyright (C) Mateo M and contributors
+
+            \(AppInfo.name) is derived from Empo. Empo is free software licensed under the GNU General Public License version 2 or later. You should have received a copy of the GNU General Public License along with the source code offer at xppocket.app.
             """),
 
     LicenseEntry(
@@ -247,7 +256,7 @@ private let licenses: [LicenseEntry] = [
             Designed by Minor Adventures (Amsterdam, Netherlands).
             https://smallbits.design
 
-            Used by the splash background's panning pattern. The icons are free for personal and commercial use. The license forbids repackaging them for resale, such as icon marketplaces or UI kits where the icons are the main draw. Empo shows only a small set of shapes: circle, square, diamond, heart, star, plus, cube, and sphere. The full pack ships in `Assets.bundle/SplashIcons/` for later use.
+            Used by decorative background patterns. The icons are free for personal and commercial use. The license forbids repackaging them for resale, such as icon marketplaces or UI kits where the icons are the main draw. \(AppInfo.name) may show only a small subset of shapes from the pack. The full pack ships in `Assets.bundle/SplashIcons/` for later use.
 
             Smallbits License Agreement (TL;DR):
               "Smallbits is free. Use the icons in personal or commercial projects, modify them however you like, include them in client work and end products. Just don't repackage the icons to sell them as icons - no uploading to marketplaces, no bundling them into UI kits or themes where the icons are the main event, no reselling the files."
@@ -331,3 +340,20 @@ private let licenses: [LicenseEntry] = [
             Alternatively, the contents of this file may be used under the terms of either the GNU General Public License Version 2 or later (the "GPL"), or the GNU Lesser General Public License Version 2.1 or later (the "LGPL"), in which case the provisions of the GPL or the LGPL are applicable instead of those above.
             """),
 ]
+
+private var appLicenses: [LicenseEntry] {
+    licenses + [
+        LicenseEntry(
+            AppInfo.name, license: "GPL-2.0",
+            text: """
+                \(AppInfo.name) — RPG Maker player for iOS
+                Copyright (C) XP Pocket contributors
+
+                This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+
+                This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+                You should have received a copy of the GNU General Public License along with this program. Source code is offered at xppocket.app.
+                """),
+    ]
+}

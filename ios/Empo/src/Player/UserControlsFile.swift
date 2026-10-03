@@ -42,7 +42,7 @@ enum UserControlsFile {
             try? FileManager.default.removeItem(at: fileURL)
             return true
         }
-        container.ensureEmpoStateDirectory()
+        container.ensurePlayerDataDirectory()
         do {
             try data.write(to: fileURL, options: .atomic)
             return true

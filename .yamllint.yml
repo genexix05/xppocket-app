@@ -25,7 +25,7 @@ rules:
 ignore: |
   mkxp-z-apple-mobile/
   ios/Empo/build/
-  ios/Empo/Empo.xcodeproj/
+  ios/Empo/XPPocket.xcodeproj/
   ios/Dependencies/sources/
   ios/Dependencies/build-*/
   ios/Dependencies/ANGLE/

@@ -909,7 +909,7 @@ extension GameLibrary {
                         onRescueFailure()
                     } else {
                         onError?(
-                            "Empo could not rescue this game's saves. "
+                            "\(AppInfo.name) could not rescue this game's saves. "
                                 + "The game was not deleted.")
                     }
                 case .failed(let message):

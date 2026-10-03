@@ -239,7 +239,8 @@ public struct LayoutProfileStore {
     // MARK: - Pins
 
     public func pinURL(forGameFolder folder: URL) -> URL {
-        folder.appendingPathComponent("EmpoState").appendingPathComponent(LayoutPinFile.fileName)
+        folder.appendingPathComponent(GameContainerPaths.playerDataDirectoryName)
+            .appendingPathComponent(LayoutPinFile.fileName)
     }
 
     public func loadPin(forGameFolder folder: URL) -> (pin: LayoutPin, note: String?) {

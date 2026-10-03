@@ -1,0 +1,10 @@
+{
+  "format": "xppocket-layout-pack",
+  "format_version": 1,
+  "id": "classic-rpg",
+  "name": "Classic RPG",
+  "description": "D-pad izquierda, botones A/B a la derecha.",
+  "author": "XP Pocket",
+  "tags": ["default", "portrait", "landscape"],
+  "min_app_version": "1.0.0"
+}

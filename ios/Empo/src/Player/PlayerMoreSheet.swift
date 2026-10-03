@@ -30,9 +30,14 @@ struct PlayerMoreSheet: View {
     let onQuit: () -> Void
 
     @Environment(\.appSettings) private var settings
+    @Environment(\.accountSession) private var session
     @Environment(\.dismiss) private var dismiss
 
     @State private var measuredHeight: CGFloat = 0
+    @State private var showProInfo = false
+
+    private var cheatsAvailable: Bool { session.entitlements.cheats }
+    private var fastForwardProAvailable: Bool { session.entitlements.fastForward }
 
     private var fastForwardEnabled: Bool {
         (fastForwardMultiplier ?? 0) >= 2
@@ -74,18 +79,31 @@ struct PlayerMoreSheet: View {
                     InterleavedRows(
                         separator: { rowSeparator },
                         content: {
-                            // Cheats: graduated from experimental in
-                            // May 2026, always enabled now.
-                            MenuRow(icon: "wand.and.stars", label: "Cheats") {
-                                onCheats()
-                                dismiss()
+                            if cheatsAvailable {
+                                MenuRow(icon: "wand.and.stars", label: "Cheats") {
+                                    onCheats()
+                                    dismiss()
+                                }
+                            } else {
+                                MenuRow(icon: "lock.fill", label: "Cheats (Pro)") {
+                                    showProInfo = true
+                                }
                             }
                             if fastForwardEnabled {
-                                MenuToggleRow(
-                                    icon: "hare.fill",
-                                    label: "Fast forward (\(fastForwardMultiplier ?? 2)x)",
-                                    isOn: $fastForwardActive
-                                )
+                                if fastForwardProAvailable {
+                                    MenuToggleRow(
+                                        icon: "hare.fill",
+                                        label: "Fast forward (\(fastForwardMultiplier ?? 2)x)",
+                                        isOn: $fastForwardActive
+                                    )
+                                } else {
+                                    MenuRow(
+                                        icon: "lock.fill",
+                                        label: "Fast forward (\(fastForwardMultiplier ?? 2)x) (Pro)"
+                                    ) {
+                                        showProInfo = true
+                                    }
+                                }
                             }
                             if settings.diagnosticsOverlay {
                                 MenuToggleRow(
@@ -173,6 +191,9 @@ struct PlayerMoreSheet: View {
             }
         }
         .intrinsicSheetDetent(measuredHeight: measuredHeight)
+        .sheet(isPresented: $showProInfo) {
+            ProUpsellSheet()
+        }
     }
 
     /// Hairline separator between rows inside the action group.

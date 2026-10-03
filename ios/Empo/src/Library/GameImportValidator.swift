@@ -21,7 +21,7 @@ enum GameImportValidator {
                 return "Corrupt zip file: \(detail)"
             case .notAnRPGMakerGame:
                 return
-                    "This does not look like an RPG Maker game. Empo found no known game configuration."
+                    "This does not look like an RPG Maker game. \(AppInfo.name) found no known game configuration."
             case .unsupportedRuntime(let detail):
                 return detail
             case .missingScripts(let path):
@@ -770,7 +770,7 @@ enum GameImportValidator {
         case .vxAce: label = "RPG Maker VX Ace (RGSS3)"
         }
         throw ImportError.unsupportedRuntime(
-            "This game requires \(label). Empo does not support it right now."
+            "This game requires \(label). \(AppInfo.name) does not support it right now."
         )
     }
 }

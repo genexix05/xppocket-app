@@ -97,6 +97,7 @@ struct GameSettingsView: View {
     @State private var settings: GameSettings
     @State private var engineSettings: EngineMkxpSettings
     @State private var defaults: GameConfigDefaults
+    @State private var cloudSaveBusy = false
     /// Auto-detected Ruby version raw value (18/19/30/31), read
     /// from `metadata.rubyVersion`. Populated when the sheet
     /// opens, used to dress the "Auto-detect" picker row with the
@@ -130,7 +131,7 @@ struct GameSettingsView: View {
         let container = game.container!
         let dir = container.gameURL
         self.gameDirectory = dir
-        let stateDir = container.empoStateURL
+        let stateDir = container.playerDataURL
         self.stateDirectory = stateDir
 
         GameSettings.migrateLegacyEngineSettingsIfNeeded(
@@ -243,6 +244,7 @@ struct GameSettingsView: View {
         NavigationStack {
             Form {
                 gameplaySection
+                GameCloudSaveSection(game: game, blocksSheetDismiss: $cloudSaveBusy)
                 displaySection
                 layoutSection
                 performanceSection
@@ -326,6 +328,7 @@ struct GameSettingsView: View {
             .task {
                 refreshAutoDetection(forceRefresh: false)
             }
+            .interactiveDismissDisabled(cloudSaveBusy)
         }
         .tint(.brand)
     }
@@ -334,7 +337,7 @@ struct GameSettingsView: View {
         Section {
             if engineSettings.gameDefaultsUnknown {
                 Text(
-                    "Empo can't read this game's mkxp.json. Game defaults are unknown."
+                    "\(AppInfo.name) can't read this game's mkxp.json. Game defaults are unknown."
                 )
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -512,7 +515,7 @@ struct GameSettingsView: View {
                 title: "Postload scripts",
                 isOn: postloadScriptsBinding,
                 description:
-                    "Run Empo's compatibility scripts after the game loads its own. They fill in common RPG Maker gaps, like missing plugins and the cheat menu, plus fixes for Pokemon Essentials graphics, input, online play, and tilemaps."
+                    "Run \(AppInfo.name)'s compatibility scripts after the game loads its own. They fill in common RPG Maker gaps, like missing plugins and the cheat menu, plus fixes for Pokemon Essentials graphics, input, online play, and tilemaps."
             )
 
             engineFieldRow(.pathCache) {

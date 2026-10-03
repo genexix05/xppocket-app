@@ -367,8 +367,7 @@ private struct AccessoryKeyButton: View {
                 .fill(colorScheme == .dark ? Color.black : Color.white)
 
             shape
-                .fill(.clear)
-                .glassEffect(.regular.interactive(), in: shape)
+                .fill(.ultraThinMaterial)
 
             // A locked modifier turns solid accent. This layer sits
             // above the glass: under it, the material washes the

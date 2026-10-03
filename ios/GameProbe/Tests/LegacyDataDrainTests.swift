@@ -180,6 +180,25 @@ final class LegacyDataDrainTests: XCTestCase {
             ])
     }
 
+    func testPreferSourceReplacesEvenWhenDestinationIsNewer() throws {
+        let source = try makeTree("UserData", files: ["Game.rxdata": "cloud"])
+        let destination = try makeTree("dest", files: ["Game.rxdata": "local"])
+        try setMtime(source, "Game.rxdata", 100)
+        try setMtime(destination, "Game.rxdata", 200)
+
+        let outcome = LegacyDataDrain.drain(
+            from: source, into: destination, policy: .preferSource)
+
+        XCTAssertEqual(outcome.movedCount, 1)
+        XCTAssertTrue(outcome.removedSource)
+        XCTAssertEqual(
+            try snapshot(destination),
+            [
+                "Game.rxdata": "cloud",
+                "Game.rxdata.empo-displaced.bak": "local",
+            ])
+    }
+
     func testEqualModificationTimesGoToTheIncomingFile() throws {
         let source = try makeTree("UserData", files: ["Game.rxdata": "retry"])
         let destination = try makeTree("dest", files: ["Game.rxdata": "crashed"])

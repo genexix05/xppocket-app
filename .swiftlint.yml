@@ -7,7 +7,7 @@ included:
 
 excluded:
   - ios/Empo/build
-  - ios/Empo/Empo.xcodeproj
+  - ios/Empo/XPPocket.xcodeproj
   - ios/Empo/src/App/GitInfo.generated.swift
 
 disabled_rules:

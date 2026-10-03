@@ -55,7 +55,7 @@ enum ImportTemporaryDirectory {
 
     static var rootURL: URL {
         FileManager.default.temporaryDirectory
-            .appendingPathComponent("empo-import", isDirectory: true)
+            .appendingPathComponent("xppocket-import", isDirectory: true)
     }
 
     static func makeScopedDirectory(

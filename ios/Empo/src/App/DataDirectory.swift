@@ -105,7 +105,7 @@ enum DataDirectory {
     /// directories.
     static func resolve(for container: GameContainer) -> URL {
         let dataPath = ManagedMkxpConfig.readDataPath(
-            stateDirectory: container.empoStateURL,
+            stateDirectory: container.playerDataURL,
             gameDirectory: container.gameURL
         )
         let iniTitle = GameINI.gameTitle(at: container.gameURL)

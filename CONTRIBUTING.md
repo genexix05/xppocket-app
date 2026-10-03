@@ -27,7 +27,7 @@ bun install
 # Hydrate ANGLE + native deps (downloads from empo-deps when published,
 # or uses locally-built trees — see below)
 xcodegen generate --spec ios/Empo/project.yml --project ios/Empo
-xcodebuild -project ios/Empo/Empo.xcodeproj -scheme Empo \
+xcodebuild -project ios/Empo/XPPocket.xcodeproj -scheme XPPocket \
   -destination 'generic/platform=iOS Simulator' -configuration Debug build
 ```
 
@@ -74,7 +74,7 @@ with a rebuild hint if the merged objects are stale.
 
 ```sh
 SIM=$(xcrun simctl list devices booted | grep -oE '[0-9A-F-]{36}' | head -1)
-xcrun simctl install "$SIM" ios/Empo/build/Debug-iphonesimulator/Empo.app
+xcrun simctl install "$SIM" "ios/Empo/build/Debug-iphonesimulator/XP Pocket.app"
 xcrun simctl launch "$SIM" sh.mateo.empo
 ```
 

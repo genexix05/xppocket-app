@@ -77,6 +77,9 @@ struct GameLibraryView: View {
     /// Games/ and hasn't told the user about yet. Non-empty
     /// presents the one-time `DuplicateGamesNotice` alert.
     @State private var duplicateNoticeNames: [String] = []
+    /// Delay ImportButton / AdMob chrome until after the first frame so
+    /// scene-create is not stuck in GeometryReader layout (0x8BADF00D).
+    @State private var launchChromeReady = false
 
     // Derived filter/sort pipeline. A previous attempt cached this in
     // @State and re-derived via .onChange, but passing library.games
@@ -166,8 +169,8 @@ struct GameLibraryView: View {
                             sourceID: source.transitionID(for: game.id),
                             in: heroNamespace))
             }
-            .onChange(of: appState.phase) { _, newPhase in
-                handleAppPhaseChange(newPhase)
+            .onChange(of: appState.phase) { oldPhase, newPhase in
+                handleAppPhaseChange(from: oldPhase, to: newPhase)
             }
             .onChange(of: settings.librarySortOption) { _, newSort in
                 handleSortOptionChange(newSort)
@@ -271,7 +274,13 @@ struct GameLibraryView: View {
         libraryContentLayer
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .overlay { emptyStateOverlay }
-            .onPreferenceChange(EmptyStateHeightKey.self) { emptyStateHeight = $0 }
+            .onPreferenceChange(EmptyStateHeightKey.self) { newHeight in
+                // Ignore sub-point noise — preference feedback into
+                // ImportButton position must not re-layout every frame.
+                if abs(newHeight - emptyStateHeight) > 1 {
+                    emptyStateHeight = newHeight
+                }
+            }
             .safeAreaInset(edge: .top, spacing: 0) { headerInset }
             .background { libraryBackground }
             // Match GameLoadingView: NavigationStack container fills stay
@@ -285,10 +294,24 @@ struct GameLibraryView: View {
             .onChange(of: splashDismissed) { _, dismissed in
                 handleSplashDismissedChange(dismissed)
             }
-            .overlay(alignment: .topTrailing) { importButtonOverlay }
+            .overlay(alignment: .topTrailing) {
+                if launchChromeReady {
+                    importButtonOverlay
+                }
+            }
             .overlay(alignment: .bottom) { bulkDeleteOverlay }
-            .safeAreaInset(edge: .bottom, spacing: 0) { updateBannerInset }
-            .animation(Motion.bouncy, value: showsUpdateBanner)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                if launchChromeReady {
+                    AdBannerView()
+                }
+            }
+            .task {
+                // Yield past the first commit before mounting the
+                // full-screen GeometryReader ImportButton.
+                await Task.yield()
+                try? await Task.sleep(for: .milliseconds(50))
+                launchChromeReady = true
+            }
     }
 
     private var libraryContentLayer: some View {
@@ -296,6 +319,10 @@ struct GameLibraryView: View {
             if !showEmpty {
                 gameContent
                     .transition(.opacity)
+            }
+            if !library.initialScanCompleted {
+                ProgressView("Loading library…")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
     }
@@ -360,22 +387,6 @@ struct GameLibraryView: View {
         .ignoresSafeArea()
     }
 
-    private var showsUpdateBanner: Bool {
-        guard !selectionMode, !appState.updateBannerDismissed else { return false }
-        guard case .available = appState.updateStatus else { return false }
-        return true
-    }
-
-    @ViewBuilder
-    private var updateBannerInset: some View {
-        if showsUpdateBanner {
-            libraryUpdateBanner
-                .padding(.horizontal, Spacing.xl)
-                .padding(.bottom, Spacing._2xl)
-                .transition(.move(edge: .bottom).combined(with: .fadeBlur))
-        }
-    }
-
     @ViewBuilder
     private var importButtonOverlay: some View {
         if !selectionMode {
@@ -413,24 +424,9 @@ struct GameLibraryView: View {
         }
     }
 
-    private var libraryUpdateBanner: some View {
-        UpdateStatusIndicator(
-            status: appState.updateStatus,
-            onTapRetry: {
-                await appState.checkForUpdatesNow()
-            },
-            canDismiss: true,
-            onDismiss: {
-                withAnimation(Motion.gentle) {
-                    appState.updateBannerDismissed = true
-                }
-            }
-        )
-    }
-
     private var emptyStateContent: some View {
         EmptyStateView(
-            icon: Image(.empoMark),
+            icon: Image(.pocketMark),
             title: "No Games Yet",
             subtitle: "Add your favorite RPG Maker\ngames to get started!",
             revealed: splashDismissed,
@@ -950,23 +946,35 @@ struct GameLibraryView: View {
 
     private func handleGameTap(_ game: GameEntry, from source: GameTapSource = .item) {
         tappedSource[game.id] = source
+        Task { @MainActor in
+            await proceedToGame(game, from: source)
+        }
+    }
+
+    @MainActor
+    private func proceedToGame(_ game: GameEntry, from source: GameTapSource) async {
         if pauseManager.pausedGame?.id == game.id {
             appState.resumePausedGame()
             path.append(game)
-        } else if pauseManager.pausedGame != nil {
+            return
+        }
+        if pauseManager.pausedGame != nil {
             pendingGame = game
             showPausedGameAlert = true
-        } else if let container = game.container,
+            return
+        }
+        if let container = game.container,
             AppState.needsRTPLaunchWarning(for: container),
             let requirement = GameRTPRequirement.detect(at: container.gameURL)
         {
             rtpWarnedGame = game
             rtpWarnedRequirement = requirement
             showRTPRequiredAlert = true
-        } else {
-            appState.selectGame(game)
-            path.append(game)
+            return
         }
+        await AdCoordinator.shared.showInterstitialIfNeeded(reason: .gameLoad)
+        appState.selectGame(game)
+        path.append(game)
     }
 
     private func continueDespiteRTPWarning() {
@@ -1005,7 +1013,12 @@ struct GameLibraryView: View {
         }
     }
 
-    private func handleAppPhaseChange(_ newPhase: GamePhase?) {
+    private func handleAppPhaseChange(from oldPhase: GamePhase?, to newPhase: GamePhase?) {
+        if oldPhase == .playing && newPhase == nil {
+            Task {
+                await AdCoordinator.shared.showInterstitialIfNeeded(reason: .sessionEnd)
+            }
+        }
         if newPhase == nil && !path.isEmpty {
             path = NavigationPath()
         }
@@ -1104,7 +1117,7 @@ private struct BulkDeleteAlert: ViewModifier {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text(
-                "This deletes the game files for the selected games. Saves in the Data folder are kept. Empo moves the save files it finds in the game folders to Rescued Saves. If Empo does not recognize a save file, it is deleted with its game."
+                "This deletes the game files for the selected games. Saves in the Data folder are kept. \(AppInfo.name) moves the save files it finds in the game folders to Rescued Saves. If \(AppInfo.name) does not recognize a save file, it is deleted with its game."
             )
         }
     }
@@ -1135,11 +1148,11 @@ private struct DuplicateGamesNotice: ViewModifier {
         let list = names.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
             .map { "\u{2022} \($0)" }
             .joined(separator: "\n")
-        return "Empo now stores each game in a folder named after its title, "
+        return "\(AppInfo.name) now stores each game in a folder named after its title, "
             + "and the library keeps one copy per title because games locate "
             + "their data by that name. The most recently played copy of each "
             + "game stayed in your library. These extra copies were moved, "
-            + "saves included, to \"Duplicate Games\" inside Empo's folder in "
+            + "saves included, to \"Duplicate Games\" inside \(AppInfo.name)'s folder in "
             + "the Files app:\n\n\(list)"
     }
 
@@ -1303,7 +1316,7 @@ private struct LibraryAlertPresentation: ViewModifier {
                         )
                     } else {
                         Text(
-                            "This deletes the game files for \"\(game.title)\". Saves in the Data folder are kept. Empo moves the save files it finds in the game folder to Rescued Saves. If Empo does not recognize a save file, it is deleted with the game."
+                            "This deletes the game files for \"\(game.title)\". Saves in the Data folder are kept. \(AppInfo.name) moves the save files it finds in the game folder to Rescued Saves. If \(AppInfo.name) does not recognize a save file, it is deleted with the game."
                         )
                     }
                 }
@@ -1330,13 +1343,13 @@ private struct LibraryAlertPresentation: ViewModifier {
                 Button("Keep Game", role: .cancel) {}
             } message: { game in
                 Text(
-                    "Empo could not rescue the saves for \"\(game.title)\". If you delete the game anyway, these saves are lost forever. You can also keep the game and try again."
+                    "\(AppInfo.name) could not rescue the saves for \"\(game.title)\". If you delete the game anyway, these saves are lost forever. You can also keep the game and try again."
                 )
             }
             .alert("Invalid Game", isPresented: $showInvalidAlert) {
                 Button("OK") {}
             } message: {
-                Text("Empo could not load this game correctly. You can delete it and import it again.")
+                Text("\(AppInfo.name) could not load this game correctly. You can delete it and import it again.")
             }
             .alert("Run-Time Package Required", isPresented: $showRTPRequiredAlert) {
                 Button("Cancel", role: .cancel) {}
@@ -1351,7 +1364,7 @@ private struct LibraryAlertPresentation: ViewModifier {
                         \(requirement.friendlySummary) (\(requirement.summary)). \
                         These Run-Time Packages are not bundled with the game.
 
-                        Empo cannot load Run-Time Packages yet, so the game \
+                        \(AppInfo.name) cannot load Run-Time Packages yet, so the game \
                         may fail to start or be missing graphics and audio.
                         """
                     )
@@ -1361,7 +1374,7 @@ private struct LibraryAlertPresentation: ViewModifier {
                 Button("Keep importing", role: .cancel) {}
                 Button("Cancel import", role: .destructive, action: onCancelValidation)
             } message: {
-                Text("Empo is still validating the game. If you cancel, the import stops.")
+                Text("\(AppInfo.name) is still validating the game. If you cancel, the import stops.")
             }
             .alert("A game is paused", isPresented: $showPausedGameAlert) {
                 Button("OK", role: .cancel, action: onDismissPausedGameAlert)

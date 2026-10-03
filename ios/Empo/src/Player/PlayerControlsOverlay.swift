@@ -25,6 +25,10 @@ struct PlayerControlsOverlay: View {
     @Binding var draggingButtonID: UUID?
 
     var body: some View {
+        let orientation = ControlsOrientation.from(geoSize: geo.size)
+        let skin = layout.skinProfileName.flatMap {
+            ControlSkinFile.load(profileName: $0, orientation: orientation)
+        }
         let separatedPositions = layout.separatedDisplayPositions(
             for: geo.size, safeArea: safeArea, controlsMinY: controlsMinY,
             // The separation pass stays off ONLY while a CONTROL
@@ -35,9 +39,20 @@ struct PlayerControlsOverlay: View {
             separate: draggingButtonID == nil && !draggingDPad,
             includeActionButton: { isPreview || editMode || actions.isAvailable($0.action) })
         ZStack {
-            dpadView
+            if let frame = skin?.frame {
+                Image(uiImage: frame)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: geo.size.width)
+                    .opacity(skin?.frameOpacity ?? 1)
+                    .position(x: geo.size.width / 2, y: geo.size.height - safeArea.bottom - 8)
+                    .allowsHitTesting(false)
+            }
+            dpadView(skin: skin)
             ForEach(Array(layout.buttons.enumerated()), id: \.element.id) { index, button in
-                actionButton(button: button, index: index, displayPosition: separatedPositions[button.id])
+                actionButton(
+                    button: button, index: index, displayPosition: separatedPositions[button.id],
+                    skin: skin)
             }
             ForEach(layout.actionButtons) { button in
                 // Unavailable actions (fast forward in a game with no
@@ -51,13 +66,13 @@ struct PlayerControlsOverlay: View {
     }
 
     @ViewBuilder
-    private var dpadView: some View {
+    private func dpadView(skin: ControlSkinFile.Resolved?) -> some View {
         let size = layout.dpadSize
         let pos = ControlsZone.absolutePosition(
             for: layout.dpadRelativeCenter, in: geo.size, controlSize: CGSize(width: size, height: size),
             safeArea: safeArea, controlsMinY: controlsMinY)
         let anchor = UnitPoint(x: pos.x / geo.size.width, y: pos.y / geo.size.height)
-        movementControl(size: size)
+        movementControl(size: size, skin: skin)
             .frame(width: size, height: size)
             // Measure the region BEFORE .position: position()
             // expands to the full proposed space, so a region attached
@@ -87,10 +102,14 @@ struct PlayerControlsOverlay: View {
     /// The movement control renders per style. Everything around it
     /// (position, drag, edit gestures, hit region) is shared.
     @ViewBuilder
-    private func movementControl(size: CGFloat) -> some View {
+    private func movementControl(size: CGFloat, skin: ControlSkinFile.Resolved?) -> some View {
         switch layout.dpadStyle {
         case .dpad:
-            DPad(size: size, editing: editMode)
+            DPad(
+                size: size,
+                editing: editMode,
+                skinImage: skin?.dpad,
+                skinPressedImage: skin?.dpadPressed)
         case .stick:
             Joystick(size: size, editing: editMode)
         }
@@ -120,13 +139,20 @@ struct PlayerControlsOverlay: View {
     }
 
     @ViewBuilder
-    private func actionButton(button: ButtonModel, index: Int, displayPosition: CGPoint?) -> some View {
+    private func actionButton(
+        button: ButtonModel,
+        index: Int,
+        displayPosition: CGPoint?,
+        skin: ControlSkinFile.Resolved?
+    ) -> some View {
+        let keyCode = KeyCodeTable.code(for: button.scancode)
         editableControl(
             ActionButton(
                 label: button.label,
                 scancode: button.scancode,
                 size: button.size,
-                editing: editMode
+                editing: editMode,
+                skinImage: skin?.buttonImage(keyCode: keyCode, label: button.label)
             ),
             id: button.id,
             size: button.size,

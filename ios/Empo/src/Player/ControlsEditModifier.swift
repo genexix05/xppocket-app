@@ -25,7 +25,7 @@ struct AddButtonSheet: View {
                         .foregroundStyle(.secondary)
                     }
                 }
-                Section("Empo actions") {
+                Section("Player actions") {
                     ForEach(EmpoActionCatalog.all.filter(\.touchValid), id: \.id) { action in
                         actionRow(for: action)
                     }

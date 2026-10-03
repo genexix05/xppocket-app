@@ -45,6 +45,11 @@ enum DefaultsKey {
     static let showContinuePlaying = "showContinuePlaying"
     static let titlePosition = "titlePosition"
 
+    // MARK: - Ads
+
+    static let lastInterstitialTimestamp = "ads.lastInterstitialTimestamp"
+    static let gameLoadCounter = "ads.gameLoadCounter"
+
     // MARK: - Viewport bounds overlay color
 
     static let viewportBoundsR = "vpBoundsR"

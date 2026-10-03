@@ -65,6 +65,14 @@ enum SaveMigration {
         }
     }
 
+    /// Application Support tree from pre-shared-Data builds, if it
+    /// still exists on disk. Cloud save reads it without moving.
+    static func lingeringLegacySaveDirectory(for container: GameContainer) -> URL? {
+        let url = legacySaveDirectory(for: container)
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+        return url
+    }
+
     /// Recover saves written at the container root when
     /// `System.data_directory` lacked a trailing slash and a game
     /// concatenated `dir + filename` (e.g. `UserDataGame.rxdata`).
