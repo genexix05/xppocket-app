@@ -2,6 +2,9 @@ services:
   xppocket-api:
     build: .
     container_name: xppocket-api
+    # Production data under Nextcloud is owned by www-data (uid 33).
+    # Override locally with XPPOCKET_CONTAINER_USER=1000:1000 if needed.
+    user: ${XPPOCKET_CONTAINER_USER:-33:33}
     restart: unless-stopped
     ports:
       - "8787:8787"

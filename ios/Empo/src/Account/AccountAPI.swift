@@ -232,10 +232,7 @@ enum AccountAPI {
             throw Error.badStatus(-1, "No response")
         }
         if !(200 ... 299).contains(http.statusCode) {
-            let detail = (try? JSONDecoder().decode([String: String].self, from: data))?["detail"]
-                ?? String(data: data, encoding: .utf8)
-                ?? "HTTP \(http.statusCode)"
-            throw Error.badStatus(http.statusCode, detail)
+            throw Error.badStatus(http.statusCode, humanReadableDetail(from: data, status: http.statusCode))
         }
         guard !data.isEmpty else { throw Error.decodeFailed }
         return data
@@ -246,14 +243,37 @@ enum AccountAPI {
             throw Error.badStatus(-1, "No response")
         }
         if !(200 ... 299).contains(http.statusCode) {
-            let detail = (try? JSONDecoder().decode([String: String].self, from: data))?["detail"]
-                ?? String(data: data, encoding: .utf8)
-                ?? "HTTP \(http.statusCode)"
-            throw Error.badStatus(http.statusCode, detail)
+            throw Error.badStatus(http.statusCode, humanReadableDetail(from: data, status: http.statusCode))
         }
         guard let decoded = try? JSONDecoder().decode(T.self, from: data) else {
             throw Error.decodeFailed
         }
         return decoded
+    }
+
+    /// Prefer JSON `detail`; never surface Cloudflare/HTML gateway pages in UI alerts.
+    private static func humanReadableDetail(from data: Data, status: Int) -> String {
+        if let json = try? JSONDecoder().decode([String: String].self, from: data),
+            let detail = json["detail"], !detail.isEmpty
+        {
+            return detail
+        }
+        let raw = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let looksLikeHTML = raw.hasPrefix("<!") || raw.localizedCaseInsensitiveContains("<html")
+        if looksLikeHTML || raw.isEmpty {
+            switch status {
+            case 502, 503, 504:
+                return "The XP Pocket service is temporarily unavailable. Please try again in a few minutes."
+            case 401, 403:
+                return "Sign in was rejected. Please try again."
+            default:
+                return "Something went wrong talking to the server (HTTP \(status))."
+            }
+        }
+        // Cap length so a plain-text error cannot flood an alert.
+        if raw.count > 180 {
+            return String(raw.prefix(177)) + "…"
+        }
+        return raw
     }
 }
