@@ -40,7 +40,7 @@
 	<key>XPPocketAdMobInterstitialUnitID</key>
 	<string>$(ADMOB_INTERSTITIAL_UNIT_ID)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
-	<true/>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>LSSupportsGameMode</key>

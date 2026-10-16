@@ -13,7 +13,7 @@ options:
 settings:
   base:
     MARKETING_VERSION: 1.1.0
-    CURRENT_PROJECT_VERSION: 10
+    CURRENT_PROJECT_VERSION: 11
     CLANG_CXX_LANGUAGE_STANDARD: c++14
     # `YES` / `NO` are Xcode's canonical boolean tokens for build
     # settings. xcodebuild's parser treats them specially. yamllint
@@ -178,7 +178,22 @@ targets:
               echo "error: $CORE_SRC missing - run: $HOW" >&2
               exit 1
             fi
-            rsync -a --delete "$CORE_SRC" "$DEST/"
+            # Trailing slashes: an archive leaves MvmzCore.framework as a
+            # symlink, and rsync copies the link itself without them.
+            mkdir -p "$DEST/$CORE.framework"
+            rsync -a --delete "$CORE_SRC/" "$DEST/$CORE.framework/"
+            # App Store Connect reads a script with a #! line or an
+            # executable bit as code and wants it signed on its own
+            # (error 90035). The Ruby files in the cores are only
+            # require'd, never run, so turn the #! into a comment and drop
+            # the executable bit. The core binary is the one real
+            # executable.
+            find "$DEST/$CORE.framework" -type f ! -name "$CORE" | while IFS= read -r F; do
+              chmod a-x "$F"
+              if [ "$(head -c 2 "$F")" = "#!" ]; then
+                LC_ALL=C sed -i '' '1s|^#!|# |' "$F"
+              fi
+            done
             # A nested framework carries its own signature. The app's
             # own signing step does not reach inside it, so sign it
             # here, the way Xcode's Embed Frameworks phase does.
