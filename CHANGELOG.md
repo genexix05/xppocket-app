@@ -8,6 +8,180 @@
 - Sign in with Apple, XP Pocket Pro subscription, cloud save
 - AdMob banner and interstitials for free tier
 
+## 0.7.2 - 2026-10-08
+
+### Bug Fixes
+
+- Capital letters in Insurgence and the plugin scan for Tectonic (#193) ([`974d829`](https://github.com/mateo-m/empo-app/commit/974d829862aef8ecc9638f42c8d54313191ad936))
+- Keep centered titles and messages within 2/3 of the screen width (#194) ([`54b9995`](https://github.com/mateo-m/empo-app/commit/54b9995671138b582d8b968371a89a937e764abc))
+
+### Chores
+
+- Use engine v5 (#197) ([`9f3d090`](https://github.com/mateo-m/empo-app/commit/9f3d09096890d04863c3ac67e2cbcb7ab22bc35e))
+
+### Features
+
+- Show the game's engine and core in game info (#196) ([`cd00d1e`](https://github.com/mateo-m/empo-app/commit/cd00d1ee1bb86543f7931a98597f531ace1e680f))
+
+## 0.7.1 - 2026-10-06
+
+### Highlights
+
+- Add the rpg maker mv and mz core and one psdk core for each ruby (#159) ([`619732a`](https://github.com/mateo-m/empo-app/commit/619732adafd6a53de0a061a9eb448389d86b9272))
+- Run xp games that call ruby 1.9 methods on ruby 3.1 (#172) ([`d2542c7`](https://github.com/mateo-m/empo-app/commit/d2542c7d5418074985a5e3c48f28df90df91cc8f))
+
+### Bug Fixes
+
+- Stop the what's new text from sliding and move the changes link under continue (#157) ([`80e9089`](https://github.com/mateo-m/empo-app/commit/80e9089f89228cf40c9f3cd1b2d6995c5300895c))
+- Make the binding picker rows buttons (#163) ([`70701bf`](https://github.com/mateo-m/empo-app/commit/70701bfc845c004842f78d0771614f6a9923900e))
+- Wait for the crash alert before the test autostart (#165) ([`4c7ad45`](https://github.com/mateo-m/empo-app/commit/4c7ad45898bedfe358cec30b776bf80f83ab3798))
+- Reset fast forward and cheats when a new game starts (#167) ([`720cca3`](https://github.com/mateo-m/empo-app/commit/720cca3057b96708daca17691d26a1fd646f43aa))
+- Ignore modern ruby tokens in comments and strings (#183) ([`8af7dab`](https://github.com/mateo-m/empo-app/commit/8af7daba6eae30a4cfc0a32893805cc83c0835a8))
+- Measure the frame rate when a frame draws, not when the app reads it (#177) ([`8d7f49d`](https://github.com/mateo-m/empo-app/commit/8d7f49df80a8ac29783c5ec4f18795d9a7b336b1))
+- Use one empty library text that fits every game type (#184) ([`eccb13e`](https://github.com/mateo-m/empo-app/commit/eccb13e26ca576dbb8b128e9a2fd3c529f170178))
+- Fix the layout of the continue card, the sheets, and the loading screen (#176) ([`02c33c1`](https://github.com/mateo-m/empo-app/commit/02c33c1cd5dbf9568291af4715524fe1920ce1cf))
+- Read Vinemon scripts and send 0 for the desktop window size (#175) ([`6c8da5d`](https://github.com/mateo-m/empo-app/commit/6c8da5df5018dbb60c5b4a4f8b16cf76bb40e2e2))
+- Scan the scripts again when a file that the scan reads changes (#178) ([`1996f19`](https://github.com/mateo-m/empo-app/commit/1996f1943cbcbb6195ba2fc2c21bb762cad7e8f9))
+
+### Documentation
+
+- Update the notes to match the code and merge the sheet rules into the design system (#156) ([`62a2186`](https://github.com/mateo-m/empo-app/commit/62a2186c627641053dd7c104ed917f5ff60b8b20))
+
+### Features
+
+- Announce MV and MZ games and send the same items to AltStore (#188) ([`4ad959e`](https://github.com/mateo-m/empo-app/commit/4ad959efc4a14cbdd49c6575037c0e58620ae59f))
+
+### Other
+
+- Wrap the engine release from mkxp-z-apple-mobile (#164) ([`90e18c1`](https://github.com/mateo-m/empo-app/commit/90e18c1161f92a1ddf5ef8b97d15fdeeb51464bb))
+
+### Refactor
+
+- Wrap the psdk-apple-mobile core release (#161) ([`36f0fcb`](https://github.com/mateo-m/empo-app/commit/36f0fcb23bcfc593b4e9a219a36e59e12355ef0c))
+- Wrap the core from mvmz-apple-mobile (#162) ([`29173bd`](https://github.com/mateo-m/empo-app/commit/29173bd61a06ca2f359eedd75897877865baa0bf))
+- Give each core wrapper its own folder (#166) ([`331a73a`](https://github.com/mateo-m/empo-app/commit/331a73aaa9363fbd76e99b30399c1300fbab37e8))
+- Make GameCore.h the one contract every core implements (#168) ([`716cffb`](https://github.com/mateo-m/empo-app/commit/716cffb517fd42ca5080c48454eb74e90b60a861))
+- Keep every engine's names and formats out of GameCore.h (#169) ([`7816554`](https://github.com/mateo-m/empo-app/commit/781655477b5310275e2b2d88f6a6a49bc585210d))
+- Keep shared display settings out of mkxp.json (#170) ([`bb0c87b`](https://github.com/mateo-m/empo-app/commit/bb0c87b936d50555253004d87354602f64943e3f))
+- Let each core name its shared save folder (#171) ([`11103c6`](https://github.com/mateo-m/empo-app/commit/11103c64c0cb49aaca97d5dbaed9ed903eb9b3ec))
+
+## 0.7.0 - 2026-09-23
+
+### Highlights
+
+- Run PSDK games next to RPG Maker games (#150) ([`2a9eb75`](https://github.com/mateo-m/empo-app/commit/2a9eb7533ef0e6db5aab27f55537ec18f5a1be51))
+
+### Features
+
+- Disable fast forward bindings for a game that has fast forward off (#149) ([`ab1f074`](https://github.com/mateo-m/empo-app/commit/ab1f0745b0490f3e818a35c6469ca8226c8d8590))
+- Show a what's new sheet once after an update (#151) ([`4653ff2`](https://github.com/mateo-m/empo-app/commit/4653ff2affd8918edfc74a139dd83ae516a33365))
+
+### Bug Fixes
+
+- Name PSDK games next to RPG Maker games (#153) ([`f78e000`](https://github.com/mateo-m/empo-app/commit/f78e000efb192a73dc109c30b03cd569ee91fe14))
+
+## 0.6.10 - 2026-09-16
+
+### Bug Fixes
+
+- Apply the UX writing audit to every user-visible string (#148) ([`225e9ec`](https://github.com/mateo-m/empo-app/commit/225e9ecdcecc38ca3737df2e089ec4c1cd5695ad))
+- Read sticks as eight sectors and rebuild controller input on the physical profile ([`d426ed8`](https://github.com/mateo-m/empo-app/commit/d426ed82cb6452bcb3512627d7328dbe01d3c7ae))
+- Keep taps on a presented sheet out of the game view ([`cca37b6`](https://github.com/mateo-m/empo-app/commit/cca37b6d84d83fe4c6847fa4fce42d6dc5c30ca9))
+- Count only session logs against the per-game log limit ([`9ddad9d`](https://github.com/mateo-m/empo-app/commit/9ddad9ddbb5502a50223ea84d7dcefcd0f295d4f))
+
+### Other
+
+- Add the EmpoTests target with controller input manager tests ([`002ba85`](https://github.com/mateo-m/empo-app/commit/002ba851dc6de8e4eefd3c5d41728cee95491799))
+- Let UI tests drive a virtual pad and ignore the simulator gamepad ([`9e5a887`](https://github.com/mateo-m/empo-app/commit/9e5a887b1e2212d7131443f74d227d943e06dbf2))
+
+## 0.6.9 - 2026-09-12
+
+### Bug Fixes
+
+- Compare unpacked bytes with fixtures instead of CryptoKit hashes ([`d03fcce`](https://github.com/mateo-m/empo-app/commit/d03fccef8acc5dc65fcb09ec6a537d9e7043c2cb))
+
+### Chores
+
+- Pick up the pointer injection bridge and the async mouse fix (#147) ([`ea7385b`](https://github.com/mateo-m/empo-app/commit/ea7385b80b05e3df70dff77a4df903c4787d5697))
+
+### Features
+
+- Unpack games packed with Enigma Virtual Box ([`7332eff`](https://github.com/mateo-m/empo-app/commit/7332effd6f384d95719121c70dbd69e8bca250ba))
+
+## 0.6.8 - 2026-09-08
+
+### Bug Fixes
+
+- Declare the OpenSSL encryption in Info.plist ([`a34a694`](https://github.com/mateo-m/empo-app/commit/a34a694a574ff05787aebf14955350a745828599))
+- Link the settings to the site privacy policy and terms ([`561bcd6`](https://github.com/mateo-m/empo-app/commit/561bcd66b2819954b6f875eead698a634844d647))
+- Run RGSS2 games on Ruby 1.8 and skip the def stat in the endless-def sniff ([`d846d5d`](https://github.com/mateo-m/empo-app/commit/d846d5d5bbdcd025859a877195887879d29506c6))
+
+### Chores
+
+- Add the GPLv2 license file ([`e1d9fc0`](https://github.com/mateo-m/empo-app/commit/e1d9fc0c6f618da4705a5e20bd627ab513918c80))
+- Pin engine-2026-09-08 with the font substitution fix ([`58a316f`](https://github.com/mateo-m/empo-app/commit/58a316f1177de55b9a3edd5db75c92288ddf8757))
+
+### Documentation
+
+- Build the privacy, terms, and support pages from root markdown files ([`9eb43ce`](https://github.com/mateo-m/empo-app/commit/9eb43ceda381cf8f194696a3d3d94acac58d68ef))
+
+### Features
+
+- Add the App Store listing and the review notes ([`2b45040`](https://github.com/mateo-m/empo-app/commit/2b45040a336e93992d8f93adca44e714887913f1))
+
+## 0.6.7 - 2026-09-07
+
+### Bug Fixes
+
+- Pick up the System.mouse_in_window stand-in ([`b86ce86`](https://github.com/mateo-m/empo-app/commit/b86ce86fc2ae2cd937f31cd344c3ba922824409f))
+- Run the pre-push guard from a linked worktree ([`9bda6ed`](https://github.com/mateo-m/empo-app/commit/9bda6ed910090a736c855b7a1399db001d88d439))
+
+### Features
+
+- Rebuild only the engine halves when the dependency inputs match the pin ([`c0126de`](https://github.com/mateo-m/empo-app/commit/c0126de7dadb8607a0ff4755dd1d8a29a6f7fb1e))
+- Add the landing page and trim the docs ([`af0181b`](https://github.com/mateo-m/empo-app/commit/af0181b915ab8ebd871df27e943c13a5338274e1))
+- Serve the site from empo.mateo.sh ([`59f48ee`](https://github.com/mateo-m/empo-app/commit/59f48ee3008375e85fbf8de6c86a3cfdd5b65d28))
+- Add the share card and the open graph tags to the landing page ([`e1c3c40`](https://github.com/mateo-m/empo-app/commit/e1c3c40b5cd10941a8d62c9307363a038c5417f0))
+
+## 0.6.6 - 2026-09-01
+
+### Chores
+
+- Point the submodule at the legacy-method fix ([`6a361f9`](https://github.com/mateo-m/empo-app/commit/6a361f9ddce75147c9900d6b761c087f2d03ad60))
+- Revert the submodule bump until the deps rebuild ([`a8afca4`](https://github.com/mateo-m/empo-app/commit/a8afca4db23752c46bcffdd2fce1eb8cfe1c3eee))
+- Pin native-2026-09-01 native prebuilts (#142) ([`8af4d14`](https://github.com/mateo-m/empo-app/commit/8af4d144696bf603615c1f0b21074fdb91f64dd6))
+
+## 0.6.5 - 2026-08-31
+
+### Bug Fixes
+
+- Apply touch mouse on resume, mark the keyboard restart-only (#138) ([`3c35ae1`](https://github.com/mateo-m/empo-app/commit/3c35ae1d3be95ffbd93ab0568187ecee2f881d7a))
+- Keep the zoom transition through a play session ([`ea246ed`](https://github.com/mateo-m/empo-app/commit/ea246ed67bf654387f6a67267d5b89e6237340dc))
+- Bump to the Array#nitems fix for legacy scripts ([`5b4e6fd`](https://github.com/mateo-m/empo-app/commit/5b4e6fd45b283ea5604210109748ed8e3d59e969))
+
+### Chores
+
+- Let the engine repo own the binding build recipe (#137) ([`4c1e2eb`](https://github.com/mateo-m/empo-app/commit/4c1e2ebebe7c3fef3c77b0fda4edec2ae32e7772))
+- Add the Google Search Console verification file ([`fa0679e`](https://github.com/mateo-m/empo-app/commit/fa0679e8dcefe1a634cb2d8b25cde56576ab73b2))
+- Move the Search Console verification to the new owner ([`e35021e`](https://github.com/mateo-m/empo-app/commit/e35021e4f8790037cd616a227bdd1ef3c5cd0f85))
+- Pin native-2026-08-31 native prebuilts ([`598b816`](https://github.com/mateo-m/empo-app/commit/598b81613d278f93089f551d71e9a3b9ceb9a391))
+
+### Documentation
+
+- Add the privacy policy and the terms of use ([`2cf4356`](https://github.com/mateo-m/empo-app/commit/2cf4356e31a85107ae024328b2527ce115c49ab7))
+
+### Features
+
+- Snap edit-mode drags and sizes to a grid ([`153f3a7`](https://github.com/mateo-m/empo-app/commit/153f3a769e238ef5a9820f58e5288615b4944e6e))
+
+### Other
+
+- Forbid silent skips and empty runs in the Swift suites (#136) ([`52761f7`](https://github.com/mateo-m/empo-app/commit/52761f73d155700245ca98a4a927c11b32fdc323))
+
+### Refactor
+
+- Remove the dead quit paths ([`5281817`](https://github.com/mateo-m/empo-app/commit/52818172db48ae697706f6fd8bb0af46db1b099b))
+
 ## 0.6.4 - 2026-08-18
 
 ### Bug Fixes

@@ -4,17 +4,6 @@ import UIKit
 private class AppRootViewController: UIViewController {
 
     private let hostingController: UIHostingController<RootView>
-    private let loadingOverlay = UIView()
-    private let loadingIndicator = UIActivityIndicatorView(style: .large)
-    private let loadingLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Loading library…"
-        label.font = .preferredFont(forTextStyle: .body)
-        label.textColor = .secondaryLabel
-        label.textAlignment = .center
-        return label
-    }()
-    private var didRevealHostedContent = false
 
     init(rootView: RootView) {
         self.hostingController = UIHostingController(rootView: rootView)
@@ -27,107 +16,34 @@ private class AppRootViewController: UIViewController {
 
     override func loadView() {
         let v = UIView()
-        v.backgroundColor = AppState.shared.phase == .playing ? .clear : .systemBackground
+        v.backgroundColor = .clear
         view = v
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
         addChild(hostingController)
-
-        applyHostingBackdrop()
+        // UIHostingController defaults to an opaque systemBackground.
+        // Set clear + isOpaque=false so the SDL/ANGLE window under
+        // AppWindow can show through during gameplay (PlayerView is
+        // mostly clear).
         let hosted = hostingController.view!
-        hosted.translatesAutoresizingMaskIntoConstraints = false
-        hosted.alpha = 0
+        hosted.backgroundColor = .clear
+        hosted.isOpaque = false
+        hosted.layer.isOpaque = false
+        hosted.frame = view.bounds
+        hosted.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(hosted)
-        NSLayoutConstraint.activate([
-            hosted.topAnchor.constraint(equalTo: view.topAnchor),
-            hosted.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            hosted.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hosted.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-        ])
         hostingController.didMove(toParent: self)
-
-        loadingOverlay.backgroundColor = .systemBackground
-        loadingOverlay.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(loadingOverlay)
-        NSLayoutConstraint.activate([
-            loadingOverlay.topAnchor.constraint(equalTo: view.topAnchor),
-            loadingOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            loadingOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            loadingOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-        ])
-
-        let loadingStack = UIStackView(arrangedSubviews: [loadingIndicator, loadingLabel])
-        loadingStack.axis = .vertical
-        loadingStack.spacing = 12
-        loadingStack.alignment = .center
-        loadingStack.translatesAutoresizingMaskIntoConstraints = false
-        loadingOverlay.addSubview(loadingStack)
-        NSLayoutConstraint.activate([
-            loadingStack.centerXAnchor.constraint(equalTo: loadingOverlay.centerXAnchor),
-            loadingStack.centerYAnchor.constraint(equalTo: loadingOverlay.centerYAnchor),
-        ])
-        loadingIndicator.startAnimating()
-
-        // If SwiftUI never commits onAppear (Xcode Play + blocked SDL_main),
-        // still peel the UIKit loading sheet so the library can show.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
-            self?.revealHostedContent()
-        }
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        applyHostingBackdrop()
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        EmpoUIBootstrap.markSwiftUIShellReady()
-    }
-
-    /// RootView.onAppear calls this once SwiftUI has a real tree to show.
-    func revealHostedContent() {
-        guard !didRevealHostedContent else { return }
-        didRevealHostedContent = true
-        applyHostingBackdrop()
-        UIView.animate(withDuration: 0.2) {
-            self.hostingController.view.alpha = 1
-            self.loadingOverlay.alpha = 0
-        } completion: { _ in
-            self.loadingOverlay.removeFromSuperview()
-            self.loadingIndicator.stopAnimating()
-        }
-        EmpoUIBootstrap.markSwiftUIShellReady()
-    }
-
-    /// Invoked on every mkxp_waitForGamePath pump so cold starts under
-    /// Xcode Play still reach a laid-out SwiftUI tree.
-    func refreshShellDuringWait() {
-        if viewIfLoaded?.window == nil {
-            view.setNeedsLayout()
-            view.layoutIfNeeded()
-        } else {
-            view.setNeedsLayout()
-            view.layoutIfNeeded()
-        }
-        hostingController.view.setNeedsLayout()
-        hostingController.view.layoutIfNeeded()
-    }
-
-    private func applyHostingBackdrop() {
-        let playing = AppState.shared.phase == .playing
-        view.backgroundColor = playing ? .clear : .systemBackground
+        // SwiftUI can reintroduce an opaque hosting background after
+        // hierarchy updates. Keep the pass-through contract intact.
         let hosted = hostingController.view!
-        if playing {
-            hosted.backgroundColor = .clear
-            hosted.isOpaque = false
-            hosted.layer.isOpaque = false
-        } else {
-            // Keep the UIKit hosting layer clear in library mode. RootView
-            // paints its own opaque background; an opaque hosting backdrop
-            // here showed a blank white sheet when SwiftUI hadn't ticked yet.
+        if hosted.backgroundColor != .clear || hosted.isOpaque {
             hosted.backgroundColor = .clear
             hosted.isOpaque = false
             hosted.layer.isOpaque = false
@@ -165,10 +81,9 @@ class AppWindow: UIWindow {
 
     override init(windowScene: UIWindowScene) {
         super.init(windowScene: windowScene)
-        windowLevel = .normal + 2
-        isOpaque = true
-        backgroundColor = .systemBackground
-        layer.isOpaque = true
+        backgroundColor = .clear
+        windowLevel = .normal + 1  // above SDL window
+        isOpaque = false
     }
 
     required init?(coder: NSCoder) {
@@ -177,8 +92,16 @@ class AppWindow: UIWindow {
 
     override func safeAreaInsetsDidChange() {
         super.safeAreaInsetsDidChange()
-        let insets = safeAreaInsets
-        mkxp_setSafeAreaInsets(
+        AppWindow.pushSafeAreaInsets()
+    }
+
+    /// The engine keeps a copy of the safe area. The user can rotate
+    /// the device in the library, before any core is open, so this
+    /// reads the live window and `EngineSessionCoordinator.openCore`
+    /// calls it once the core is in.
+    static func pushSafeAreaInsets() {
+        guard EmpoCoreIsOpen() != 0, let insets = instance?.safeAreaInsets else { return }
+        gamecore_setSafeAreaInsets(
             Float(insets.top), Float(insets.bottom),
             Float(insets.left), Float(insets.right)
         )
@@ -188,13 +111,20 @@ class AppWindow: UIWindow {
     /// published by `PlayerView`. `_UIHostingView` is hit-testable
     /// across the full window and owns every SwiftUI gesture, so view
     /// identity cannot distinguish empty game area from chrome.
+    ///
+    /// A presented sheet lives in its own `UITransitionView`, outside
+    /// the root view. Its content is a `HostingView` too, so the rule
+    /// stays limited to the root view tree. Before that limit, a sheet
+    /// row over the game rect sent its tap to the game (iPad, where the
+    /// Menu sheet sits over the game).
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         let hit = super.hitTest(point, with: event)
         guard AppState.shared.phase == .playing else { return hit }
         guard let hit else { return nil }
+        guard let rootView = rootViewController?.view, hit.isDescendant(of: rootView) else { return hit }
 
         let typeName = String(describing: type(of: hit))
-        let isHostingLayer = typeName.contains("Hosting") || hit === rootViewController?.view
+        let isHostingLayer = typeName.contains("Hosting") || hit === rootView
 
         if isHostingLayer {
             if ChromeHitRegions.contains(point) {
@@ -210,7 +140,7 @@ class AppWindow: UIWindow {
             // permissive.
             let gameRect = EngineState.shared.gameRect
             if gameRect.isEmpty || gameRect.contains(point) {
-                return GameViewEmbedder.embeddedView
+                return gameTouchTarget(at: point, with: event)
             }
             return hit
         }
@@ -226,6 +156,16 @@ class AppWindow: UIWindow {
             view = current.superview
         }
         return hit
+    }
+
+    /// The view Empo embedded is the engine's own top view, and the
+    /// view that reads the touch can sit inside it. SFML puts its touch
+    /// view in a container, and the container answers nothing, so a
+    /// touch sent straight to it is lost. SDL's top view reads the touch
+    /// itself and answers with itself here.
+    private func gameTouchTarget(at point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard let gameView = GameViewEmbedder.embeddedView else { return nil }
+        return gameView.hitTest(convert(point, to: gameView), with: event) ?? gameView
     }
 
     /// Any tap during play wakes the toolbar via
@@ -256,21 +196,11 @@ class AppWindow: UIWindow {
 
     static var hostView: UIView? { instance?.rootViewController?.view }
 
-    /// True once the SwiftUI overlay window has been created.
-    static var isInstalled: Bool { instance != nil }
-
     /// Top view controller for AdMob presentation.
     static var topViewController: UIViewController? { instance?.rootViewController }
 
-    @objc static func pumpShellWhileWaiting() {
-        guard let root = instance?.rootViewController as? AppRootViewController else { return }
-        root.refreshShellDuringWait()
-    }
-
-    /// RootView.onAppear — SwiftUI has committed its first frame.
-    @objc static func revealSwiftUIShell() {
-        guard let root = instance?.rootViewController as? AppRootViewController else { return }
-        root.revealHostedContent()
+    static var currentScreenBounds: CGRect {
+        instance?.windowScene?.screen.bounds ?? .zero
     }
 
     static var currentSafeArea: EdgeInsets {
@@ -332,23 +262,14 @@ class AppWindow: UIWindow {
         }
 
         let recovering = AppState.shared.pendingCrashRecovery
-        var fallbackScene: UIWindowScene?
 
         for scene in UIApplication.shared.connectedScenes {
-            guard let windowScene = scene as? UIWindowScene else { continue }
-            if recovering || scene.activationState == .foregroundActive {
+            if let windowScene = scene as? UIWindowScene,
+                recovering || scene.activationState == .foregroundActive
+            {
                 createWindow(in: windowScene)
                 return
             }
-            fallbackScene = windowScene
-        }
-
-        // Cold launch under Xcode Play: a scene often exists before UIKit
-        // marks it foregroundActive. Waiting only on didActivate leaves a
-        // blank SDL launch screen indefinitely on some runs.
-        if let fallbackScene {
-            createWindow(in: fallbackScene)
-            return
         }
 
         NotificationCenter.default.addObserver(
@@ -364,7 +285,6 @@ class AppWindow: UIWindow {
     }
 
     private static func createWindow(in scene: UIWindowScene) {
-        NSLog("XPPocket: AppWindow.createWindow scene=%@", String(describing: scene.activationState.rawValue))
         let window = AppWindow(windowScene: scene)
         window.frame = scene.screen.bounds
 
@@ -375,13 +295,7 @@ class AppWindow: UIWindow {
         window.makeKeyAndVisible()
         instance = window
 
-        vc.loadViewIfNeeded()
-
-        let insets = window.safeAreaInsets
-        mkxp_setSafeAreaInsets(
-            Float(insets.top), Float(insets.bottom),
-            Float(insets.left), Float(insets.right)
-        )
+        pushSafeAreaInsets()
 
         window.overrideUserInterfaceStyle = AppSettings.shared.theme.userInterfaceStyle
 
@@ -391,17 +305,6 @@ class AppWindow: UIWindow {
         observePhase(window: window)
         observeTheme(window: window)
         applyOverlayPresentationMode(window: window)
-
-        // Force an initial layout pass while mkxp_waitForGamePath is still
-        // pumping the run loop. Without this, Xcode Play sometimes leaves the
-        // hosting controller at zero size until the first external event.
-        vc.view.setNeedsLayout()
-        vc.view.layoutIfNeeded()
-        DispatchQueue.main.async {
-            vc.view.setNeedsLayout()
-            vc.view.layoutIfNeeded()
-            EmpoUIBootstrap.dismissSDLLaunchScreenIfShellReady()
-        }
     }
 
     private static func observePhase(window: AppWindow) {
@@ -435,12 +338,34 @@ class AppWindow: UIWindow {
         } else {
             GameViewEmbedder.detach()
             window.isHidden = false
-            // Opaque in library/loading so a cleared SwiftUI hosting
-            // stack cannot reveal SDL's empty window underneath.
-            window.isOpaque = true
-            window.backgroundColor = .systemBackground
-            window.layer.isOpaque = true
+            window.isOpaque = false
+            window.backgroundColor = .clear
+            window.layer.isOpaque = false
+            if let root = window.rootViewController?.view {
+                clearPassThroughBackdrop(in: root)
+                // `paintRootForZoom` painted the root at the tap.
+                // Leave that paint alone while the game loads, and
+                // clear it once the app is back at the library, so
+                // the pause never fades the library in over it.
+                if AppState.shared.phase == nil {
+                    root.backgroundColor = .clear
+                }
+            }
         }
+    }
+
+    /// Paints the root before the library pushes a game.
+    ///
+    /// The zoom transition scales the library down and rounds it
+    /// with a radius on the root layer. A radius rounds the
+    /// background of that layer alone, and a cleared root has none,
+    /// so the library kept square corners. The transition reads the
+    /// layer as it stands at the push, so the paint must land before
+    /// it and not on the phase change, which comes one hop later.
+    /// Clipping instead of painting does not work: the transition
+    /// sets `masksToBounds` itself.
+    static func paintRootForZoom() {
+        hostView?.backgroundColor = .systemBackground
     }
 
     /// Strip opaque UIKit backdrops SwiftUI installs on hosting views.

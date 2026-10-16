@@ -5,13 +5,14 @@ import SwiftUI
 /// one-surface background, intrinsic sizing, brand tint - and the
 /// `Sheet*` pieces below are the building blocks its content
 /// composes. A sheet built from these cannot spell the chrome
-/// wrong. The rules they encode live in `docs/sheet-design.md`.
+/// wrong. The rules they encode live in the Sheets section of
+/// `ios/Empo/docs/design-system.md`.
 ///
 /// Composition works like slots: the sheet declares WHAT it
 /// shows, the vocabulary decides HOW it looks.
 ///
 /// ```swift
-/// StandardSheet(title: "Saves Recovered", emblem: "checkmark.seal") {
+/// StandardSheet(title: "Saves recovered", emblem: "checkmark.seal") {
 ///     SheetBodyText("What happened and why.")
 ///     SheetCard { /* rows */ }
 ///     SheetFootnote("The fine print.")
@@ -66,7 +67,7 @@ struct StandardSheet<Content: View>: View {
     var trailingButton: SheetBarAction?
     @ViewBuilder var content: Content
 
-    @State private var measuredHeight: CGFloat = 0
+    @State private var sheetSize = IntrinsicSheetSize()
 
     /// An identity-block sheet with no toolbar action has an empty
     /// bar. Hiding it lets the sheet hug its content.
@@ -98,7 +99,7 @@ struct StandardSheet<Content: View>: View {
                     content
                 }
                 .padding(Spacing.xl)
-                .intrinsicSheetContent(measuredHeight: $measuredHeight)
+                .intrinsicSheetContent(size: $sheetSize)
             }
             .scrollBounceBehavior(.basedOnSize)
             .navigationTitle(emblem == nil ? title : "")
@@ -113,7 +114,7 @@ struct StandardSheet<Content: View>: View {
             }
         }
         .intrinsicSheetDetent(
-            measuredHeight: measuredHeight,
+            size: $sheetSize,
             chromeAllowance: chromeAllowance ?? (barHidden ? 28 : 64)
         )
         .tint(.brand)

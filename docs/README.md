@@ -1,6 +1,6 @@
 # Empo documentation
 
-This folder is the source of the [Empo documentation site](https://mateo-m.github.io/empo-app/).
+This folder is the source of the [Empo documentation site](https://empo.mateo.sh/).
 Each `.md` and `.mdx` file here becomes a page. Run `bun run docs:dev` from the repository root
 to read it in a browser, or read the files below on GitHub.
 
@@ -24,11 +24,18 @@ Internal checklists for rebranding this fork, GPL compliance, App Store submissi
 ## For players
 
 | Doc                                          | What it covers                                                     |
-| -------------------------------------------- | -------------------------------------------------------------------- |
-| [`install.mdx`](install.mdx)                 | Requirements, and how to sideload the app.                         |
+| -------------------------------------------- | ------------------------------------------------------------------ |
+| [`requirements.mdx`](requirements.mdx)       | Devices, iOS version, sideloading tools, and the supported engines. |
+| [`install.mdx`](install.mdx)                 | How to sideload the app and get update notifications.              |
 | [`importing-games.mdx`](importing-games.mdx) | The accepted file types, and what happens to an installed game.    |
 | [`playing.mdx`](playing.mdx)                 | The library, the touch controls, controllers, and game settings.   |
-| [`troubleshooting.mdx`](troubleshooting.mdx) | Frequent problems, and how to collect logs for a report.           |
+| [`saves.mdx`](saves.mdx)                     | Where saves live, what updates and deletes do, moving saves.       |
+| [`troubleshooting.mdx`](troubleshooting.mdx) | Frequent problems and their fixes.                                 |
+| [`faq.mdx`](faq.mdx)                         | Short answers before you install.                                  |
+| `community.mdx`                              | Generated from [`SUPPORT.md`](../SUPPORT.md) by `tools/root-pages.ts` at build time. Not checked in. |
+| `privacy.mdx`                                | Generated from [`PRIVACY.md`](../PRIVACY.md) by `tools/root-pages.ts` at build time. Not checked in. |
+| `terms.mdx`                                  | Generated from [`TERMS.md`](../TERMS.md) by `tools/root-pages.ts` at build time. Not checked in. |
+| `changelog.mdx`                              | Generated from [`CHANGELOG.md`](../CHANGELOG.md) by `tools/changelog-page.ts` at build time. Not checked in. |
 
 ## For game developers
 
@@ -38,23 +45,22 @@ Reference docs for shipping or adapting an RPG Maker game for Empo:
 | ------------------------------------------ | -------------------------------------------------------------------------------------------- |
 | [`controls-format.md`](controls-format.md) | The `empo/controls.json` touch-controls manifest: format, validation codes, controller maps. |
 | [`config-format.md`](config-format.md)     | The JSON5 language that both the app and the engine parse, and its quirks.                   |
-| [`patches-format.md`](https://github.com/mateo-m/mkxp-z-apple-mobile/blob/main/docs/patches-format.md) (engine repo) | The `patches.json` script-patching system: format, matching semantics, when patches apply. |
+| [`patches-format.md`](https://github.com/mateo-m/mkxp-z-apple-mobile/blob/dev/docs/patches-format.md) (engine repo) | The `patches.json` script-patching system: format, matching semantics, when patches apply. |
 | [`schemas/`](schemas/)                     | JSON Schemas (e.g. `empo-controls.v1.schema.json`).                                          |
 | [`examples/`](examples/)                   | Worked examples (e.g. a complete `controls.json`).                                           |
 
-## How Empo works (contributors)
+## For contributors
 
 Explanations of the trickier architecture, in rough reading order:
 
 | Doc                                                  | What it covers                                                                     |
 | ---------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | [`how-it-works.mdx`](how-it-works.mdx)               | The architecture in one page, with links to each detailed note.                     |
-| [`multi-ruby.md`](multi-ruby.md)                     | Three Ruby interpreters in one binary, with per-game version detection and dispatch. |
-| [`sdl-ruby-workarounds.md`](https://github.com/mateo-m/mkxp-z-apple-mobile/blob/main/docs/sdl-ruby-workarounds.md) (engine repo) | Why SDL, the GL context, OpenAL, and the Ruby VM persist for the process lifetime. |
-| [`multi-session.md`](multi-session.md)               | Why cross-session play is disabled, and the neutralized quit paths.                |
-| [`pause-resume.md`](pause-resume.md)                 | Frozen-frame snapshots that bridge the SDL window into SwiftUI transitions.        |
-| [`import-pipeline.md`](import-pipeline.md)           | The game import pipeline: supported inputs, stage flow, invariants.                |
-| [`sheet-design.md`](sheet-design.md)                 | The rules that keep every bottom sheet consistent.                                 |
+| [`sdl-ruby-workarounds.md`](https://github.com/mateo-m/mkxp-z-apple-mobile/blob/dev/docs/sdl-ruby-workarounds.md) (engine repo) | Why SDL, the GL context, OpenAL, and the Ruby VM persist for the process lifetime. |
+
+The detailed notes (the game cores, the Ruby interpreters, one game per session, pause and
+resume, the import pipeline, and the visual rules) live next to the Swift, in
+[`ios/Empo/docs/`](../ios/Empo/docs/).
 
 `media/` holds the README screenshots and demo assets. The site configuration lives in
 [`blume.config.ts`](../blume.config.ts), and site-wide static files live in [`public/`](../public).

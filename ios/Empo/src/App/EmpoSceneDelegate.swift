@@ -13,13 +13,8 @@ final class EmpoSceneDelegate: UIResponder, UIWindowSceneDelegate {
     ) {
         guard let windowScene = scene as? UIWindowScene else { return }
         AppWindow.install(in: windowScene)
-        EmpoUIBootstrap.dismissSDLLaunchScreenIfShellReady()
-    }
-
-    func sceneDidBecomeActive(_ scene: UIScene) {
-        guard let windowScene = scene as? UIWindowScene else { return }
-        AppWindow.install(in: windowScene)
-        EmpoUIBootstrap.ensureAppWindowInstalled()
-        EmpoUIBootstrap.dismissSDLLaunchScreenIfShellReady()
+        #if DEBUG
+        UITestVirtualController.connectIfRequested()
+        #endif
     }
 }

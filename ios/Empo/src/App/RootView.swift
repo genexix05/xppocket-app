@@ -4,43 +4,54 @@ struct RootView: View {
     @Environment(\.appState) private var appState
     @Environment(\.engineState) private var engineState
     @Environment(\.controlsLayout) private var layout
-    @Namespace private var hero
-    /// The library stays mounted through the loading→playing fade.
-    /// It then unmounts, so Ken Burns / NavigationStack stop
-    /// compositing over the embedded game view.
-    @State private var libraryMounted = true
-
-    @State private var showLaunchProSheet = false
-    @Environment(\.accountSession) private var accountSession
     @Environment(\.gameLibrary) private var library
+    @Environment(\.accountSession) private var accountSession
+    @Namespace private var hero
+    @State private var showLaunchProSheet = false
+    /// The library goes quiet after the loading→playing fade. It
+    /// stays mounted and keeps its navigation stack, but the pushed
+    /// loading view renders nothing, so Ken Burns and the container
+    /// fill stop compositing over the embedded game view.
+    ///
+    /// An earlier version took the whole library out of the tree
+    /// instead. That threw the navigation path away, so the library
+    /// came back at the root and the pause showed no reverse zoom.
+    /// Putting the path back by hand was not enough either: a
+    /// rebuilt stack keeps no record of the push, so the zoom went
+    /// to the middle of the screen instead of to the card.
+    @State private var libraryDormant = false
+    /// Drives the handoff fade. It is a state of its own, not a read
+    /// of the phase, so the way back can snap. `AppWindow` paints the
+    /// root background for the zoom transition, and a fade in over
+    /// that colour reads as a white flash.
+    @State private var libraryFaded = false
+
 
     var body: some View {
         ZStack {
-            // Opaque in library; clear only while playing so SDL shows
-            // through the overlay chrome.
-            Group {
-                if appState.phase == .playing {
-                    Color.clear
-                } else {
-                    Color(.systemBackground)
-                }
-            }
-            .ignoresSafeArea()
-            .onAppear {
-                AppWindow.revealSwiftUIShell()
-            }
+            // Explicit transparent base. Without this, SwiftUI can
+            // default the UIHostingController backdrop to
+            // systemBackground, which occludes the SDL window on
+            // device even when every child view is "clear".
+            Color.clear.ignoresSafeArea()
 
-            // Fade the library out on play (loading banner handoff).
-            // Then unmount after the spring, so Ken Burns /
-            // NavigationStack do not keep running over the embedded
-            // game view. Remounts on pause/return. GameLibraryView
-            // clears the path.
-            if libraryMounted {
-                GameLibraryView(heroNamespace: hero)
-                    .opacity(appState.phase == .playing ? 0 : 1)
-                    .allowsHitTesting(appState.phase != .playing)
-                    .transition(.identity)
-            }
+            // Fade the library out on play (loading banner
+            // handoff). It then goes dormant after the spring, so
+            // Ken Burns does not keep running over the embedded game
+            // view. It never leaves the tree: the pause pops the
+            // pushed game, and that pop needs the same navigation
+            // stack the push used.
+            GameLibraryView(
+                heroNamespace: hero,
+                dormant: libraryDormant
+            )
+            // Flatten first. Without this, the fade applies to
+            // each layer on its own, so the loading banner turns
+            // see-through over the grid and the library shows for a
+            // moment before the game does.
+            .compositingGroup()
+            .opacity(libraryFaded ? 0 : 1)
+            .allowsHitTesting(appState.phase != .playing)
 
             // Instant appear: the library fades out underneath without
             // a cross-fade dim on the controls.
@@ -56,15 +67,29 @@ struct RootView: View {
         .tint(.brand)
         .onChange(of: appState.phase) { _, phase in
             if phase == .playing {
+                // GameLoadingView flips the phase inside a spring of
+                // 0.15–0.30s. This change runs after that
+                // transaction, so it needs a spring of its own.
+                withAnimation(.spring(duration: 0.3, bounce: 0)) {
+                    libraryFaded = true
+                }
                 // Slightly longer than GameLoadingView's handoff spring
-                // (0.15–0.30s) so the fade finishes before unmount.
+                // (0.15–0.30s) so the fade finishes first.
                 Task { @MainActor in
                     try? await Task.sleep(for: .milliseconds(400))
                     guard appState.phase == .playing else { return }
-                    libraryMounted = false
+                    libraryDormant = true
                 }
             } else {
-                libraryMounted = true
+                // No fade on the way back. The pause plays the zoom
+                // in reverse, and the library must be there in full
+                // for it, not dissolving in over the root colour.
+                var instant = Transaction()
+                instant.disablesAnimations = true
+                withTransaction(instant) {
+                    libraryFaded = false
+                    libraryDormant = false
+                }
             }
         }
         .task {
@@ -98,10 +123,10 @@ struct RootView: View {
             if hasPro { showLaunchProSheet = false }
         }
         .alert(
-            (engineHung || appState.phase != nil) ? "Restart \(AppInfo.name)" : "Something went wrong",
+            (engineHung || appState.phase != nil) ? "Restart \(AppInfo.name)" : "Last session ended early",
             isPresented: showErrorAlert
         ) {
-            Button("OK") {
+            Button("Got it") {
                 dismissErrorAlert()
                 if engineHung {
                     return
@@ -116,7 +141,7 @@ struct RootView: View {
                 Text("The game stopped responding. Close \(AppInfo.name) and reopen it.")
             } else if appState.phase != nil {
                 Text(
-                    "\(appState.errorMessage ?? "An error occurred.") Close \(AppInfo.name) from the app switcher and reopen it to continue."
+                    "\(appState.errorMessage ?? "The game stopped.")\n\nClose \(AppInfo.name) from the app switcher, then reopen it."
                 )
             } else {
                 Text(appState.errorMessage ?? "")
@@ -126,7 +151,7 @@ struct RootView: View {
             infoAlertTitle,
             isPresented: showInfoAlert
         ) {
-            Button("OK") {
+            Button("Continue") {
                 dismissInfoAlert()
             }
         } message: {
@@ -189,9 +214,9 @@ struct RootView: View {
         )
     }
 
-    /// Unblocks any engine thread waiting in `mkxp_presentErrorAndWait()`.
+    /// Unblocks a core that waits for the error alert to close.
     private func dismissErrorAlert() {
-        mkxp_signalErrorDismissed()
+        if EmpoCoreIsOpen() != 0 { gamecore_signalErrorDismissed() }
         appState.errorMessage = nil
     }
 
@@ -203,17 +228,17 @@ struct RootView: View {
     }
 
     /// The game speaks in its own name. Title the alert after the
-    /// running game, so the notice does not read as an Empo message.
+    /// running game, so the notice does not read as an app message.
     private var infoAlertTitle: String {
         appState.selectedGame?.title
             ?? PauseManager.shared.pausedGame?.title
-            ?? "Message"
+            ?? "Game message"
     }
 
-    /// Unblocks the engine thread that waits in `mkxp_presentInfoAndWait()`.
+    /// Unblocks the core that waits for the info alert to close.
     /// The game resumes right where it called `msgbox`.
     private func dismissInfoAlert() {
-        mkxp_signalInfoDismissed()
+        if EmpoCoreIsOpen() != 0 { gamecore_signalInfoDismissed() }
         appState.infoMessage = nil
     }
 
@@ -223,6 +248,6 @@ struct RootView: View {
     /// way out is for the user to close and reopen the app manually.
     /// We do not call `exit()`, per App Store guideline 2.5.1.
     private var engineHung: Bool {
-        mkxp_isEngineHung() != 0
+        EmpoCoreIsOpen() != 0 && gamecore_isEngineHung() != 0
     }
 }

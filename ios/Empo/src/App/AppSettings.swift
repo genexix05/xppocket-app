@@ -29,12 +29,12 @@ enum LibrarySortOption: String, CaseIterable {
 
     var label: String {
         switch self {
-        case .titleAZ: "A → Z"
-        case .titleZA: "Z → A"
+        case .titleAZ: "Title A to Z"
+        case .titleZA: "Title Z to A"
         case .recentlyAdded: "Recently added"
-        case .leastRecentlyAdded: "Least recently added"
+        case .leastRecentlyAdded: "Added longest ago"
         case .recentlyPlayed: "Recently played"
-        case .leastRecentlyPlayed: "Least recently played"
+        case .leastRecentlyPlayed: "Played longest ago"
         case .mostPlayed: "Most played"
         case .leastPlayed: "Least played"
         case .largestSize: "Largest first"
@@ -95,7 +95,7 @@ enum AppTheme: String, CaseIterable {
         switch self {
         case .dark: "Dark"
         case .light: "Light"
-        case .auto: "Auto"
+        case .auto: "System"
         }
     }
 
@@ -111,9 +111,9 @@ enum AppTheme: String, CaseIterable {
 // We removed the `ExperimentalFeature` enum and its `isEnabled` /
 // `setEnabled` machinery in May 2026, after `gamePause` and
 // `cheats` graduated to always-on. No experimental toggles remain.
-// We also planned `gameQuit` as an experimental feature, but it
-// never landed (cross-session Ruby state cleanup blocks it, see
-// docs/multi-session.md).
+// We also planned `gameQuit` as an experimental feature. It never
+// landed, and we removed the quit paths in August 2026. See
+// ios/Empo/docs/multi-session.md.
 //
 // To bring back an opt-in experimental toggle later, restore:
 //   - this enum (cases + `label` + `description` + `id`)
@@ -150,14 +150,14 @@ class AppSettings {
     var showViewportBounds: Bool {
         didSet {
             UserDefaults.standard.set(showViewportBounds, forKey: DefaultsKey.showViewportBounds)
-            mkxp_setShowViewportBounds(showViewportBounds)
+            pushToCore()
         }
     }
 
     var viewportBoundsColor: Color {
         didSet {
             saveViewportBoundsColor()
-            pushViewportBoundsColor()
+            pushToCore()
         }
     }
 
@@ -226,6 +226,23 @@ class AppSettings {
 
     func acknowledgeDisclaimer() {
         disclaimerAcknowledgedVersion = Self.currentDisclaimerVersion
+        acknowledgeWhatsNew()
+    }
+
+    // MARK: - What's new
+
+    var whatsNewSeenVersion: Int {
+        didSet {
+            UserDefaults.standard.set(whatsNewSeenVersion, forKey: DefaultsKey.whatsNewSeenVersion)
+        }
+    }
+
+    var needsWhatsNew: Bool {
+        whatsNewSeenVersion < WhatsNew.version
+    }
+
+    func acknowledgeWhatsNew() {
+        whatsNewSeenVersion = WhatsNew.version
     }
 
     private init() {
@@ -251,9 +268,8 @@ class AppSettings {
         let sortRaw = ud.string(forKey: DefaultsKey.librarySortOption) ?? LibrarySortOption.titleAZ.rawValue
         self.librarySortOption = LibrarySortOption(rawValue: sortRaw) ?? .titleAZ
         self.disclaimerAcknowledgedVersion = ud.integer(forKey: DefaultsKey.disclaimerAcknowledgedVersion)
+        self.whatsNewSeenVersion = ud.integer(forKey: DefaultsKey.whatsNewSeenVersion)
 
-        mkxp_setShowViewportBounds(showViewportBounds)
-        pushViewportBoundsColor()
     }
 
     private static let defaultViewportBoundsColor = Color(
@@ -290,8 +306,16 @@ class AppSettings {
         ud.set(Double(c.a), forKey: DefaultsKey.viewportBoundsA)
     }
 
-    func pushViewportBoundsColor() {
+    /// Pushes the settings the engine holds a copy of.
+    ///
+    /// The user can change these in the library, before any core is
+    /// open. They live here until then, and
+    /// `EngineSessionCoordinator.openCore` calls this once the core is
+    /// in.
+    func pushToCore() {
+        guard EmpoCoreIsOpen() != 0 else { return }
+        gamecore_setShowViewportBounds(showViewportBounds)
         let c = resolvedRGBA()
-        mkxp_setViewportBoundsColor(Float(c.r), Float(c.g), Float(c.b), Float(c.a))
+        gamecore_setViewportBoundsColor(Float(c.r), Float(c.g), Float(c.b), Float(c.a))
     }
 }

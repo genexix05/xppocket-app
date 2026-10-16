@@ -34,8 +34,22 @@ enum CloudSaveManager {
         }
     }
 
+    /// The folder cloud saves cover. A core that names no shared data
+    /// folder keeps its saves in the game's own `UserData/`.
+    private static func dataRoot(for container: GameContainer) -> URL {
+        let core = GameCores.core(forGameAt: container.gameURL)
+        return DataDirectory.resolve(for: container, core: core)
+            ?? container.url.appendingPathComponent("UserData", isDirectory: true)
+    }
+
+    private static func dataRootPrepared(for container: GameContainer) -> URL {
+        let core = GameCores.core(forGameAt: container.gameURL)
+        return DataDirectory.resolveAndPrepare(for: container, core: core)
+            ?? container.url.appendingPathComponent("UserData", isDirectory: true)
+    }
+
     static func gameKey(for container: GameContainer) -> String {
-        let dataURL = DataDirectory.resolve(for: container)
+        let dataURL = dataRoot(for: container)
         let root = DataDirectory.sharedRootURL.path
         var relative = dataURL.path
         if relative.hasPrefix(root + "/") {
@@ -52,7 +66,7 @@ enum CloudSaveManager {
     static func packData(for container: GameContainer) throws -> Data {
         let fm = FileManager.default
         SaveMigration.migrateLegacySavesIfNeeded(for: container)
-        let dataRoot = DataDirectory.resolve(for: container)
+        let dataRoot = dataRoot(for: container)
         try? fm.createDirectory(at: dataRoot, withIntermediateDirectories: true)
         var entries: [ZipArchiveWriter.Entry] = []
         var searched: [String] = []
@@ -119,7 +133,7 @@ enum CloudSaveManager {
 
     static func applyPack(_ data: Data, to container: GameContainer) throws {
         let fm = FileManager.default
-        let dataDestination = DataDirectory.resolveAndPrepare(for: container)
+        let dataDestination = dataRootPrepared(for: container)
 
         let stagingRoot = fm.temporaryDirectory.appendingPathComponent(
             "xppocket-cloud-\(UUID().uuidString)", isDirectory: true)
@@ -235,7 +249,7 @@ enum CloudSaveManager {
     }
 
     private static func dataRelativePath(for container: GameContainer) -> String {
-        let dataURL = DataDirectory.resolve(for: container)
+        let dataURL = dataRoot(for: container)
         let root = DataDirectory.sharedRootURL.path
         var relative = dataURL.path
         if relative.hasPrefix(root + "/") {

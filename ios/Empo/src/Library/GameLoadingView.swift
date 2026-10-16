@@ -4,14 +4,17 @@ struct GameLoadingView: View {
     enum Mode { case loading, resuming }
 
     let game: GameEntry
+    /// True once the play session settled. The view stays pushed, so
+    /// the pause can pop it and play the zoom in reverse, but it
+    /// draws nothing: the Ken Burns pan and the container fill would
+    /// otherwise composite over the embedded game view.
+    var dormant: Bool = false
     @Environment(\.appState) private var appState
     @Environment(\.engineState) private var engineState
     @Environment(\.pauseManager) private var pauseManager
 
     private var mode: Mode { pauseManager.pauseSnapshot != nil ? .resuming : .loading }
 
-    @State private var titleVisible = false
-    @State private var spinnerVisible = false
     @State private var kenBurns = false
     @State private var appearedAt: ContinuousClock.Instant?
 
@@ -62,24 +65,49 @@ struct GameLoadingView: View {
     /// the SDL window inside AppWindow (device compositing).
     private var isPlayingPhase: Bool { appState.phase == .playing }
 
+    private var isEnded: Bool {
+        if case .ended = appState.phase { return true }
+        return false
+    }
+
     var body: some View {
         ZStack {
-            // Keep banner/scrim mounted through the playing handoff so
-            // RootView's opacity fade has something to dissolve. Clear
-            // only the NavigationStack container fill. An opaque
-            // UIKit backdrop would otherwise flash black under the fade.
-            Color.black.ignoresSafeArea()
-                .opacity(isPlayingPhase ? 0 : 1)
+            // A full-size clear layer, so the pushed view keeps its
+            // frame while it is dormant. The pop needs that frame to
+            // animate from.
+            Color.clear.ignoresSafeArea()
 
-            switch mode {
-            case .loading: loadingContent
-            case .resuming: resumeContent
+            if !dormant {
+                Group {
+                    // Keep banner/scrim mounted through the playing handoff so
+                    // RootView's opacity fade has something to dissolve. Clear
+                    // only the NavigationStack container fill. An opaque
+                    // UIKit backdrop would otherwise flash black under the fade.
+                    Color.black.ignoresSafeArea()
+                        .opacity(isPlayingPhase ? 0 : 1)
+
+                    switch mode {
+                    case .loading: loadingContent
+                    case .resuming: resumeContent
+                    }
+                }
+                // The pause wakes this content inside an animation.
+                // The default insertion is a fade, which shows as a
+                // black gap over the game before the snapshot lands.
+                .transition(.identity)
             }
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbarBackground(.hidden, for: .navigationBar)
         .containerBackground(isPlayingPhase ? .clear : .black, for: .navigation)
+        // The pause sets the phase inside an animation. The black
+        // must not fade in with it: `AppWindow` paints the root
+        // background for the zoom transition, and a fade shows that
+        // background as a flash while the game view is already
+        // gone. The library fades as one unit in `RootView`, so
+        // an instant switch here has no cost on the way in.
+        .animation(nil, value: isPlayingPhase)
         .task(id: game.id) { await loadBannerImage() }
     }
 
@@ -88,23 +116,21 @@ struct GameLoadingView: View {
             bannerBackground
 
             VStack(spacing: Spacing.xl) {
-                if showErrorContent {
-                    errorContent
+                if case .ended(let clean, let started) = appState.phase {
+                    endedContent(clean: clean, started: started)
                 } else {
                     Text(game.title)
                         .font(.title)
                         .fontWeight(.bold)
                         .foregroundStyle(.white)
-                        .opacity(titleVisible ? 1 : 0)
-                        .offset(y: titleVisible ? 0 : 12)
+                        .multilineTextAlignment(.center)
+                        .centeredMessageWidth()
 
                     ProgressView()
                         .progressViewStyle(.circular)
                         .tint(.white)
                         .scaleEffect(1.2)
                         .accessibilityLabel("Loading game")
-                        .opacity(spinnerVisible ? 1 : 0)
-                        .offset(y: spinnerVisible ? 0 : 12)
                 }
             }
         }
@@ -117,12 +143,6 @@ struct GameLoadingView: View {
         }
         .onAppear {
             appearedAt = .now
-            withAnimation(Motion.standard.delay(0.2)) {
-                titleVisible = true
-            }
-            withAnimation(Motion.standard.delay(0.28)) {
-                spinnerVisible = true
-            }
             withAnimation(.linear(duration: 20).repeatForever(autoreverses: true)) {
                 kenBurns = true
             }
@@ -151,36 +171,55 @@ struct GameLoadingView: View {
         }
     }
 
-    /// True when an error fired during this loading session and the
-    /// user has dismissed the alert. Switches the loading view's
-    /// inner content from `<title> + spinner` to a stable error
-    /// message so the user does not face an endless spinner after
-    /// tapping "OK".
-    private var showErrorContent: Bool {
-        appState.sessionHadError && appState.errorMessage == nil
+    private func endedContent(clean: Bool, started: Bool) -> some View {
+        VStack(spacing: Spacing.md) {
+            Text(
+                clean
+                    ? "\(game.title) closed"
+                    : started ? "\(game.title) stopped" : "\(game.title) didn't start"
+            )
+            .font(.title)
+            .fontWeight(.bold)
+            .foregroundStyle(.white)
+            .multilineTextAlignment(.center)
+            .centeredMessageWidth()
+
+            if !clean {
+                messageLine(
+                    started
+                        ? "\(AppInfo.name) hit a problem while running this game."
+                        : "\(AppInfo.name) hit a problem while loading this game.")
+            }
+            if appState.canLeaveEndedGame {
+                Button("Back to Library") { appState.leaveEndedGame() }
+                    .buttonStyle(.primary)
+                    .padding(.top, Spacing.md)
+            } else {
+                messageLine("To play again, close \(AppInfo.name) from the app switcher, then open it again.")
+            }
+            if !clean {
+                reportLine
+            }
+        }
+        .padding(.horizontal, Spacing.xl)
+        .transition(.opacity)
     }
 
-    private var errorContent: some View {
+    private func messageLine(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 15))
+            .foregroundStyle(.white.opacity(0.85))
+            .multilineTextAlignment(.center)
+            .centeredMessageWidth()
+    }
+
+    private var reportLine: some View {
         VStack(spacing: Spacing.md) {
-            Text("Error occurred")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundStyle(.white)
-
-            Text("An unexpected error happened when \(AppInfo.name) tried to start \(game.title).")
-                .font(.system(size: 15))
-                .foregroundStyle(.white.opacity(0.85))
-                .multilineTextAlignment(.center)
-
-            Text("Please restart \(AppInfo.name) and try again.")
-                .font(.system(size: 15))
-                .foregroundStyle(.white.opacity(0.85))
-                .multilineTextAlignment(.center)
-
             Text("If the error keeps happening, send us a report so we can look into it.")
                 .font(.system(size: 15))
                 .foregroundStyle(.white.opacity(0.85))
                 .multilineTextAlignment(.center)
+                .centeredMessageWidth()
 
             FeedbackShareButton(
                 label: "Send report",
@@ -193,41 +232,24 @@ struct GameLoadingView: View {
                 prominentStyle: true
             )
         }
-        .padding(.horizontal, Spacing.xl)
-        .transition(.opacity)
     }
 
     @ViewBuilder
     private var cancelButton: some View {
         // Suppress the hint once an error alert is presenting or the
-        // error content has taken over: RootView is showing the user
-        // what to do, so the "if loading is stuck..." line only
-        // clutters the screen.
-        if cancelVisible && appState.errorMessage == nil && !showErrorContent {
-            // Previously a "Quit to library" button that called
-            // returnToLibrary + a hard-deadline force-quit helper.
-            // Replaced with a static label because:
-            //
-            // 1. returnToLibrary triggers the cross-session Ruby
-            //    state cleanup machinery, which we no longer trust
-            //    after parking the mruby experiment (see
-            //    docs/multi-session.md). Lingering state from a hung
-            //    game would leak into the next session.
-            // 2. The force-quit helper called the system exit
-            //    function, which violates App Store guideline 2.5.1
-            //    ("Apps should not terminate themselves
-            //    programmatically"). That helper has been removed
-            //    entirely. See docs/multi-session.md.
-            //
-            // The label below tells the user to close Empo from the
-            // app switcher, which is the iOS-sanctioned way to
-            // force-close. Same pattern RootView uses for
-            // engineHung errors.
+        // game ended: the screen already tells the user what to do, so
+        // the "if loading is stuck..." line only clutters it.
+        if cancelVisible && appState.errorMessage == nil && !isEnded {
+            // A static label, not a button. Empo has no quit path,
+            // and an app may not close itself: App Store guideline
+            // 2.5.1 forbids it. So the label tells the user to close
+            // Empo from the app switcher, which is the way iOS
+            // allows. See `ios/Empo/docs/multi-session.md`.
             Text("If loading is stuck, close \(AppInfo.name) from the app switcher and reopen.")
                 .font(.system(size: 14))
                 .foregroundStyle(.white.opacity(0.8))
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, Spacing.xl)
+                .centeredMessageWidth()
                 .padding(.bottom, Spacing.xl)
                 .transition(.opacity.combined(with: .offset(y: 8)))
         }

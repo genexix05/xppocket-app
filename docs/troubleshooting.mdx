@@ -8,16 +8,16 @@ sidebar:
 ## Empo cannot start a different game
 
 This is a known limitation, and not a defect in the game. Force-close Empo from the app
-switcher, and open it again. [Multi-session](/multi-session) explains why.
+switcher, and open it again. [`multi-session.md`](https://github.com/mateo-m/empo-app/blob/main/ios/Empo/docs/multi-session.md) explains why.
 
 ## The game does not start
 
 Try these steps in order:
 
 <Steps>
-  <Step title="Check the RGSS version">
-    Empo runs RPG Maker XP, VX, and VX Ace games, and modern mkxp-z forks. Other engines, such as
-    RPG Maker MV and MZ, do not run.
+  <Step title="Check the engine">
+    Empo runs RPG Maker XP, VX, VX Ace, MV, and MZ games, modern mkxp-z forks, and PSDK games.
+    Other engines, such as RPG Maker 2000 and 2003, do not run.
   </Step>
   <Step title="Check for an RTP warning">
     If the game asks for a Run-Time Package, Empo warns you before it starts. Empo cannot install
@@ -73,7 +73,7 @@ Battle scenes and large maps cost the most. Older devices show it first.
 Empo keeps saves inside the folder of the game, so an app update never removes them.
 
 A defect in versions before v0.6.1 renamed the save files of some games. Empo v0.6.1 and newer
-restore the newest save for each affected game at launch, and show a **Saves Recovered** sheet.
+restore the newest save for each affected game at launch, and show a **Saves recovered** sheet.
 The renamed copies stay in the folder of the game as backups. You can reach them in the Files
 app, under **On My iPhone → Empo**.
 
@@ -84,25 +84,10 @@ and saves go with it.
 
 ## A card in the library looks broken
 
-Go to **Settings → Advanced**, and tap **Clean up broken imports**. Empo removes the folders
+Go to **Settings → Advanced**, and turn on **Delete broken imports**. Empo deletes the folders
 that a failed import left behind.
 
-## Collect logs for a bug report
+## Report a problem
 
-<Steps>
-  <Step title="Turn on the logs">
-    Go to **Settings → Advanced**, and turn on **Debug logs**. Empo removes the older logs at
-    the start of each session.
-  </Step>
-  <Step title="Reproduce the problem">
-    Start the game, and repeat the steps that fail.
-  </Step>
-  <Step title="Share the log">
-    Open the Files app, go to **On My iPhone → Empo**, and share the newest log file.
-  </Step>
-  <Step title="Open an issue">
-    Report it on [GitHub](https://github.com/mateo-m/empo-app/issues) with the title of the game,
-    its version, and a description of the failure. You can also ask on
-    [Discord](https://discord.gg/m3YnpXMxrB).
-  </Step>
-</Steps>
+If none of the steps above helps, collect the logs and report the game. [Community and
+support](/community) lists what a report needs and where to send it.

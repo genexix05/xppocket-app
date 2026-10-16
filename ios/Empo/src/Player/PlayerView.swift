@@ -8,6 +8,10 @@ struct PlayerView: View {
     @Environment(\.pauseManager) private var pauseManager
     @Environment(\.appSettings) private var settings
     @State private var editMode = false
+    /// Mirrored here so entering edit mode with the preference on
+    /// can round the layout immediately (the toggle itself lives in
+    /// PlayerEditToolbar).
+    @AppStorage(DefaultsKey.controlsEditSnapToGrid) private var snapToGrid = false
     @State private var controlsHidden = false
     @State private var keyboardMode = false
     @State private var showDebugOverlay = false
@@ -21,7 +25,6 @@ struct PlayerView: View {
     /// etc.) restores it to full opacity via `resetToolbarIdleTimer()`.
     @State private var toolbarOpacity: Double = Alpha.toolbarDim
     @State private var toolbarIdleTask: Task<Void, Never>?
-    @State private var showQuitConfirm = false
     /// Action dispatch + the runtime state actions act on (fast
     /// forward, cheats). Both input paths (touch function buttons,
     /// controller action bindings) route through this registry.
@@ -41,8 +44,8 @@ struct PlayerView: View {
     @State private var draggingButtonID: UUID?
 
     /// More-menu sheet (toolbar -> ellipsis button). Houses pause /
-    /// cheats / fast-forward / debug-overlay / quit so the toolbar
-    /// itself stays trimmed to keyboard / edit / hide / more.
+    /// cheats / fast-forward / debug-overlay so the toolbar itself
+    /// stays trimmed to keyboard / edit / hide / more.
     @State private var showMoreSheet = false
     @State private var showControllerRemap = false
     @State private var showLayoutProfilePicker = false
@@ -152,16 +155,12 @@ struct PlayerView: View {
                         safeArea: safeArea,
                         geoSize: geo.size,
                         controlsHidden: controlsHidden,
+                        keyboardShown: keyboardMode,
                         toolbarOpacity: toolbarOpacity,
                         onToggleKeyboard: { toggleKeyboard() },
                         onToggleEditMode: { toggleEditMode() },
                         onToggleHideControls: { toggleHideControls() },
                         onShowMore: { showMoreSheet = true },
-                        menuVisible: PlayerMoreSheet.hasContent(
-                            settings: settings,
-                            fastForwardMultiplier: actions.runtime.fastForwardMultiplier,
-                            controllerRemapAvailable: input.hasSeenPhysicalInput
-                        ),
                         onResetIdleTimer: { resetToolbarIdleTimer() }
                     )
                     .opacity(editMode ? 0 : 1)
@@ -203,6 +202,14 @@ struct PlayerView: View {
                     )
                 )
                 .allowsHitTesting(showDebugOverlay)
+                .onChange(of: appState.selectedGame?.title, initial: true) { _, title in
+                    // The RPG Maker XP, VX and VX Ace core reads the title
+                    // from Game.ini and wins once it lands. The PSDK core reports no
+                    // title, so the library name is all the overlay gets.
+                    if !debugOverlayState.metadataLoaded, let title {
+                        debugOverlayState.gameTitle = title
+                    }
+                }
 
                 // Stays mounted in both keyboard states. Removing the
                 // field while it is first responder kills the input
@@ -231,10 +238,10 @@ struct PlayerView: View {
                 // replaced their default profile.
                 if layout.gameLayoutNoticePending && !editMode && !layout.importOfferPending {
                     noticeCapsule(hitRegionKey: "gameLayoutNotice", safeArea: safeArea) {
-                        Text("This game comes with its own control layout. It is now active.")
+                        Text("This game's own control layout is now active.")
                             .font(.footnote)
                             .foregroundStyle(.white)
-                        Button("OK") {
+                        Button("Got it") {
                             layout.dismissGameLayoutNotice()
                         }
                         .font(.footnote.weight(.semibold))
@@ -246,7 +253,7 @@ struct PlayerView: View {
                 // folder waits for the user's import decision.
                 if layout.importOfferPending && !editMode {
                     noticeCapsule(hitRegionKey: "importOffer", safeArea: safeArea) {
-                        Text("This game's folder has a controls file.")
+                        Text("This game includes its own control layout.")
                             .font(.footnote)
                             .foregroundStyle(.white)
                         Button("Import as profile") {
@@ -294,6 +301,17 @@ struct PlayerView: View {
                 // Presets compute their rect from the game's aspect.
                 // The published picture rect carries it.
                 ScreenRegionApplier.gameRectChanged(rect)
+            }
+            .onChange(of: editMode) { _, editing in
+                // Entering with the preference already on applies the
+                // same rounding the toolbar toggle would. Exiting
+                // keeps what is on screen: endEditSession drops the
+                // restore record, so Done commits the snap.
+                guard editing, snapToGrid else { return }
+                layout.applyGridSnap(
+                    geoSize: geo.size,
+                    safeArea: safeArea,
+                    controlsMinY: controlsMinY)
             }
         }
         .ignoresSafeArea()
@@ -384,18 +402,9 @@ struct PlayerView: View {
                 startSnapshotFade()
             }
         }
-        .alert("Return to Library", isPresented: $showQuitConfirm) {
-            Button("Cancel", role: .cancel) {}
-            Button("Quit", role: .destructive) {
-                appState.returnToLibrary()
-            }
-            .keyboardShortcut(.defaultAction)
-        } message: {
-            Text("Do you want to quit the current game?")
-        }
         .sheet(isPresented: $showMoreSheet) {
             PlayerMoreSheet(
-                gameTitle: appState.selectedGame?.title ?? "Game",
+                gameTitle: appState.selectedGame?.title ?? "this game",
                 showDebugOverlay: $showDebugOverlay,
                 fastForwardActive: Binding(
                     get: { actions.runtime.fastForwardActive },
@@ -403,11 +412,12 @@ struct PlayerView: View {
                 ),
                 fastForwardMultiplier: actions.runtime.fastForwardMultiplier,
                 showControllerRemap: input.hasSeenPhysicalInput,
+                core: EngineSessionCoordinator.shared.openedCore,
                 onControllerRemap: { showControllerRemap = true },
                 onLayoutProfile: { showLayoutProfilePicker = true },
                 onPause: { appState.requestPause() },
-                onCheats: { actions.handle(EmpoActionCatalog.toggleCheats, pressed: true) },
-                onQuit: { showQuitConfirm = true }
+                onQuit: { appState.quitGame() },
+                onCheats: { actions.handle(EmpoActionCatalog.toggleCheats, pressed: true) }
             )
         }
         .sheet(isPresented: $showLayoutProfilePicker) {
@@ -418,9 +428,10 @@ struct PlayerView: View {
         .sheet(isPresented: $showControllerRemap) {
             BindingsView(
                 container: layout.currentContainer,
-                gameTitle: appState.selectedGame?.title ?? "Game",
+                gameTitle: appState.selectedGame?.title ?? "this game",
                 manifest: layout.activeManifest?.bindings,
-                input: input
+                input: input,
+                actions: actions
             )
         }
         .onChange(of: showMoreSheet) { _, opened in
@@ -436,6 +447,7 @@ struct PlayerView: View {
         .tint(nil)
         .controlsEditDialogs(
             layout: layout,
+            actions: actions,
             showAddSheet: $showAddSheet,
             showResetConfirm: $showResetConfirm,
             editingButton: $editingButton,
@@ -610,9 +622,9 @@ struct PlayerView: View {
         // The shared preset calculator holds the ONE copy of the
         // fit-and-align math.
         let preset: ScreenPreset
-        switch mkxp_getVerticalAlignment() {
-        case MKXP_VALIGN_TOP: preset = .top
-        case MKXP_VALIGN_CENTER: preset = .center
+        switch gamecore_getVerticalAlignment() {
+        case GAMECORE_VALIGN_TOP: preset = .top
+        case GAMECORE_VALIGN_CENTER: preset = .center
         default: preset = .topCenter
         }
         let safeArea = AppWindow.currentSafeArea
@@ -633,15 +645,17 @@ struct PlayerView: View {
         if layout.manifestRejectionErrorCount > 0 {
             let errorCount = layout.manifestRejectionErrorCount
             let errorLabel = errorCount == 1 ? "error" : "errors"
-            return "This game ships a controls.json with \(errorCount) \(errorLabel). See Logs."
+            return
+                "This game's controls file has \(errorCount) \(errorLabel), so \(AppInfo.name) used its own layout. Open Logs for details."
         }
         if layout.profileRejectionErrorCount > 0 {
             let errorCount = layout.profileRejectionErrorCount
             let errorLabel = errorCount == 1 ? "error" : "errors"
-            return "The pinned profile has \(errorCount) \(errorLabel). See Logs."
+            return
+                "Your layout profile has \(errorCount) \(errorLabel), so \(AppInfo.name) used its own layout. Open Logs for details."
         }
         if layout.pinFellThrough {
-            return "The pinned layout is missing. This game uses the next layout in line."
+            return "That layout profile is gone, so this game is using the \(AppInfo.builtInLayoutName.lowercased()) layout."
         }
         return nil
     }
@@ -750,8 +764,8 @@ struct PlayerView: View {
         var covered = Set<Int32>()
         if !controlsHidden {
             covered.formUnion([
-                Int32(MKXP_SCANCODE_UP), Int32(MKXP_SCANCODE_DOWN),
-                Int32(MKXP_SCANCODE_LEFT), Int32(MKXP_SCANCODE_RIGHT),
+                Int32(GAMECORE_SCANCODE_UP), Int32(GAMECORE_SCANCODE_DOWN),
+                Int32(GAMECORE_SCANCODE_LEFT), Int32(GAMECORE_SCANCODE_RIGHT),
             ])
             for button in layout.buttons {
                 covered.insert(button.scancode)

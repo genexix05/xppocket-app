@@ -24,6 +24,10 @@ struct PlayerControlsOverlay: View {
     @Binding var draggingDPad: Bool
     @Binding var draggingButtonID: UUID?
 
+    /// Edit-mode drag snapping. Shared with the edit toolbar's
+    /// toggle through UserDefaults, so both surfaces stay in sync.
+    @AppStorage(DefaultsKey.controlsEditSnapToGrid) private var snapToGrid = false
+
     var body: some View {
         let orientation = ControlsOrientation.from(geoSize: geo.size)
         let skin = layout.skinProfileName.flatMap {
@@ -48,6 +52,7 @@ struct PlayerControlsOverlay: View {
                     .position(x: geo.size.width / 2, y: geo.size.height - safeArea.bottom - 8)
                     .allowsHitTesting(false)
             }
+            editGridOverlay
             dpadView(skin: skin)
             ForEach(Array(layout.buttons.enumerated()), id: \.element.id) { index, button in
                 actionButton(
@@ -62,6 +67,49 @@ struct PlayerControlsOverlay: View {
                     functionButton(button: button, displayPosition: separatedPositions[button.id])
                 }
             }
+        }
+        // The add flow solves spawn placement against this canvas,
+        // so a fresh control cannot land under the chrome. One
+        // onChange on the value itself covers appear + every input
+        // that can move the lattice (canvas size, safe area, zone).
+        .onChange(
+            of: ControlsLayout.EditGeometry(
+                geoSize: geo.size, safeArea: safeArea,
+                controlsMinY: controlsMinY),
+            initial: true
+        ) { _, geometry in
+            layout.editGeometry = geometry
+        }
+    }
+
+    /// The snap lattice, drawn only while edit mode and the toggle
+    /// are both on. Anchored at the zone's top-left, the same origin
+    /// snappedToEditGrid rounds against, so every line is a legal
+    /// snap line. Under the controls, never hit-testable.
+    @ViewBuilder
+    private var editGridOverlay: some View {
+        if editMode && snapToGrid {
+            let zone = ControlsZone.bounds(
+                controlsMinY: controlsMinY, safeArea: safeArea, geoSize: geo.size)
+            Canvas { context, _ in
+                var lines = Path()
+                var x = zone.minX
+                while x <= zone.maxX {
+                    lines.move(to: CGPoint(x: x, y: zone.minY))
+                    lines.addLine(to: CGPoint(x: x, y: zone.maxY))
+                    x += ControlsZone.editGridStep
+                }
+                var y = zone.minY
+                while y <= zone.maxY {
+                    lines.move(to: CGPoint(x: zone.minX, y: y))
+                    lines.addLine(to: CGPoint(x: zone.maxX, y: y))
+                    y += ControlsZone.editGridStep
+                }
+                context.stroke(
+                    lines, with: .color(.white.opacity(0.15)), lineWidth: 0.5)
+            }
+            .allowsHitTesting(false)
+            .transition(.opacity)
         }
     }
 
@@ -190,7 +238,7 @@ struct PlayerControlsOverlay: View {
             )
             .overlay(alignment: .bottom) {
                 if editMode && !isPreview && !actions.isAvailable(button.action) {
-                    Text("Unavailable in this game")
+                    Text("Turn this on in Game settings")
                         .font(.system(size: 9, weight: .medium))
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 4)
@@ -267,8 +315,18 @@ struct PlayerControlsOverlay: View {
             lastDragResolved[key] = currentAbsoluteCenter(
                 draggedID: draggedID, draggedIsDPad: draggedIsDPad)
         }
+        // Snap BEFORE the solve, so clamp and collision run against
+        // on-grid targets. The solve may still leave the control
+        // off-grid at a wall or against a neighbor; a valid position
+        // beats an exact one.
+        let target =
+            snapToGrid
+            ? ControlsZone.snappedToEditGrid(
+                location, controlSize: size, geoSize: geo.size,
+                safeArea: safeArea, controlsMinY: controlsMinY)
+            : location
         var center = ControlsZone.clampToSafeArea(
-            location, controlSize: size, geoSize: geo.size, safeArea: safeArea,
+            target, controlSize: size, geoSize: geo.size, safeArea: safeArea,
             controlsMinY: controlsMinY)
         for _ in 0..<3 {
             center = layout.collisionResolvedCenter(

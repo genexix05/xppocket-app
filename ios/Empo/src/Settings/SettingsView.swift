@@ -4,6 +4,7 @@ struct SettingsView: View {
     @Environment(\.appSettings) private var settings
     @Environment(\.dismiss) private var dismiss
     @State private var showBuildInfo = false
+    @State private var showWhatsNew = false
 
     // We deleted the ExperimentalFeature toggles and the
     // ConfirmSheet/InfoSheet when gamePause/cheats graduated. See
@@ -22,7 +23,7 @@ struct SettingsView: View {
                     SettingsPicker(
                         title: "Theme",
                         selection: $settings.theme,
-                        description: "Switch between dark, light, or system appearance."
+                        description: "System follows your device's appearance setting."
                     ) {
                         ForEach(AppTheme.allCases, id: \.self) { theme in
                             Text(theme.label).tag(theme)
@@ -58,19 +59,17 @@ struct SettingsView: View {
                         title: "Interface haptics",
                         isOn: $settings.interfaceHaptics,
                         description:
-                            "Gentle taps when you press buttons, toggle switches, and navigate around."
+                            "Feel a gentle tap when you press buttons and switches."
                     )
 
                     SettingsToggle(
                         title: "Continue playing",
                         isOn: $settings.showContinuePlaying,
                         description:
-                            "Show a card at the top of your library to quickly jump back into your last game."
+                            "Shows a card at the top of your library for your last game."
                     )
                 } header: {
-                    Text("Look & Feel")
-                } footer: {
-                    Text("Customize the appearance and layout of your library.")
+                    Text("Appearance")
                 }
 
                 Section {
@@ -97,8 +96,6 @@ struct SettingsView: View {
                     )
                 } header: {
                     Text("Gameplay")
-                } footer: {
-                    Text("These options apply while you play a game.")
                 }
 
                 Section {
@@ -106,11 +103,11 @@ struct SettingsView: View {
                         title: "Diagnostics overlay",
                         isOn: $settings.diagnosticsOverlay,
                         description:
-                            "Add a button to the in-game toolbar. The button shows or hides a movable panel with the title, Ruby version, graphics driver, and frame rate."
+                            "Adds a toolbar button that shows frame rate, memory use, and details about the game engine while you play."
                     )
 
                     SettingsToggle(
-                        title: "Show unused screen area",
+                        title: "Fill unused screen area",
                         isOn: $settings.showViewportBounds,
                         description:
                             "Fill the screen area outside the game picture with a color you choose."
@@ -121,7 +118,7 @@ struct SettingsView: View {
                             ViewportBoundsColorPicker(color: $settings.viewportBoundsColor)
                         } label: {
                             HStack {
-                                Text("Bounds color")
+                                Text("Fill color")
                                 Spacer()
                                 RoundedRectangle(cornerRadius: Radius.xs)
                                     .fill(settings.viewportBoundsColor)
@@ -131,23 +128,24 @@ struct SettingsView: View {
                     }
 
                     SettingsToggle(
-                        title: "Show touch zone",
+                        title: "Show touch area",
                         isOn: $settings.showTouchZone,
                         description:
-                            "Outline the part of the game screen where taps and drags act as mouse input."
+                            "Outlines where your taps and drags control the game's cursor."
                     )
 
                     SettingsToggle(
-                        title: "Clean up broken imports",
+                        title: "Delete broken imports",
                         isOn: $settings.cleanupInvalidGames,
-                        description: "On the next app launch, removes games that did not import correctly."
+                        description:
+                            "Deletes games that failed to import the next time you open \(AppInfo.name). You can't undo this."
                     )
 
                     SettingsToggle(
                         title: "Debug logs",
                         isOn: $settings.debugLogs,
                         description:
-                            "Saves engine logs for each session. Find them in Files → \(AppInfo.name) → Games → <game> → Logs."
+                            "Saves a log for each play session. Find them in Files, under \(AppInfo.name) › Games › the game's name › Logs."
                     )
 
                     if settings.debugLogs {
@@ -155,7 +153,7 @@ struct SettingsView: View {
                             Stepper(
                                 "Keep last \(settings.maxLogFiles) logs per game",
                                 value: $settings.maxLogFiles, in: 5...100, step: 5)
-                            Text("The app removes older logs automatically when a session starts.")
+                            Text("\(AppInfo.name) deletes older logs each time you start a game.")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
@@ -168,6 +166,19 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Button {
+                        showWhatsNew = true
+                    } label: {
+                        Label("What's new", systemImage: "sparkles")
+                    }
+                    .tint(.primary)
+
+                    NavigationLink {
+                        GameCoresView()
+                    } label: {
+                        Label("Game cores", systemImage: "cpu")
+                    }
+
                     NavigationLink {
                         ChangelogView()
                     } label: {
@@ -220,6 +231,11 @@ struct SettingsView: View {
             .sheet(isPresented: $showBuildInfo) {
                 BuildInfoSheet()
             }
+            .sheet(isPresented: $showWhatsNew) {
+                WhatsNewSheet(items: WhatsNew.items(after: WhatsNew.version - 1)) {
+                    showWhatsNew = false
+                }
+            }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -258,7 +274,8 @@ struct SettingsView: View {
                 .foregroundStyle(.secondary)
         }
         .buttonStyle(.plain)
-        .accessibilityHint("Show build details")
+        .accessibilityLabel("Version \(AppInfo.version)")
+        .accessibilityHint("Shows build details")
     }
 
     private var settingsHeader: some View {
@@ -294,15 +311,15 @@ struct SettingsView: View {
 ///
 /// Uses the same navigation-stack-with-inline-title pattern as
 /// SettingsView / GameInfoView / GameSettingsView so the toolbar reads
-/// as native chrome (centered inline title, trailing Close button).
+/// as native chrome (centered inline title, trailing Done button).
 private struct BuildInfoSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     /// A detail row shown in the list. `value` is the copyable string.
     /// The optional `annotation` renders next to it but stays out of
     /// the text-selection range. Users can then long-press to copy only
-    /// the canonical value (e.g. the commit hash without a "(dirty)"
-    /// suffix).
+    /// the canonical value (e.g. the commit hash without the
+    /// "(uncommitted changes)" suffix).
     private struct Row: Identifiable {
         let label: String
         let value: String
@@ -318,7 +335,7 @@ private struct BuildInfoSheet: View {
             Row(
                 label: "Commit",
                 value: GitInfo.commit,
-                annotation: GitInfo.dirty ? "(dirty)" : nil
+                annotation: GitInfo.dirty ? "(uncommitted changes)" : nil
             ))
         if !GitInfo.branch.isEmpty, GitInfo.branch != GitInfo.defaultBranch {
             r.append(Row(label: "Branch", value: GitInfo.branch))
@@ -328,9 +345,9 @@ private struct BuildInfoSheet: View {
 
     var body: some View {
         StandardSheet(
-            title: "Build Info",
+            title: "Build info",
             chromeAllowance: AppSize.libraryHeader,
-            trailingButton: SheetBarAction("Close") { dismiss() }
+            trailingButton: SheetBarAction("Done") { dismiss() }
         ) {
             SheetCard {
                 ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
@@ -373,7 +390,7 @@ private struct ViewportBoundsColorPicker: View {
     var body: some View {
         Form {
             Section {
-                ColorPicker("Color", selection: $color, supportsOpacity: true)
+                ColorPicker("Fill color", selection: $color, supportsOpacity: true)
             }
 
             Section {
@@ -389,12 +406,12 @@ private struct ViewportBoundsColorPicker: View {
                 Text("Preview")
             }
         }
-        .navigationTitle("Bounds color")
+        .navigationTitle("Fill color")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
-/// Miniature device mockup showing the game viewport and bounds color.
+/// Miniature device mockup showing the game viewport and fill color.
 private struct DevicePreview: View {
     let color: Color
     let isLandscape: Bool

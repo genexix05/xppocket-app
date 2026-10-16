@@ -32,10 +32,20 @@ enum ArchiveExtractor {
 
         var errorDescription: String? {
             switch self {
-            case .openFailed(let s), .readFailed(let s), .writeFailed(let s), .pathEscape(let s):
-                return s
+            case .openFailed:
+                return
+                    "\(AppInfo.name) couldn't open this archive. It may be incomplete. Download the game again, then import it."
+            case .readFailed:
+                return
+                    "\(AppInfo.name) couldn't read this archive. It may be damaged. Download the game again, then import it."
+            case .writeFailed:
+                return
+                    "\(AppInfo.name) couldn't write the game to your device. Free up space, then import again."
+            case .pathEscape:
+                return
+                    "This archive contains unsafe file paths, so \(AppInfo.name) stopped the import. Get the game from another source."
             case .cancelled:
-                return "Cancelled"
+                return "Import stopped."
             }
         }
     }
