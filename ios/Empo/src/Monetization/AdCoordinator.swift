@@ -54,7 +54,7 @@ final class AdCoordinator {
         isShowingInterstitial = true
         defer {
             isShowingInterstitial = false
-            recordInterstitialShown(reason: reason)
+            recordInterstitialShown()
             self.interstitial = nil
             preloadInterstitial()
         }
@@ -71,6 +71,9 @@ final class AdCoordinator {
     private func canPresentInterstitial(reason: InterstitialReason) -> Bool {
         if isShowingInterstitial { return false }
 
+        // Every game launch shows one, regardless of the cooldown.
+        if reason == .gameLoad { return true }
+
         let now = Date().timeIntervalSince1970
         if let last = UserDefaults.standard.object(forKey: DefaultsKey.lastInterstitialTimestamp) as? TimeInterval,
             now - last < AdsConfig.interstitialCooldown
@@ -79,22 +82,13 @@ final class AdCoordinator {
         }
 
         switch reason {
-        case .importComplete:
-            return true
-        case .gameLoad:
-            let count = UserDefaults.standard.integer(forKey: DefaultsKey.gameLoadCounter) + 1
-            return count % AdsConfig.gameLoadFrequency == 0
-        case .sessionEnd:
+        case .importComplete, .gameLoad, .sessionEnd:
             return true
         }
     }
 
-    private func recordInterstitialShown(reason: InterstitialReason) {
+    private func recordInterstitialShown() {
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: DefaultsKey.lastInterstitialTimestamp)
-        if reason == .gameLoad {
-            let count = UserDefaults.standard.integer(forKey: DefaultsKey.gameLoadCounter) + 1
-            UserDefaults.standard.set(count, forKey: DefaultsKey.gameLoadCounter)
-        }
     }
 
     private func preloadInterstitial() {

@@ -40,17 +40,8 @@ enum AdsConfig {
         #endif
     }
 
-    /// Minimum seconds between interstitials (free tier).
+    /// Minimum seconds between interstitials (free tier). Game launches ignore it.
     static let interstitialCooldown: TimeInterval = 10 * 60
-
-    /// Show a load interstitial every N game launches (free tier).
-    static var gameLoadFrequency: Int {
-        #if DEBUG
-        1
-        #else
-        3
-        #endif
-    }
 
     /// AdMob request that opts out of personalized advertising / IDFA use.
     static func nonPersonalizedRequest() -> GADRequest {
