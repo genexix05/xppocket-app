@@ -47,11 +47,11 @@ struct ProPaywallView: View {
     private var paywallContent: some View {
         List {
             Section {
-                featureRow("nosign", "No ads", "Remove banner and full-screen ads.")
-                featureRow("icloud.fill", "Cloud save", "Back up and restore saves across devices.")
-                featureRow("wand.and.stars", "Cheats", "In-game cheat menu for supported games.")
-                featureRow("hare.fill", "Fast forward", "Speed up repetitive sections.")
-                featureRow("square.grid.3x3", "Premium layouts", "Exclusive community control packs.")
+                featureRow("nosign", String(localized: "No ads"), String(localized: "Remove banner and full-screen ads."))
+                featureRow("icloud.fill", String(localized: "Cloud save"), String(localized: "Back up and restore saves across devices."))
+                featureRow("wand.and.stars", String(localized: "Cheats"), String(localized: "In-game cheat menu for supported games."))
+                featureRow("hare.fill", String(localized: "Fast forward"), String(localized: "Speed up repetitive sections."))
+                featureRow("square.grid.3x3", String(localized: "Premium layouts"), String(localized: "Exclusive community control packs."))
             }
 
             if session.hasPro {
@@ -64,14 +64,14 @@ struct ProPaywallView: View {
                 }
                 if !session.isSignedIn {
                     optionalSignInSection(
-                        message: "Sign in with Apple to enable cloud save on all your devices. Pro features on this device stay active without an account."
+                        message: String(localized: "Sign in with Apple to enable cloud save on all your devices. Pro features on this device stay active without an account.")
                     )
                 }
             } else {
                 pricingSection
                 if !session.isSignedIn {
                     optionalSignInSection(
-                        message: "Playing stays free without an account. Sign in is optional — useful later for cloud save across devices."
+                        message: String(localized: "Playing stays free without an account. Sign in is optional — useful later for cloud save across devices.")
                     )
                 }
                 if !isLaunchPromo {
@@ -130,9 +130,9 @@ struct ProPaywallView: View {
 
     private var subscribeButtonTitle: String {
         if let product = subscriptions.product {
-            return "Subscribe — \(product.displayPrice)/month"
+            return String(localized: "Subscribe — \(product.displayPrice)/month")
         }
-        return "Subscribe to Pro"
+        return String(localized: "Subscribe to Pro")
     }
 
     @ViewBuilder
@@ -240,7 +240,7 @@ struct ProPaywallView: View {
             if session.hasPro {
                 dismiss()
             } else {
-                errorMessage = "No active Pro subscription was found for this Apple ID."
+                errorMessage = String(localized: "No active Pro subscription was found for this Apple ID.")
             }
         } catch {
             errorMessage = error.localizedDescription

@@ -59,7 +59,7 @@ struct FeedbackShareButton: View {
 
         do {
             try await FeedbackReporter.submit(context)
-            statusMessage = "Thanks — we received your report."
+            statusMessage = String(localized: "Thanks — we received your report.")
             return
         } catch {
             do {

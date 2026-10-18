@@ -7,6 +7,7 @@ packages:
     from: 11.13.0
 options:
   bundleIdPrefix: app.xppocket
+  developmentLanguage: en
   deploymentTarget:
     iOS: "26.0"
   createIntermediateGroups: true

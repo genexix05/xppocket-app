@@ -289,16 +289,16 @@ class ControlsLayout {
 
     var resetConfirmationTitle: String {
         if case .pinnedProfile(let name) = provenance {
-            return "Stop using \(name)?"
+            return String(localized: "Stop using \(name)?")
         }
-        return hasManifestTouchSection ? "Reset to game default" : "Reset to \(AppInfo.builtInLayoutName.lowercased())"
+        return hasManifestTouchSection ? String(localized: "Reset to game default") : String(localized: "Reset to \(AppInfo.builtInLayoutName.lowercased())")
     }
 
     var resetConfirmationActionTitle: String {
         if case .pinnedProfile = provenance {
-            return "Stop using"
+            return String(localized: "Stop using")
         }
-        return "Reset"
+        return String(localized: "Reset")
     }
 
     /// A method, not a property: building the message resolves the
@@ -306,13 +306,13 @@ class ControlsLayout {
     /// confirm alert shows, not per render.
     func resetConfirmationMessage() -> String {
         if case .pinnedProfile(let name) = provenance {
-            let base = "This game stops using the profile \(name). The profile keeps its layout."
+            let base = String(localized: "This game stops using the profile \(name). The profile keeps its layout.")
             return screenChangesOnReset()
                 ? base + " The screen returns to automatic placement." : base
         }
         return screenChangesOnReset()
-            ? "This deletes your custom layout and returns the screen to automatic placement. You can't undo this."
-            : "This deletes your custom layout. You can't undo this."
+            ? String(localized: "This deletes your custom layout and returns the screen to automatic placement. You can't undo this.")
+            : String(localized: "This deletes your custom layout. You can't undo this.")
     }
 
     /// The reset clause must only promise "automatic placement" when

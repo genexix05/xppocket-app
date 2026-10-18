@@ -14,7 +14,7 @@ enum FeedbackReporter {
 
         var errorDescription: String? {
             switch self {
-            case .emptyReport: "Could not prepare a feedback report."
+            case .emptyReport: String(localized: "Could not prepare a feedback report.")
             }
         }
     }

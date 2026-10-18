@@ -7,9 +7,9 @@ enum VerticalAlignment: String, Codable, CaseIterable {
 
     var label: String {
         switch self {
-        case .top: "Top"
-        case .topCenter: "Top-center"
-        case .center: "Center"
+        case .top: String(localized: "Top")
+        case .topCenter: String(localized: "Top-center")
+        case .center: String(localized: "Center")
         }
     }
 
@@ -249,9 +249,9 @@ struct GameSettings: GameSettingsGroup {
 
     static func displayLabel(forKey key: String) -> String {
         switch key {
-        case "verticalAlignment": return "Screen position"
-        case "smoothScaling": return "Smooth scaling"
-        case "fixedAspectRatio": return "Fixed aspect ratio"
+        case "verticalAlignment": return String(localized: "Screen position")
+        case "smoothScaling": return String(localized: "Smooth scaling")
+        case "fixedAspectRatio": return String(localized: "Fixed aspect ratio")
         default:
             assertionFailure("Missing displayLabel mapping for GameSettings.\(key)")
             return key

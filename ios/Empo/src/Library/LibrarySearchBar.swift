@@ -35,13 +35,13 @@ struct LibrarySearchBar: View {
             .frame(height: searchBarHeight)
             .xpGlassChrome(in: Capsule())
 
-            IconButton("arrow.up.arrow.down", label: "Sort games", style: .outline) {
+            IconButton("arrow.up.arrow.down", label: String(localized: "Sort games"), style: .outline) {
                 showSortSheet = true
             }
 
             IconButton(
                 settings.libraryDisplayMode == .grid ? "list.bullet" : "square.grid.2x2",
-                label: settings.libraryDisplayMode == .grid ? "Switch to list" : "Switch to grid",
+                label: settings.libraryDisplayMode == .grid ? String(localized: "Switch to list") : String(localized: "Switch to grid"),
                 style: .outline,
                 contentTransition: .symbolEffect(.replace)
             ) {

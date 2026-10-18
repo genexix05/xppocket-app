@@ -100,7 +100,7 @@ extension GameCore {
     func madeWith(at root: URL) -> String { madeWith }
 
     var notInThisBuildMessage: String {
-        "This build of \(AppInfo.name) has no \(displayName), so it can't run this game."
+        String(localized: "This build of \(AppInfo.name) has no \(displayName), so it can't run this game.")
     }
 
     /// `EngineSessionCoordinator.openCore` opens this path, so a core is

@@ -12,7 +12,7 @@ struct GameplaySettingsSection: View {
         Section {
             VStack(alignment: .leading, spacing: Spacing.md) {
                 SettingsToggle(
-                    title: "Fast forward",
+                    title: String(localized: "Fast forward"),
                     isOn: Binding(
                         get: { model.fastForwardEnabled },
                         set: { on in
@@ -28,7 +28,7 @@ struct GameplaySettingsSection: View {
                         }
                     ),
                     description:
-                        "Add a Fast forward button to the in-game menu. While it is on, the game runs at the speed below."
+                        String(localized: "Add a Fast forward button to the in-game menu. While it is on, the game runs at the speed below.")
                 )
 
                 if model.fastForwardEnabled {
@@ -99,13 +99,13 @@ struct DisplaySettingsSection<Extra: View>: View {
                 model.settings.smoothScaling = nil
             } content: {
                 SettingsToggle(
-                    title: "Smooth scaling",
+                    title: String(localized: "Smooth scaling"),
                     isOn: Binding(
                         get: { model.effectiveSmoothScaling },
                         set: { model.settings.smoothScaling = $0 }
                     ),
                     description:
-                        "Smooth the picture when the game scales up. Turn it off to keep the pixels crisp."
+                        String(localized: "Smooth the picture when the game scales up. Turn it off to keep the pixels crisp.")
                 )
             }
         case .fixedAspectRatio:
@@ -113,13 +113,13 @@ struct DisplaySettingsSection<Extra: View>: View {
                 model.settings.fixedAspectRatio = nil
             } content: {
                 SettingsToggle(
-                    title: "Fixed aspect ratio",
+                    title: String(localized: "Fixed aspect ratio"),
                     isOn: Binding(
                         get: { model.effectiveFixedAspectRatio },
                         set: { model.settings.fixedAspectRatio = $0 }
                     ),
                     description:
-                        "Preserve the game's proportions instead of stretching to fill the screen."
+                        String(localized: "Preserve the game's proportions instead of stretching to fill the screen.")
                 )
             }
         }
@@ -176,10 +176,10 @@ struct LayoutSettingsSection: View {
 
     private var currentPinLabel: String {
         switch LayoutProfilesManager.store.loadPin(forGameFolder: model.container.url).pin {
-        case .followChain: return "Automatic"
+        case .followChain: return String(localized: "Automatic")
         case .profile(let name): return name
-        case .gameLayout: return "Game layout"
-        case .defaultProfile: return "Default profile"
+        case .gameLayout: return String(localized: "Game layout")
+        case .defaultProfile: return String(localized: "Default profile")
         }
     }
 }
@@ -189,12 +189,12 @@ struct TouchMouseToggle: View {
 
     var body: some View {
         SettingsToggle(
-            title: "Touch acts as mouse",
+            title: String(localized: "Touch acts as mouse"),
             isOn: Binding(
                 get: { model.settings.touchMouseEnabled },
                 set: { model.settings.touchMouse = $0 }
             ),
-            description: "Send taps and drags on the game screen to the game as mouse input."
+            description: String(localized: "Send taps and drags on the game screen to the game as mouse input.")
         )
     }
 }

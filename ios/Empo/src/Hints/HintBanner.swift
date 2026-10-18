@@ -62,7 +62,7 @@ private struct HintDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        StandardSheet(title: "Tip", emblem: icon) {
+        StandardSheet(title: String(localized: "Tip"), emblem: icon) {
             Text(excerpt)
                 .font(.subheadline.weight(.semibold))
                 .frame(maxWidth: .infinity, alignment: .leading)

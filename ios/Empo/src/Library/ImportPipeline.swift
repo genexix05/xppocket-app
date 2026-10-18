@@ -82,8 +82,8 @@ struct ImportPipelineAlert: Identifiable {
 
     var title: String {
         failures.count == 1
-            ? "Couldn't import \(quoted(failures[0].name))"
-            : "Some games didn't import"
+            ? String(localized: "Couldn't import \(quoted(failures[0].name))")
+            : String(localized: "Some games didn't import")
     }
 
     var message: String {
@@ -470,8 +470,8 @@ final class ImportPipeline {
                     selection.displayName)
                 presentError(
                     name: selection.displayName,
-                    message: "This game is already being imported. "
-                        + "Wait for the current import to finish, then try again."
+                    message: String(localized: "This game is already being imported. ")
+                        + String(localized: "Wait for the current import to finish, then try again.")
                 )
 
             case .refusedDuplicateInBatch:
@@ -480,8 +480,8 @@ final class ImportPipeline {
                     selection.displayName)
                 presentError(
                     name: selection.displayName,
-                    message: "Two games in this import share the same title. "
-                        + "Import them one at a time, or rename one folder first."
+                    message: String(localized: "Two games in this import share the same title. ")
+                        + String(localized: "Import them one at a time, or rename one folder first.")
                 )
 
             case .refusedOpenGame:
@@ -491,7 +491,7 @@ final class ImportPipeline {
                 presentError(
                     name: selection.displayName,
                     message:
-                        "This game is currently open. Close it from the app switcher and import again."
+                        String(localized: "This game is currently open. Close it from the app switcher and import again.")
                 )
             }
         }
@@ -756,7 +756,7 @@ extension GameLibrary {
         var errorDescription: String? {
             switch self {
             case .outOfSpace:
-                return "Not enough space to import. Free up space on your device and try again."
+                return String(localized: "Not enough space to import. Free up space on your device and try again.")
             }
         }
     }
@@ -927,7 +927,7 @@ extension GameLibrary {
                     } else {
                         onError?(
                             "\(AppInfo.name) couldn't move this game's saves, so it kept the game. "
-                                + "Free up space, then delete again.")
+                                + String(localized: "Free up space, then delete again."))
                     }
                 case .failed(let message):
                     GameLibrary.shared.restoreEntryAfterFailedDelete(id: container.id)

@@ -42,7 +42,7 @@ struct ImageSourcePickerModifier: ViewModifier {
 extension View {
     func imageSourcePicker(
         isPresented: Binding<Bool>,
-        title: String = "Choose image",
+        title: String = String(localized: "Choose image"),
         hasExisting: Bool = false,
         onImageSelected: @escaping (UIImage) -> Void,
         onRemove: (() -> Void)? = nil

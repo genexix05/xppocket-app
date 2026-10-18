@@ -23,8 +23,8 @@ struct CreditsView: View {
                         "Copyright © Splendide Imaginarius, Jonas Kulla, and contributors. Licensed under GPL-2.0. Powers Ruby scripts, graphics, and audio at runtime."
                 )
                 creditRow(
-                    title: "Empo",
-                    subtitle: "Upstream project",
+                    title: String(localized: "Empo"),
+                    subtitle: String(localized: "Upstream project"),
                     detail:
                         "\(AppInfo.name) is derived from Empo, an open-source RPG Maker player for iOS. Empo and mkxp-z contributors made this app possible."
                 )
@@ -36,9 +36,9 @@ struct CreditsView: View {
 
             Section {
                 creditRow(
-                    title: "Smallbits",
-                    subtitle: "Icon pack (splash pattern)",
-                    detail: "Designed by Minor Adventures. Used under the Smallbits license."
+                    title: String(localized: "Smallbits"),
+                    subtitle: String(localized: "Icon pack (splash pattern)"),
+                    detail: String(localized: "Designed by Minor Adventures. Used under the Smallbits license.")
                 )
             } header: {
                 Text("Assets")

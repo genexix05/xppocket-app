@@ -75,7 +75,7 @@ enum GameImporter {
         guard GameCores.all.contains(where: { $0.joiPlayTypes.contains(type) }) else {
             let games = GameCores.all.compactMap(\.joiPlayGames).joined(separator: " and ")
             throw GameImportValidator.ImportError.unsupportedRuntime(
-                "This JoiPlay archive uses '\(type)', which \(AppInfo.name) does not support. "
+                String(localized: "This JoiPlay archive uses '\(type)', which \(AppInfo.name) does not support. ")
                     + "\(AppInfo.name) imports only JoiPlay archives of \(games)."
             )
         }

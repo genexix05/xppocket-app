@@ -84,7 +84,7 @@ struct WhatsNewSheet: View {
     @State private var entered = false
 
     var body: some View {
-        StandardSheet(title: "What's new in \(AppInfo.name)", emblem: "sparkles") {
+        StandardSheet(title: String(localized: "What's new in \(AppInfo.name)"), emblem: "sparkles") {
             VStack(alignment: .leading, spacing: Spacing._2xl) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
                     // Animate only the fade and the slide. An animation

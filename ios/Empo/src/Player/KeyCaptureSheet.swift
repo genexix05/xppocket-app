@@ -10,12 +10,12 @@ struct KeyCaptureSheet: View {
 
     var body: some View {
         StandardSheet(
-            title: "Press a button",
+            title: String(localized: "Press a button"),
             emblem: "keyboard",
             trailingButton: SheetBarAction("Cancel") { dismiss() }
         ) {
             SheetBodyText(
-                "Press the controller button or keyboard key you want to bind."
+                String(localized: "Press the controller button or keyboard key you want to bind.")
             )
         }
     }

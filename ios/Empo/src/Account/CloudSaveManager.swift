@@ -25,10 +25,10 @@ enum CloudSaveManager {
 
         var errorDescription: String? {
             switch self {
-            case .missingContainer: "This game is not installed on disk."
+            case .missingContainer: String(localized: "This game is not installed on disk.")
             case .emptySaveData(let searched):
-                "No save data found. Save in-game once, then try again.\n\nSearched:\n\(searched)"
-            case .packFailed: "Could not pack save data."
+                String(localized: "No save data found. Save in-game once, then try again.\n\nSearched:\n\(searched)")
+            case .packFailed: String(localized: "Could not pack save data.")
             case .restoreFailed(let detail): detail
             }
         }
@@ -199,7 +199,7 @@ enum CloudSaveManager {
             }
 
             guard restoredSomething else {
-                throw Error.restoreFailed("The cloud save pack was empty.")
+                throw Error.restoreFailed(String(localized: "The cloud save pack was empty."))
             }
         } catch let error as Error {
             throw error

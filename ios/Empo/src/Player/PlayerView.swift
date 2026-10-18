@@ -644,18 +644,18 @@ struct PlayerView: View {
     private var editZoneCaptionText: String? {
         if layout.manifestRejectionErrorCount > 0 {
             let errorCount = layout.manifestRejectionErrorCount
-            let errorLabel = errorCount == 1 ? "error" : "errors"
+            let errorLabel = errorCount == 1 ? String(localized: "error") : String(localized: "errors")
             return
-                "This game's controls file has \(errorCount) \(errorLabel), so \(AppInfo.name) used its own layout. Open Logs for details."
+                String(localized: "This game's controls file has \(errorCount) \(errorLabel), so \(AppInfo.name) used its own layout. Open Logs for details.")
         }
         if layout.profileRejectionErrorCount > 0 {
             let errorCount = layout.profileRejectionErrorCount
-            let errorLabel = errorCount == 1 ? "error" : "errors"
+            let errorLabel = errorCount == 1 ? String(localized: "error") : String(localized: "errors")
             return
-                "Your layout profile has \(errorCount) \(errorLabel), so \(AppInfo.name) used its own layout. Open Logs for details."
+                String(localized: "Your layout profile has \(errorCount) \(errorLabel), so \(AppInfo.name) used its own layout. Open Logs for details.")
         }
         if layout.pinFellThrough {
-            return "That layout profile is gone, so this game is using the \(AppInfo.builtInLayoutName.lowercased()) layout."
+            return String(localized: "That layout profile is gone, so this game is using the \(AppInfo.builtInLayoutName.lowercased()) layout.")
         }
         return nil
     }

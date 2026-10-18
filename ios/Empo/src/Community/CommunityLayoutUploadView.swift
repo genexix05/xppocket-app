@@ -144,7 +144,7 @@ struct CommunityLayoutUploadView: View {
                             ProgressView()
                         } else {
                             Label(
-                                isUpdating ? "Update on community" : "Publish to community",
+                                isUpdating ? String(localized: "Update on community") : String(localized: "Publish to community"),
                                 systemImage: isUpdating ? "arrow.triangle.2.circlepath" : "icloud.and.arrow.up")
                         }
                         Spacer()

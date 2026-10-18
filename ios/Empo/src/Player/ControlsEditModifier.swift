@@ -20,7 +20,7 @@ struct AddButtonSheet: View {
                 if atCap {
                     Section {
                         Text(
-                            "This layout has the maximum of \(ControlsManifestLoader.maxButtonsPerOrientation) buttons. Delete one to add another."
+                            String(localized: "This layout has the maximum of \(ControlsManifestLoader.maxButtonsPerOrientation) buttons. Delete one to add another.")
                         )
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -142,14 +142,14 @@ struct AddButtonSheet: View {
 /// cannot drift between the button kinds.
 enum ControlSizePresets {
     static let button: [(String, CGFloat)] = [
-        ("Small", 44), ("Medium", 50),
-        ("Standard", 56), ("Large", 68), ("Extra large", 80),
+        (String(localized: "Small"), 44), (String(localized: "Medium"), 50),
+        (String(localized: "Standard"), 56), (String(localized: "Large"), 68), (String(localized: "Extra large"), 80),
     ]
     /// Matches the button progression's feel. The D-pad's default
     /// (140pt) is the middle preset.
     static let dpad: [(String, CGFloat)] = [
-        ("Small", 110), ("Medium", 125),
-        ("Standard", 140), ("Large", 160), ("Extra large", 180),
+        (String(localized: "Small"), 110), (String(localized: "Medium"), 125),
+        (String(localized: "Standard"), 140), (String(localized: "Large"), 160), (String(localized: "Extra large"), 180),
     ]
 }
 

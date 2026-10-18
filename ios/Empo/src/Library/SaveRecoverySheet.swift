@@ -80,7 +80,7 @@ private struct SaveRecoverySheet: View {
 
     var body: some View {
         StandardSheet(
-            title: "Saves recovered",
+            title: String(localized: "Saves recovered"),
             emblem: "checkmark.arrow.trianglehead.counterclockwise"
         ) {
             SheetBodyText(

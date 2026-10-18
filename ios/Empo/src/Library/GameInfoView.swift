@@ -49,7 +49,7 @@ struct GameInfoView: View {
         self.originalTitle =
             meta.baseTitle
             ?? core?.defaultTitle(of: container)
-            ?? "Untitled game"
+            ?? String(localized: "Untitled game")
         self.madeWith = core?.madeWith(at: container.gameURL)
         self.coreName = core?.displayName
     }
@@ -108,13 +108,13 @@ struct GameInfoView: View {
 
                         GroupedSection("Details") {
                             if let madeWith, let coreName {
-                                DetailRow("Made with") {
+                                DetailRow(String(localized: "Made with")) {
                                     Text(madeWith)
                                 }
 
                                 Divider().padding(.leading, Spacing.xl)
 
-                                DetailRow("Game core") {
+                                DetailRow(String(localized: "Game core")) {
                                     Text(coreName)
                                         .multilineTextAlignment(.trailing)
                                 }
@@ -122,7 +122,7 @@ struct GameInfoView: View {
                                 Divider().padding(.leading, Spacing.xl)
                             }
 
-                            DetailRow("Date added") {
+                            DetailRow(String(localized: "Date added")) {
                                 if let date = metadata.dateAdded {
                                     Text(Self.dateFormatter.string(from: date))
                                 } else {
@@ -132,7 +132,7 @@ struct GameInfoView: View {
 
                             Divider().padding(.leading, Spacing.xl)
 
-                            DetailRow("Last played") {
+                            DetailRow(String(localized: "Last played")) {
                                 if let date = metadata.lastPlayed {
                                     Text(
                                         Self.relativeDateFormatter.localizedString(
@@ -145,14 +145,14 @@ struct GameInfoView: View {
                             if let time = metadata.totalPlayTime, time > 0 {
                                 Divider().padding(.leading, Spacing.xl)
 
-                                DetailRow("Play time") {
+                                DetailRow(String(localized: "Play time")) {
                                     Text(GameMetadata.formatPlayTime(metadata.totalPlayTime))
                                 }
                             }
 
                             Divider().padding(.leading, Spacing.xl)
 
-                            DetailRow("Size on disk") {
+                            DetailRow(String(localized: "Size on disk")) {
                                 if let size = diskSize {
                                     Text(GameMetadata.formatDiskSize(size))
                                 } else {
@@ -254,14 +254,14 @@ struct GameInfoView: View {
             }
             .imageSourcePicker(
                 isPresented: $showArtworkPicker,
-                title: "Artwork",
+                title: String(localized: "Artwork"),
                 hasExisting: hasCustomArtwork,
                 onImageSelected: { saveArtwork($0) },
                 onRemove: { removeArtwork() }
             )
             .imageSourcePicker(
                 isPresented: $showBannerPicker,
-                title: "Banner",
+                title: String(localized: "Banner"),
                 hasExisting: hasCustomBanner,
                 onImageSelected: { saveBanner($0) },
                 onRemove: { removeBanner() }

@@ -30,7 +30,7 @@ struct BindingTargetPicker: View {
                             enabled: available || scope == .allGames
                         )
                     }
-                    actionRow(label: "Do nothing", target: .unbound)
+                    actionRow(label: String(localized: "Do nothing"), target: .unbound)
                 }
 
                 if offersElements {
@@ -41,7 +41,7 @@ struct BindingTargetPicker: View {
                             ForEach(section.elements) { row in
                                 actionRow(
                                     label: row.label,
-                                    blurb: "Acts as this button",
+                                    blurb: String(localized: "Acts as this button"),
                                     target: .element(row.source.name)
                                 )
                             }
@@ -75,9 +75,9 @@ struct BindingTargetPicker: View {
     private var unavailableNote: String {
         switch scope {
         case .thisGame:
-            return "Fast forward is off for this game. Turn it on in Game settings."
+            return String(localized: "Fast forward is off for this game. Turn it on in Game settings.")
         case .allGames:
-            return "Fast forward is off for this game. The binding works in games that have Fast forward on."
+            return String(localized: "Fast forward is off for this game. The binding works in games that have Fast forward on.")
         }
     }
 

@@ -22,8 +22,8 @@ struct LayoutPackImportSupport: ViewModifier {
                             let install = try LayoutPackInstaller.installLocalFile(url)
                             successMessage =
                                 install.updated
-                                ? "Updated profile “\(install.profileName)”."
-                                : "Added profile “\(install.profileName)”."
+                                ? String(localized: "Updated profile “\(install.profileName)”.")
+                                : String(localized: "Added profile “\(install.profileName)”.")
                         } catch {
                             errorMessage = error.localizedDescription
                         }

@@ -18,9 +18,9 @@ enum LayoutPackExporter {
 
         var errorDescription: String? {
             switch self {
-            case .profileMissing: "The layout profile could not be found."
-            case .controlsMissing: "The profile has no controls.json."
-            case .writeFailed: "Could not build the layout pack."
+            case .profileMissing: String(localized: "The layout profile could not be found.")
+            case .controlsMissing: String(localized: "The profile has no controls.json.")
+            case .writeFailed: String(localized: "Could not build the layout pack.")
             }
         }
     }

@@ -109,7 +109,7 @@ struct GameCloudSaveSection: View {
 
     private func upload() async {
         guard let token = session.accessToken else {
-            errorMessage = "Sign in with Apple first."
+            errorMessage = String(localized: "Sign in with Apple first.")
             return
         }
         setBusy(true)
@@ -117,7 +117,7 @@ struct GameCloudSaveSection: View {
         do {
             let result = try await CloudSaveManager.upload(game: game, accessToken: token)
             statusMessage =
-                "Uploaded revision \(result.revision) (\(ByteCountFormatter.string(fromByteCount: Int64(result.sizeBytes), countStyle: .file)))."
+                String(localized: "Uploaded revision \(result.revision) (\(ByteCountFormatter.string(fromByteCount: Int64(result.sizeBytes), countStyle: .file))).")
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -126,7 +126,7 @@ struct GameCloudSaveSection: View {
 
     private func download() async {
         guard let token = session.accessToken else {
-            errorMessage = "Sign in with Apple first."
+            errorMessage = String(localized: "Sign in with Apple first.")
             return
         }
         setBusy(true)
@@ -134,7 +134,7 @@ struct GameCloudSaveSection: View {
         do {
             try await CloudSaveManager.download(game: game, accessToken: token)
             statusMessage =
-                "Cloud save restored. Quit the game completely (not just pause) and launch it again to load the cloud copy."
+                String(localized: "Cloud save restored. Quit the game completely (not just pause) and launch it again to load the cloud copy.")
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription

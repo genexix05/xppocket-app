@@ -13,7 +13,7 @@ enum ZipArchiveWriter {
 
         var errorDescription: String? {
             switch self {
-            case .invalidPath: "Archive entry path is invalid."
+            case .invalidPath: String(localized: "Archive entry path is invalid.")
             }
         }
     }

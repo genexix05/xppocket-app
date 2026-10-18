@@ -9,10 +9,10 @@ struct KeyEntry: Identifiable {
 
 let keyCatalog: [KeyEntry] = [
     // Common RPG Maker keys
-    KeyEntry(label: "Z", hint: "Confirm", scancode: Int32(GAMECORE_SCANCODE_Z)),
-    KeyEntry(label: "X", hint: "Cancel", scancode: Int32(GAMECORE_SCANCODE_X)),
-    KeyEntry(label: "Shift", hint: "Dash", scancode: Int32(GAMECORE_SCANCODE_LSHIFT)),
-    KeyEntry(label: "Ctrl", hint: "Skip", scancode: Int32(GAMECORE_SCANCODE_LCTRL)),
+    KeyEntry(label: "Z", hint: String(localized: "Confirm"), scancode: Int32(GAMECORE_SCANCODE_Z)),
+    KeyEntry(label: "X", hint: String(localized: "Cancel"), scancode: Int32(GAMECORE_SCANCODE_X)),
+    KeyEntry(label: "Shift", hint: String(localized: "Dash"), scancode: Int32(GAMECORE_SCANCODE_LSHIFT)),
+    KeyEntry(label: "Ctrl", hint: String(localized: "Skip"), scancode: Int32(GAMECORE_SCANCODE_LCTRL)),
     KeyEntry(label: "Space", scancode: Int32(GAMECORE_SCANCODE_SPACE)),
     KeyEntry(label: "Enter", scancode: Int32(GAMECORE_SCANCODE_RETURN)),
     KeyEntry(label: "Escape", scancode: Int32(GAMECORE_SCANCODE_ESCAPE)),

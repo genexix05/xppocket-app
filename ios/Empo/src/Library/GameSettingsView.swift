@@ -26,7 +26,7 @@ struct GameSettingsView: View {
         let list = changed.formatted(.list(type: .and, width: .standard))
         return Hint(
             id: "gameSettings.restartRequired",
-            excerpt: "Restart this game to apply: \(list).",
+            excerpt: String(localized: "Restart this game to apply: \(list)."),
             description: nil,
             dismissal: .none,
             icon: "arrow.clockwise.circle.fill"
@@ -92,7 +92,7 @@ struct GameSettingsView: View {
                 Button("Reset", role: .destructive) { withAnimation { model.resetToDefaults() } }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("This clears every change you made to \"\(game.title)\". You can't undo this.")
+                Text(String(localized: "This clears every change you made to \"\(game.title)\". You can't undo this."))
             }
             .sheetToolbar {
                 VStack(spacing: 1) {

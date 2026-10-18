@@ -198,33 +198,33 @@ struct KeyboardAccessoryBar: View {
         (1...12).map { .fKey(Int32($0)) } + [
             AccessoryKey(
                 id: "esc", face: .symbol("escape"), scancode: Int32(GAMECORE_SCANCODE_ESCAPE),
-                kind: .tap, name: "Escape key"),
+                kind: .tap, name: String(localized: "Escape key")),
             AccessoryKey(
                 id: "tab", face: .symbol("arrow.right.to.line"),
                 scancode: Int32(GAMECORE_SCANCODE_TAB),
-                kind: .tap, name: "Tab key"),
+                kind: .tap, name: String(localized: "Tab key")),
             AccessoryKey(
                 id: "ctrl", face: .text("Ctrl"), scancode: Int32(GAMECORE_SCANCODE_LCTRL),
-                kind: .modifier, name: "Control key"),
+                kind: .modifier, name: String(localized: "Control key")),
             AccessoryKey(
                 id: "shift", face: .text("Shift"), scancode: Int32(GAMECORE_SCANCODE_LSHIFT),
-                kind: .modifier, name: "Shift key"),
+                kind: .modifier, name: String(localized: "Shift key")),
             AccessoryKey(
                 id: "alt", face: .text("Alt"), scancode: Int32(GAMECORE_SCANCODE_LALT),
-                kind: .modifier, name: "Alt key"),
+                kind: .modifier, name: String(localized: "Alt key")),
             AccessoryKey(
                 id: "left", face: .symbol("chevron.left"), scancode: Int32(GAMECORE_SCANCODE_LEFT),
-                kind: .hold, name: "Left arrow key"),
+                kind: .hold, name: String(localized: "Left arrow key")),
             AccessoryKey(
                 id: "up", face: .symbol("chevron.up"), scancode: Int32(GAMECORE_SCANCODE_UP),
-                kind: .hold, name: "Up arrow key"),
+                kind: .hold, name: String(localized: "Up arrow key")),
             AccessoryKey(
                 id: "down", face: .symbol("chevron.down"), scancode: Int32(GAMECORE_SCANCODE_DOWN),
-                kind: .hold, name: "Down arrow key"),
+                kind: .hold, name: String(localized: "Down arrow key")),
             AccessoryKey(
                 id: "right", face: .symbol("chevron.right"),
                 scancode: Int32(GAMECORE_SCANCODE_RIGHT),
-                kind: .hold, name: "Right arrow key"),
+                kind: .hold, name: String(localized: "Right arrow key")),
         ]
 
     var body: some View {

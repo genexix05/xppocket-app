@@ -51,7 +51,7 @@ struct Hint: Identifiable {
 extension Hint {
     static let gameInfoCustomization = Hint(
         id: "gameInfo.customization",
-        excerpt: "Tap the artwork, banner, or title to customize them.",
+        excerpt: String(localized: "Tap the artwork, banner, or title to customize them."),
         description: nil,
         dismissal: .permanent
     )

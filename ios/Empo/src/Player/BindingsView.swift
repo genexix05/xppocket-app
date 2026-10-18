@@ -48,7 +48,7 @@ struct BindingsView: View {
             VStack(spacing: 0) {
                 Picker("Scope", selection: $scope) {
                     ForEach(BindingsCatalog.Scope.allCases, id: \.self) { option in
-                        Text(option.rawValue).tag(option)
+                        Text(LocalizedStringKey(option.rawValue)).tag(option)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -195,25 +195,25 @@ struct BindingsView: View {
     }
 
     private var resetTitle: String {
-        scope == .thisGame ? "Reset buttons for this game?" : "Reset buttons for all games?"
+        scope == .thisGame ? String(localized: "Reset buttons for this game?") : String(localized: "Reset buttons for all games?")
     }
 
     private var resetFooter: String {
         switch scope {
         case .thisGame:
-            return "Clears the buttons you changed for this game."
+            return String(localized: "Clears the buttons you changed for this game.")
         case .allGames:
-            return "Clears the buttons you changed for all games. Buttons you changed for one game stay."
+            return String(localized: "Clears the buttons you changed for all games. Buttons you changed for one game stay.")
         }
     }
 
     private var resetMessage: String {
         switch scope {
         case .thisGame:
-            return "The buttons you changed for \(gameTitle) go back to their defaults. You can't undo this."
+            return String(localized: "The buttons you changed for \(gameTitle) go back to their defaults. You can't undo this.")
         case .allGames:
             return
-                "The buttons you changed for all games go back to their defaults. Buttons you changed for one game stay. You can't undo this."
+                String(localized: "The buttons you changed for all games go back to their defaults. Buttons you changed for one game stay. You can't undo this.")
         }
     }
 

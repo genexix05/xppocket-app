@@ -186,7 +186,7 @@ struct GameMetadata: Codable {
     }
 
     static func formatPlayTime(_ seconds: TimeInterval?) -> String {
-        guard let seconds, seconds > 0 else { return "Not played yet" }
+        guard let seconds, seconds > 0 else { return String(localized: "Not played yet") }
         let totalMinutes = Int(seconds) / 60
         let hours = totalMinutes / 60
         let minutes = totalMinutes % 60
@@ -195,7 +195,7 @@ struct GameMetadata: Codable {
         } else if minutes > 0 {
             return "\(minutes)m"
         } else {
-            return "Less than a minute"
+            return String(localized: "Less than a minute")
         }
     }
 

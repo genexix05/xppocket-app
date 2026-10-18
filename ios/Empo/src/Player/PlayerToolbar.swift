@@ -55,7 +55,7 @@ struct PlayerToolbar: View {
         [
             ToolbarEntry(
                 icon: "keyboard",
-                label: keyboardShown ? "Hide keyboard" : "Show keyboard",
+                label: keyboardShown ? String(localized: "Hide keyboard") : String(localized: "Show keyboard"),
                 tint: .white,
                 action: onToggleKeyboard
             ),
@@ -63,15 +63,15 @@ struct PlayerToolbar: View {
             // fits the controls-edit mode better than a generic
             // gear/settings.
             ToolbarEntry(
-                icon: "square.and.pencil", label: "Edit controls", tint: .white, action: onToggleEditMode),
+                icon: "square.and.pencil", label: String(localized: "Edit controls"), tint: .white, action: onToggleEditMode),
             ToolbarEntry(
                 icon: controlsHidden ? "eye.slash.fill" : "eye.fill",
-                label: controlsHidden ? "Show controls" : "Hide controls",
+                label: controlsHidden ? String(localized: "Show controls") : String(localized: "Hide controls"),
                 tint: .white,
                 action: onToggleHideControls
             ),
             ToolbarEntry(
-                icon: "ellipsis.circle", label: "More options", tint: .white, action: onShowMore),
+                icon: "ellipsis.circle", label: String(localized: "More options"), tint: .white, action: onShowMore),
         ]
     }
 
@@ -197,12 +197,12 @@ struct PlayerEditToolbar: View {
     /// full-screen region.
     private var actionsRow: some View {
         HStack(spacing: Spacing.md) {
-            IconButton("plus", label: "Add button", style: .outline, size: .sm, tint: .white) {
+            IconButton("plus", label: String(localized: "Add button"), style: .outline, size: .sm, tint: .white) {
                 showAddSheet = true
             }
 
             IconButton(
-                "arrow.uturn.backward", label: "Undo layout change", style: .outline, size: .sm,
+                "arrow.uturn.backward", label: String(localized: "Undo layout change"), style: .outline, size: .sm,
                 tint: .white.opacity(layout.canUndo ? 1 : Alpha.disabled)
             ) {
                 layout.undoLastEdit()
@@ -210,7 +210,7 @@ struct PlayerEditToolbar: View {
             .disabled(!layout.canUndo)
 
             IconButton(
-                "grid", label: "Snap to grid", style: .outline, size: .sm,
+                "grid", label: String(localized: "Snap to grid"), style: .outline, size: .sm,
                 tint: snapToGrid ? .brand : .white
             ) {
                 // On: round every control onto the lattice now. Off:
@@ -227,7 +227,7 @@ struct PlayerEditToolbar: View {
             .accessibilityValue(snapToGrid ? "on" : "off")
 
             IconButton(
-                "arrow.counterclockwise", label: "Reset layout", style: .outline, size: .sm, tint: .brand
+                "arrow.counterclockwise", label: String(localized: "Reset layout"), style: .outline, size: .sm, tint: .brand
             ) {
                 showResetConfirm = true
             }
@@ -251,9 +251,9 @@ struct PlayerEditToolbar: View {
     private var editBannerText: String {
         switch layout.provenance {
         case .pinnedProfile(let name):
-            return "Editing \(name). Changes apply to every game that uses it."
+            return String(localized: "Editing \(name). Changes apply to every game that uses it.")
         case .gameLayout, .defaultProfile, .builtin:
-            return "Your edits will create a new profile."
+            return String(localized: "Your edits will create a new profile.")
         }
     }
 }

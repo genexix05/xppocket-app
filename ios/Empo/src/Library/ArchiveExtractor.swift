@@ -43,9 +43,9 @@ enum ArchiveExtractor {
                     "\(AppInfo.name) couldn't write the game to your device. Free up space, then import again."
             case .pathEscape:
                 return
-                    "This archive contains unsafe file paths, so \(AppInfo.name) stopped the import. Get the game from another source."
+                    String(localized: "This archive contains unsafe file paths, so \(AppInfo.name) stopped the import. Get the game from another source.")
             case .cancelled:
-                return "Import stopped."
+                return String(localized: "Import stopped.")
             }
         }
     }

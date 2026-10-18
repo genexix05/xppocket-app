@@ -198,9 +198,9 @@ enum ControlSkinFile {
 
         var errorDescription: String? {
             switch self {
-            case .invalidProfile: "Profile name is invalid."
-            case .imageEncodeFailed: "Could not encode the image."
-            case .writeFailed: "Could not save skin files."
+            case .invalidProfile: String(localized: "Profile name is invalid.")
+            case .imageEncodeFailed: String(localized: "Could not encode the image.")
+            case .writeFailed: String(localized: "Could not save skin files.")
             }
         }
     }

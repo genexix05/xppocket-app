@@ -9,8 +9,8 @@ enum LibraryDisplayMode: String, CaseIterable {
 
     var label: String {
         switch self {
-        case .grid: "Grid"
-        case .list: "List"
+        case .grid: String(localized: "Grid")
+        case .list: String(localized: "List")
         }
     }
 }
@@ -29,16 +29,16 @@ enum LibrarySortOption: String, CaseIterable {
 
     var label: String {
         switch self {
-        case .titleAZ: "Title A to Z"
-        case .titleZA: "Title Z to A"
-        case .recentlyAdded: "Recently added"
-        case .leastRecentlyAdded: "Added longest ago"
-        case .recentlyPlayed: "Recently played"
-        case .leastRecentlyPlayed: "Played longest ago"
-        case .mostPlayed: "Most played"
-        case .leastPlayed: "Least played"
-        case .largestSize: "Largest first"
-        case .smallestSize: "Smallest first"
+        case .titleAZ: String(localized: "Title A to Z")
+        case .titleZA: String(localized: "Title Z to A")
+        case .recentlyAdded: String(localized: "Recently added")
+        case .leastRecentlyAdded: String(localized: "Added longest ago")
+        case .recentlyPlayed: String(localized: "Recently played")
+        case .leastRecentlyPlayed: String(localized: "Played longest ago")
+        case .mostPlayed: String(localized: "Most played")
+        case .leastPlayed: String(localized: "Least played")
+        case .largestSize: String(localized: "Largest first")
+        case .smallestSize: String(localized: "Smallest first")
         }
     }
 
@@ -56,15 +56,15 @@ enum LibrarySortOption: String, CaseIterable {
     /// order in the UI. Each group's options also render in the
     /// listed order.
     static let groups: [LibrarySortGroup] = [
-        LibrarySortGroup(title: "Title", options: [.titleAZ, .titleZA]),
+        LibrarySortGroup(title: String(localized: "Title"), options: [.titleAZ, .titleZA]),
         LibrarySortGroup(
-            title: "Date",
+            title: String(localized: "Date"),
             options: [
                 .recentlyAdded, .leastRecentlyAdded,
                 .recentlyPlayed, .leastRecentlyPlayed,
             ]),
-        LibrarySortGroup(title: "Playtime", options: [.mostPlayed, .leastPlayed]),
-        LibrarySortGroup(title: "Size", options: [.largestSize, .smallestSize]),
+        LibrarySortGroup(title: String(localized: "Playtime"), options: [.mostPlayed, .leastPlayed]),
+        LibrarySortGroup(title: String(localized: "Size"), options: [.largestSize, .smallestSize]),
     ]
 }
 
@@ -80,8 +80,8 @@ enum TitlePosition: String, CaseIterable {
 
     var label: String {
         switch self {
-        case .inside: "Inside card"
-        case .under: "Under card"
+        case .inside: String(localized: "Inside card")
+        case .under: String(localized: "Under card")
         }
     }
 }
@@ -93,9 +93,9 @@ enum AppTheme: String, CaseIterable {
 
     var label: String {
         switch self {
-        case .dark: "Dark"
-        case .light: "Light"
-        case .auto: "System"
+        case .dark: String(localized: "Dark")
+        case .light: String(localized: "Light")
+        case .auto: String(localized: "System")
         }
     }
 

@@ -13,13 +13,13 @@ struct MkxpSettingsPage: View {
                 fontScaleRow
                 MkxpEngineRow(state: state, field: .solidFonts) {
                     SettingsToggle(
-                        title: "Solid fonts",
+                        title: String(localized: "Solid fonts"),
                         isOn: Binding(
                             get: { state.effectiveSolidFonts },
                             set: { state.engine.solidFonts = $0 }
                         ),
                         description:
-                            "Draw text as solid pixels, with no soft edges. This looks sharper in some games."
+                            String(localized: "Draw text as solid pixels, with no soft edges. This looks sharper in some games.")
                     )
                 }
             }
@@ -27,13 +27,13 @@ struct MkxpSettingsPage: View {
             Section {
                 MkxpEngineRow(state: state, field: .frameSkip) {
                     SettingsToggle(
-                        title: "Frame skip",
+                        title: String(localized: "Frame skip"),
                         isOn: Binding(
                             get: { state.effectiveFrameSkip },
                             set: { state.engine.frameSkip = $0 }
                         ),
                         description:
-                            "Skip frames when the game falls behind. The game keeps up better, but motion looks less smooth."
+                            String(localized: "Skip frames when the game falls behind. The game keeps up better, but motion looks less smooth.")
                     )
                 }
             } header: {

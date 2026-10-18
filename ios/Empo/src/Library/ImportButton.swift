@@ -9,22 +9,22 @@ struct ImportButton: View {
         var title: String {
             switch self {
             case .idle:
-                return "Import game"
+                return String(localized: "Import game")
             case .validating:
-                return "Checking game"
+                return String(localized: "Checking game")
             case .multipleGames:
-                return "Choose game"
+                return String(localized: "Choose game")
             }
         }
 
         var accessibilityLabel: String {
             switch self {
             case .idle:
-                return "Import game"
+                return String(localized: "Import game")
             case .validating:
-                return "Checking game, tap to stop"
+                return String(localized: "Checking game, tap to stop")
             case .multipleGames:
-                return "Choose game"
+                return String(localized: "Choose game")
             }
         }
 

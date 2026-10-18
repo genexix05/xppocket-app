@@ -123,7 +123,7 @@ struct RootView: View {
             if hasPro { showLaunchProSheet = false }
         }
         .alert(
-            (engineHung || appState.phase != nil) ? "Restart \(AppInfo.name)" : "Last session ended early",
+            (engineHung || appState.phase != nil) ? String(localized: "Restart \(AppInfo.name)") : String(localized: "Last session ended early"),
             isPresented: showErrorAlert
         ) {
             Button("Got it") {

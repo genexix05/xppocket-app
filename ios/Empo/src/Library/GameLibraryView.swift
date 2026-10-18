@@ -26,7 +26,7 @@ struct GameLibraryView: View {
     // copy fallbacks should move into it alongside the other
     // user-facing text. Keep the literals here for now so the
     // existing string-search audit still points at a single spot.
-    @State private var errorTitle: String = "Couldn't delete this game"
+    @State private var errorTitle: String = String(localized: "Couldn't delete this game")
     @State private var showErrorAlert = false
     @State private var showCancelValidationAlert = false
     @State private var gameToDelete: GameEntry?
@@ -445,8 +445,8 @@ struct GameLibraryView: View {
     private var emptyStateContent: some View {
         EmptyStateView(
             icon: Image(.pocketMark),
-            title: "No games yet",
-            subtitle: "Import a game to start playing.",
+            title: String(localized: "No games yet"),
+            subtitle: String(localized: "Import a game to start playing."),
             revealed: splashDismissed,
             initialDelay: entranceDelay
         )
@@ -473,7 +473,7 @@ struct GameLibraryView: View {
                     .font(.body.weight(.semibold))
                     .tint(.brand)
             } else {
-                IconButton("gearshape", label: "Settings", style: .outline) { showSettings = true }
+                IconButton("gearshape", label: String(localized: "Settings"), style: .outline) { showSettings = true }
                 Spacer()
                 Text("Library")
                     .font(.title)
@@ -921,7 +921,7 @@ struct GameLibraryView: View {
             // @Sendable and may run after the model left the library.
             let title = game.title
             library.deleteGame(game) { error in
-                errorTitle = "Couldn't delete \"\(title)\""
+                errorTitle = String(localized: "Couldn't delete \"\(title)\"")
                 errorMessage = error
                 showErrorAlert = true
             } onSaveRescueFailure: { failedGame in
@@ -969,7 +969,7 @@ struct GameLibraryView: View {
             showBulkDeleteConfirm = true
         } label: {
             Label(
-                "Delete \(selectedIDs.count) game\(selectedIDs.count == 1 ? "" : "s")",
+                selectedIDs.count == 1 ? String(localized: "Delete 1 game") : String(localized: "Delete \(selectedIDs.count) games"),
                 systemImage: "trash"
             )
         }
@@ -1159,7 +1159,7 @@ struct GameLibraryView: View {
     private func deleteSelectedGame() {
         guard let game = gameToDelete else { return }
         library.deleteGame(game) { error in
-            errorTitle = "Couldn't delete \"\(game.title)\""
+            errorTitle = String(localized: "Couldn't delete \"\(game.title)\"")
             errorMessage = error
             showErrorAlert = true
         } onSaveRescueFailure: { failedGame in
@@ -1171,7 +1171,7 @@ struct GameLibraryView: View {
     /// rescue: delete without rescuing again.
     private func deleteGameDiscardingSaves(_ game: GameEntry) {
         library.deleteGame(game, skipSaveRescue: true) { error in
-            errorTitle = "Couldn't delete \"\(game.title)\""
+            errorTitle = String(localized: "Couldn't delete \"\(game.title)\"")
             errorMessage = error
             showErrorAlert = true
         }
@@ -1229,7 +1229,7 @@ private struct BulkDeleteAlert: ViewModifier {
     let onConfirm: () -> Void
 
     func body(content: Content) -> some View {
-        content.alert("Delete \(count) game\(count == 1 ? "" : "s")?", isPresented: $isPresented) {
+        content.alert(count == 1 ? "Delete 1 game?" : String(localized: "Delete \(count) games?"), isPresented: $isPresented) {
             Button("Delete", role: .destructive) {
                 onConfirm()
             }
@@ -1270,7 +1270,7 @@ private struct DuplicateGamesNotice: ViewModifier {
             .joined(separator: "\n")
         return "\(AppInfo.name) keeps one copy of each game, so it moved the extra copies "
             + "below out of your library. The most recently played copy stayed. "
-            + "The rest, saves included, are in \"Duplicate Games\" in \(AppInfo.name)'s "
+            + String(localized: "The rest, saves included, are in \"Duplicate Games\" in \(AppInfo.name)'s ")
             + "folder in Files:\n\n\(list)"
     }
 
@@ -1317,17 +1317,16 @@ private struct ImportReplaceAlert: ViewModifier {
 
     private var title: String {
         (prompt?.titles.count ?? 1) > 1
-            ? "These games are already in your library"
-            : "This game is already in your library"
+            ? String(localized: "These games are already in your library")
+            : String(localized: "This game is already in your library")
     }
 
     private func message(for prompt: ImportReplacePrompt) -> String {
         let names = prompt.titles.map { "\"\($0)\"" }.joined(separator: ", ")
-        let verb = prompt.titles.count == 1 ? "is" : "are"
-        let possessive = prompt.titles.count == 1 ? "its" : "their"
-        return "\(names) \(verb) already in your library. "
-            + "Importing replaces \(possessive) files with the new ones. "
-            + "Your saves and settings stay. You can't undo this."
+        if prompt.titles.count == 1 {
+            return String(localized: "\(names) is already in your library. Importing replaces its files with the new ones. Your saves and settings stay. You can't undo this.")
+        }
+        return String(localized: "\(names) are already in your library. Importing replaces their files with the new ones. Your saves and settings stay. You can't undo this.")
     }
 
     func body(content: Content) -> some View {
@@ -1440,11 +1439,11 @@ private struct LibraryAlertPresentation: ViewModifier {
                         // stays - promising file removal here would
                         // be false.
                         Text(
-                            "This stops importing \"\(game.title)\". If you were updating a game you already have, that copy stays as it is."
+                            String(localized: "This stops importing \"\(game.title)\". If you were updating a game you already have, that copy stays as it is.")
                         )
                     } else {
                         Text(
-                            "This deletes \"\(game.title)\" from your device. \(AppInfo.name) keeps the saves it recognizes and moves them to Rescued Saves. Any saves it doesn't recognize go with the game. You can't undo this."
+                            String(localized: "This deletes \"\(game.title)\" from your device. \(AppInfo.name) keeps the saves it recognizes and moves them to Rescued Saves. Any saves it doesn't recognize go with the game. You can't undo this.")
                         )
                     }
                 }
@@ -1488,7 +1487,7 @@ private struct LibraryAlertPresentation: ViewModifier {
                     let core = AppState.missingCore(for: container)
                 {
                     Text(
-                        "This build of \(AppInfo.name) has no \(core.displayName), so it can't run \"\(game.title)\"."
+                        String(localized: "This build of \(AppInfo.name) has no \(core.displayName), so it can't run \"\(game.title)\".")
                     )
                 }
             }

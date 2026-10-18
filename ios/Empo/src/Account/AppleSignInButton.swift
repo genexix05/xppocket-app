@@ -36,7 +36,7 @@ struct AppleSignInButton: View {
 
         var errorDescription: String? {
             switch self {
-            case .missingToken: "Apple did not return a sign-in token."
+            case .missingToken: String(localized: "Apple did not return a sign-in token.")
             }
         }
     }

@@ -42,7 +42,7 @@ struct AccountSettingsSection: View {
             if let email = session.profile?.email, !email.isEmpty {
                 LabeledContent("Apple ID", value: email)
             } else {
-                LabeledContent("Status", value: "Signed in")
+                LabeledContent("Status", value: String(localized: "Signed in"))
             }
 
             proEntryRow

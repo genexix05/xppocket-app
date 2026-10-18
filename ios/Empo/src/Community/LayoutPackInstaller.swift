@@ -25,13 +25,13 @@ enum LayoutPackInstaller {
 
         var errorDescription: String? {
             switch self {
-            case .emptyPack: "The pack file is empty."
-            case .missingControls: "The pack does not include controls.json."
-            case .invalidControls(let detail): "Invalid controls.json: \(detail)"
-            case .invalidScreen(let detail): "Invalid screen.json: \(detail)"
-            case .invalidSkin(let detail): "Invalid skin.json: \(detail)"
-            case .invalidProfileName: "Could not derive a valid profile name."
-            case .writeFailed: "Could not save the layout profile."
+            case .emptyPack: String(localized: "The pack file is empty.")
+            case .missingControls: String(localized: "The pack does not include controls.json.")
+            case .invalidControls(let detail): String(localized: "Invalid controls.json: \(detail)")
+            case .invalidScreen(let detail): String(localized: "Invalid screen.json: \(detail)")
+            case .invalidSkin(let detail): String(localized: "Invalid skin.json: \(detail)")
+            case .invalidProfileName: String(localized: "Could not derive a valid profile name.")
+            case .writeFailed: String(localized: "Could not save the layout profile.")
             case .importFailed(let detail): detail
             }
         }

@@ -24,12 +24,12 @@ struct LayoutProfilePickerSheet: View {
         NavigationStack {
             List {
                 Section {
-                    row(label: "Automatic", detail: automaticResolution, target: .followChain)
+                    row(label: String(localized: "Automatic"), detail: automaticResolution, target: .followChain)
                     if gameShipsLayout {
-                        row(label: "Game layout", detail: nil, target: .gameLayout)
+                        row(label: String(localized: "Game layout"), detail: nil, target: .gameLayout)
                     }
                     if LayoutProfilesManager.defaultProfileName != nil {
-                        row(label: "Default profile", detail: nil, target: .defaultProfile)
+                        row(label: String(localized: "Default profile"), detail: nil, target: .defaultProfile)
                     }
                 } footer: {
                     Text(
@@ -76,7 +76,7 @@ struct LayoutProfilePickerSheet: View {
         gameShipsLayout = ambient.provenance == .gameLayout
         switch ambient.provenance {
         case .gameLayout:
-            automaticResolution = "Game layout"
+            automaticResolution = String(localized: "Game layout")
         case .defaultProfile(let name):
             automaticResolution = name
         default:
@@ -251,11 +251,11 @@ struct LayoutProfilesSettingsView: View {
         let count = LayoutProfilesManager.store.gamesPinned(to: deleting).count
         let games =
             switch count {
-            case 0: "No game uses it."
+            case 0: String(localized: "No game uses it.")
             case 1: "1 game uses it and will switch to Automatic."
             default: "\(count) games use it and will switch to Automatic."
             }
-        return "Delete \(deleting)? \(games) You can't undo this."
+        return String(localized: "Delete \(deleting)? \(games) You can't undo this.")
     }
 
     private var renameBinding: Binding<Bool> {

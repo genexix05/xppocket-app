@@ -84,7 +84,7 @@ struct CommunityLayoutsView: View {
     }
 
     private var installAlertTitle: String {
-        lastInstallWasUpdate ? "Updated" : "Installed"
+        lastInstallWasUpdate ? String(localized: "Updated") : String(localized: "Installed")
     }
 
     private var errorPresented: Binding<Bool> {
@@ -191,8 +191,8 @@ struct CommunityLayoutsView: View {
             lastInstallWasUpdate = wasUpdate || result.updated
             successMessage =
                 lastInstallWasUpdate
-                ? "Updated profile “\(result.profileName)” to the latest version."
-                : "Added profile “\(result.profileName)”."
+                ? String(localized: "Updated profile “\(result.profileName)” to the latest version.")
+                : String(localized: "Added profile “\(result.profileName)”.")
         } catch {
             errorMessage = error.localizedDescription
         }

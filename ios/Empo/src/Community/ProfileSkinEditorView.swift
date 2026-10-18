@@ -32,8 +32,8 @@ struct ProfileSkinEditorView: View {
 
             Section {
                 skinRow(
-                    title: "Device frame",
-                    subtitle: "Bezel or shell image, usually at the bottom.",
+                    title: String(localized: "Device frame"),
+                    subtitle: String(localized: "Bezel or shell image, usually at the bottom."),
                     path: slice.frame)
                 {
                     pickingSlot = .frame
@@ -55,8 +55,8 @@ struct ProfileSkinEditorView: View {
 
             Section {
                 skinRow(
-                    title: "D-pad",
-                    subtitle: "Normal state.",
+                    title: String(localized: "D-pad"),
+                    subtitle: String(localized: "Normal state."),
                     path: slice.dpad)
                 {
                     pickingSlot = .dpad
@@ -66,7 +66,7 @@ struct ProfileSkinEditorView: View {
 
                 skinRow(
                     title: "D-pad (pressed)",
-                    subtitle: "Shown while a direction is held.",
+                    subtitle: String(localized: "Shown while a direction is held."),
                     path: slice.dpadPressed)
                 {
                     pickingSlot = .dpadPressed
@@ -117,7 +117,7 @@ struct ProfileSkinEditorView: View {
             isPresented: Binding(
                 get: { pickingSlot != nil },
                 set: { if !$0 { pickingSlot = nil } }),
-            title: pickingSlot?.pickerTitle ?? "Choose image",
+            title: pickingSlot?.pickerTitle ?? String(localized: "Choose image"),
             hasExisting: pickingSlot?.hasExisting(in: slice) ?? false,
             onImageSelected: { image in
                 guard let slot = pickingSlot else { return }
@@ -307,7 +307,7 @@ struct ProfileSkinEditorView: View {
 
         var pickerTitle: String {
             switch self {
-            case .frame: "Device frame"
+            case .frame: String(localized: "Device frame")
             case .dpad: "D-pad image"
             case .dpadPressed: "D-pad pressed image"
             case .button(_, let label, _): "\(label ?? "Button") image"

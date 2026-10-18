@@ -18,10 +18,10 @@ struct PsdkCore: GameCore {
     var displayName: String { "PSDK core for Ruby \(ruby)" }
 
     static let all = [
-        PsdkCore(ruby: "2.5", gamesLine: "Runs PSDK games released from December 2019 to about March 2021"),
-        PsdkCore(ruby: "3.0", gamesLine: "Runs the Windows release of PSDK games since about March 2021"),
-        PsdkCore(ruby: "3.2", gamesLine: "Runs the Mac release of PSDK games"),
-        PsdkCore(ruby: "3.3", gamesLine: "Runs the Linux release of PSDK games"),
+        PsdkCore(ruby: "2.5", gamesLine: String(localized: "Runs PSDK games released from December 2019 to about March 2021")),
+        PsdkCore(ruby: "3.0", gamesLine: String(localized: "Runs the Windows release of PSDK games since about March 2021")),
+        PsdkCore(ruby: "3.2", gamesLine: String(localized: "Runs the Mac release of PSDK games")),
+        PsdkCore(ruby: "3.3", gamesLine: String(localized: "Runs the Linux release of PSDK games")),
     ]
 
     /// Takes a release without bytecode, which runs on any Ruby, and every
@@ -68,7 +68,7 @@ struct PsdkCore: GameCore {
         }
         guard PsdkGame.isStudioProject(root) else { return }
         throw GameImportValidator.ImportError.unsupportedRuntime(
-            "This is a Pokémon Studio project, not a game you can play yet. In Pokémon Studio, choose Compile the project, then import the game it makes."
+            String(localized: "This is a Pokémon Studio project, not a game you can play yet. In Pokémon Studio, choose Compile the project, then import the game it makes.")
         )
     }
 

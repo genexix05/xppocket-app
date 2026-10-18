@@ -72,13 +72,13 @@ struct ImportRootPickerSheet: View {
     }
 
     private var navigationTitle: String {
-        step == .add ? "Add games" : "Already in your library"
+        step == .add ? String(localized: "Add games") : String(localized: "Already in your library")
     }
 
     private var bannerText: String {
         step == .add
-            ? "This import includes more than one game"
-            : "Importing replaces the installed games"
+            ? String(localized: "This import includes more than one game")
+            : String(localized: "Importing replaces the installed games")
     }
 
     private var bannerSystemImage: String {
@@ -88,13 +88,13 @@ struct ImportRootPickerSheet: View {
     private var explainerText: String {
         switch step {
         case .add where updateChoices.isEmpty:
-            return "Choose the games you want to add to your library."
+            return String(localized: "Choose the games you want to add to your library.")
         case .add:
-            return "Choose the new games to add. "
-                + "Next, review the ones you already have."
+            return String(localized: "Choose the new games to add. ")
+                + String(localized: "Next, review the ones you already have.")
         case .update:
-            return "Choose which games to update. "
-                + "The others stay as they are, and saves are always kept."
+            return String(localized: "Choose which games to update. ")
+                + String(localized: "The others stay as they are, and saves are always kept.")
         }
     }
 

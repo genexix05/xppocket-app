@@ -33,12 +33,12 @@ struct MkxpSettings: GameSettingsGroup {
 
     static func displayLabel(forKey key: String) -> String {
         switch key {
-        case "useInGameKeyboard": return "In-game keyboard"
-        case "postloadScripts": return "Postload scripts"
-        case "useModernRuby": return "Ruby compatibility mode"
-        case "rubyVersionOverride": return "Ruby version"
-        case "joiplayCompat": return "JoiPlay compatibility"
-        case "networkEnabled": return "Network access"
+        case "useInGameKeyboard": return String(localized: "In-game keyboard")
+        case "postloadScripts": return String(localized: "Postload scripts")
+        case "useModernRuby": return String(localized: "Ruby compatibility mode")
+        case "rubyVersionOverride": return String(localized: "Ruby version")
+        case "joiplayCompat": return String(localized: "JoiPlay compatibility")
+        case "networkEnabled": return String(localized: "Network access")
         default:
             assertionFailure("Missing displayLabel mapping for MkxpSettings.\(key)")
             return key
@@ -188,8 +188,8 @@ enum CompatibilityPick: String, CaseIterable, Hashable {
     var displayLabel: String {
         switch self {
         case .auto: return "Auto-detect"
-        case .modern: return "Modern (newer Ruby)"
-        case .legacy: return "Legacy (older Ruby)"
+        case .modern: return String(localized: "Modern (newer Ruby)")
+        case .legacy: return String(localized: "Legacy (older Ruby)")
         }
     }
 }
@@ -201,57 +201,57 @@ struct MkxpEngineSection: View {
     var body: some View {
         Section {
             SettingsToggle(
-                title: "Postload scripts",
+                title: String(localized: "Postload scripts"),
                 isOn: Binding(
                     get: { state.settings.postloadScriptsEnabled },
                     set: { state.settings.postloadScripts = $0 }
                 ),
                 description:
-                    "Run \(AppInfo.name)'s fix-up scripts after the game loads. They add the cheat menu and patch common RPG Maker and Pokemon Essentials problems."
+                    String(localized: "Run \(AppInfo.name)'s fix-up scripts after the game loads. They add the cheat menu and patch common RPG Maker and Pokemon Essentials problems.")
             )
 
             MkxpEngineRow(state: state, field: .pathCache) {
                 SettingsToggle(
-                    title: "Path cache",
+                    title: String(localized: "Path cache"),
                     isOn: Binding(
                         get: { state.effectivePathCache },
                         set: { state.engine.pathCache = $0 }
                     ),
                     description:
-                        "Keep a lowercase index of every game file so lookups are faster. Turn it off if the game can't find its images or sounds."
+                        String(localized: "Keep a lowercase index of every game file so lookups are faster. Turn it off if the game can't find its images or sounds.")
                 )
             }
 
             SettingsToggle(
-                title: "In-game keyboard",
+                title: String(localized: "In-game keyboard"),
                 isOn: Binding(
                     get: { state.settings.useInGameKeyboard ?? state.isPokemonEssentials },
                     set: { state.settings.useInGameKeyboard = $0 }
                 ),
                 description:
-                    "Use the game's own keyboard for names instead of the iOS one. Turn it on for Pokemon Essentials games with custom keys."
+                    String(localized: "Use the game's own keyboard for names instead of the iOS one. Turn it on for Pokemon Essentials games with custom keys.")
             )
 
             TouchMouseToggle(model: model)
 
             SettingsToggle(
-                title: "JoiPlay compatibility",
+                title: String(localized: "JoiPlay compatibility"),
                 isOn: Binding(
                     get: { state.settings.joiplayCompatEnabled },
                     set: { state.settings.joiplayCompat = $0 }
                 ),
                 description:
-                    "Tell the game it's running on JoiPlay. Some games switch to their mobile version. Worth trying if a game misbehaves here but works on PC."
+                    String(localized: "Tell the game it's running on JoiPlay. Some games switch to their mobile version. Worth trying if a game misbehaves here but works on PC.")
             )
 
             SettingsToggle(
-                title: "Network access",
+                title: String(localized: "Network access"),
                 isOn: Binding(
                     get: { state.settings.networkAccessEnabled },
                     set: { state.settings.networkEnabled = $0 }
                 ),
                 description:
-                    "Let this game use the internet for updates and online features. Some games send data unencrypted. When off, the game sees no network."
+                    String(localized: "Let this game use the internet for updates and online features. Some games send data unencrypted. When off, the game sees no network.")
             )
 
             VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -295,7 +295,7 @@ struct MkxpEngineSection: View {
                     .pickerStyle(.navigationLink)
 
                     Text(
-                        "Legacy rewrites old Ruby code so newer Ruby can run it. Switch to Legacy if a Pokemon Essentials game crashes with a \"private method\" error."
+                        String(localized: "Legacy rewrites old Ruby code so newer Ruby can run it. Switch to Legacy if a Pokemon Essentials game crashes with a \"private method\" error.")
                     )
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -312,11 +312,11 @@ struct MkxpEngineSection: View {
     private var autoDetectLabel: String {
         let pick = RubyVersionPick.from(state.profile.rubyVersion)
         guard pick != .auto else { return "Auto-detect" }
-        return "Auto-detect (\(pick.displayLabel))"
+        return String(localized: "Auto-detect (\(pick.displayLabel))")
     }
 
     private var autoDetectCompatLabel: String {
         let resolved: CompatibilityPick = state.profile.modernRubyScripts ? .modern : .legacy
-        return "Auto-detect (\(resolved.displayLabel))"
+        return String(localized: "Auto-detect (\(resolved.displayLabel))")
     }
 }

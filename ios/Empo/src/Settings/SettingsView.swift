@@ -21,9 +21,9 @@ struct SettingsView: View {
 
                 Section {
                     SettingsPicker(
-                        title: "Theme",
+                        title: String(localized: "Theme"),
                         selection: $settings.theme,
-                        description: "System follows your device's appearance setting."
+                        description: String(localized: "System follows your device's appearance setting.")
                     ) {
                         ForEach(AppTheme.allCases, id: \.self) { theme in
                             Text(theme.label).tag(theme)
@@ -31,9 +31,9 @@ struct SettingsView: View {
                     }
 
                     SettingsPicker(
-                        title: "Layout",
+                        title: String(localized: "Layout"),
                         selection: $settings.libraryDisplayMode,
-                        description: "Show games as a grid of cards or a compact list."
+                        description: String(localized: "Show games as a grid of cards or a compact list.")
                     ) {
                         ForEach(LibraryDisplayMode.allCases, id: \.self) { mode in
                             Text(mode.label).tag(mode)
@@ -45,9 +45,9 @@ struct SettingsView: View {
                     // artwork. Hide the row when it would be a no-op.
                     if settings.libraryDisplayMode == .grid {
                         SettingsPicker(
-                            title: "Title position",
+                            title: String(localized: "Title position"),
                             selection: $settings.titlePosition,
-                            description: "Where game titles show up on your library cards."
+                            description: String(localized: "Where game titles show up on your library cards.")
                         ) {
                             ForEach(TitlePosition.allCases, id: \.self) { position in
                                 Text(position.label).tag(position)
@@ -56,17 +56,17 @@ struct SettingsView: View {
                     }
 
                     SettingsToggle(
-                        title: "Interface haptics",
+                        title: String(localized: "Interface haptics"),
                         isOn: $settings.interfaceHaptics,
                         description:
-                            "Feel a gentle tap when you press buttons and switches."
+                            String(localized: "Feel a gentle tap when you press buttons and switches.")
                     )
 
                     SettingsToggle(
-                        title: "Continue playing",
+                        title: String(localized: "Continue playing"),
                         isOn: $settings.showContinuePlaying,
                         description:
-                            "Shows a card at the top of your library for your last game."
+                            String(localized: "Shows a card at the top of your library for your last game.")
                     )
                 } header: {
                     Text("Appearance")
@@ -74,25 +74,25 @@ struct SettingsView: View {
 
                 Section {
                     SettingsNavigationRow(
-                        title: "Layout profiles",
+                        title: String(localized: "Layout profiles"),
                         description:
-                            "Create and edit saved layouts for the on-screen controls and the game screen."
+                            String(localized: "Create and edit saved layouts for the on-screen controls and the game screen.")
                     ) {
                         LayoutProfilesSettingsView()
                     }
 
                     SettingsNavigationRow(
-                        title: "Community layouts",
+                        title: String(localized: "Community layouts"),
                         description:
-                            "Browse and install touch-control layouts shared by the XP Pocket community."
+                            String(localized: "Browse and install touch-control layouts shared by the XP Pocket community.")
                     ) {
                         CommunityLayoutsView()
                     }
 
                     SettingsToggle(
-                        title: "Controller haptics",
+                        title: String(localized: "Controller haptics"),
                         isOn: $settings.controllerHaptics,
-                        description: "Vibration feedback on the on-screen game controls while you play."
+                        description: String(localized: "Vibration feedback on the on-screen game controls while you play.")
                     )
                 } header: {
                     Text("Gameplay")
@@ -100,17 +100,17 @@ struct SettingsView: View {
 
                 Section {
                     SettingsToggle(
-                        title: "Diagnostics overlay",
+                        title: String(localized: "Diagnostics overlay"),
                         isOn: $settings.diagnosticsOverlay,
                         description:
-                            "Adds a toolbar button that shows frame rate, memory use, and details about the game engine while you play."
+                            String(localized: "Adds a toolbar button that shows frame rate, memory use, and details about the game engine while you play.")
                     )
 
                     SettingsToggle(
-                        title: "Fill unused screen area",
+                        title: String(localized: "Fill unused screen area"),
                         isOn: $settings.showViewportBounds,
                         description:
-                            "Fill the screen area outside the game picture with a color you choose."
+                            String(localized: "Fill the screen area outside the game picture with a color you choose.")
                     )
 
                     if settings.showViewportBounds {
@@ -128,30 +128,30 @@ struct SettingsView: View {
                     }
 
                     SettingsToggle(
-                        title: "Show touch area",
+                        title: String(localized: "Show touch area"),
                         isOn: $settings.showTouchZone,
                         description:
-                            "Outlines where your taps and drags control the game's cursor."
+                            String(localized: "Outlines where your taps and drags control the game's cursor.")
                     )
 
                     SettingsToggle(
-                        title: "Delete broken imports",
+                        title: String(localized: "Delete broken imports"),
                         isOn: $settings.cleanupInvalidGames,
                         description:
-                            "Deletes games that failed to import the next time you open \(AppInfo.name). You can't undo this."
+                            String(localized: "Deletes games that failed to import the next time you open \(AppInfo.name). You can't undo this.")
                     )
 
                     SettingsToggle(
-                        title: "Debug logs",
+                        title: String(localized: "Debug logs"),
                         isOn: $settings.debugLogs,
                         description:
-                            "Saves a log for each play session. Find them in Files, under \(AppInfo.name) › Games › the game's name › Logs."
+                            String(localized: "Saves a log for each play session. Find them in Files, under \(AppInfo.name) › Games › the game's name › Logs.")
                     )
 
                     if settings.debugLogs {
                         VStack(alignment: .leading, spacing: Spacing.xs) {
                             Stepper(
-                                "Keep last \(settings.maxLogFiles) logs per game",
+                                String(localized: "Keep last \(settings.maxLogFiles) logs per game"),
                                 value: $settings.maxLogFiles, in: 5...100, step: 5)
                             Text("\(AppInfo.name) deletes older logs each time you start a game.")
                                 .font(.footnote)
@@ -198,28 +198,28 @@ struct SettingsView: View {
                     }
 
                     externalLink(
-                        title: "Privacy Policy",
+                        title: String(localized: "Privacy Policy"),
                         systemImage: "hand.raised",
                         url: AppInfo.privacyURL)
 
                     externalLink(
-                        title: "Terms of Use",
+                        title: String(localized: "Terms of Use"),
                         systemImage: "doc.plaintext",
                         url: AppInfo.termsURL)
 
                     externalLink(
-                        title: "Source code (GPL)",
+                        title: String(localized: "Source code (GPL)"),
                         systemImage: "chevron.left.forwardslash.chevron.right",
                         url: AppInfo.sourceCodeURL)
 
                     FeedbackShareButton(
-                        label: "Send feedback",
+                        label: String(localized: "Send feedback"),
                         systemImage: "exclamationmark.bubble",
                         formRowStyle: true
                     )
 
                     externalLink(
-                        title: "Website",
+                        title: String(localized: "Website"),
                         systemImage: "globe",
                         url: AppInfo.websiteURL)
                 } header: {
@@ -329,23 +329,23 @@ private struct BuildInfoSheet: View {
 
     private var rows: [Row] {
         var r: [Row] = []
-        r.append(Row(label: "Version", value: AppInfo.version))
-        r.append(Row(label: "Build", value: AppInfo.build))
+        r.append(Row(label: String(localized: "Version"), value: AppInfo.version))
+        r.append(Row(label: String(localized: "Build"), value: AppInfo.build))
         r.append(
             Row(
-                label: "Commit",
+                label: String(localized: "Commit"),
                 value: GitInfo.commit,
                 annotation: GitInfo.dirty ? "(uncommitted changes)" : nil
             ))
         if !GitInfo.branch.isEmpty, GitInfo.branch != GitInfo.defaultBranch {
-            r.append(Row(label: "Branch", value: GitInfo.branch))
+            r.append(Row(label: String(localized: "Branch"), value: GitInfo.branch))
         }
         return r
     }
 
     var body: some View {
         StandardSheet(
-            title: "Build info",
+            title: String(localized: "Build info"),
             chromeAllowance: AppSize.libraryHeader,
             trailingButton: SheetBarAction("Done") { dismiss() }
         ) {

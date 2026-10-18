@@ -83,8 +83,8 @@ enum AccountAPI {
 
         var errorDescription: String? {
             switch self {
-            case .badStatus(let code, let detail): "Server error (\(code)): \(detail)"
-            case .decodeFailed: "Could not read the server response."
+            case .badStatus(let code, let detail): String(localized: "Server error (\(code)): \(detail)")
+            case .decodeFailed: String(localized: "Could not read the server response.")
             }
         }
     }
@@ -263,11 +263,11 @@ enum AccountAPI {
         if looksLikeHTML || raw.isEmpty {
             switch status {
             case 502, 503, 504:
-                return "The XP Pocket service is temporarily unavailable. Please try again in a few minutes."
+                return String(localized: "The XP Pocket service is temporarily unavailable. Please try again in a few minutes.")
             case 401, 403:
-                return "Sign in was rejected. Please try again."
+                return String(localized: "Sign in was rejected. Please try again.")
             default:
-                return "Something went wrong talking to the server (HTTP \(status))."
+                return String(localized: "Something went wrong talking to the server (HTTP \(status)).")
             }
         }
         // Cap length so a plain-text error cannot flood an alert.

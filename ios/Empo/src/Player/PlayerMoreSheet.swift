@@ -60,12 +60,12 @@ struct PlayerMoreSheet: View {
                         content: {
                             if core?.supportsCheats == true {
                                 if cheatsAvailable {
-                                    MenuRow(icon: "wand.and.stars", label: "Show cheats") {
+                                    MenuRow(icon: "wand.and.stars", label: String(localized: "Show cheats")) {
                                         onCheats()
                                         dismiss()
                                     }
                                 } else {
-                                    MenuRow(icon: "lock.fill", label: "Show cheats (Pro)") {
+                                    MenuRow(icon: "lock.fill", label: String(localized: "Show cheats (Pro)")) {
                                         showProInfo = true
                                     }
                                 }
@@ -74,13 +74,13 @@ struct PlayerMoreSheet: View {
                                 if fastForwardProAvailable {
                                     MenuToggleRow(
                                         icon: "hare.fill",
-                                        label: "Fast forward (\(fastForwardMultiplier ?? 2)x)",
+                                        label: String(localized: "Fast forward (\(fastForwardMultiplier ?? 2)x)"),
                                         isOn: $fastForwardActive
                                     )
                                 } else {
                                     MenuRow(
                                         icon: "lock.fill",
-                                        label: "Fast forward (\(fastForwardMultiplier ?? 2)x) (Pro)"
+                                        label: String(localized: "Fast forward (\(fastForwardMultiplier ?? 2)x) (Pro)")
                                     ) {
                                         showProInfo = true
                                     }
@@ -89,17 +89,17 @@ struct PlayerMoreSheet: View {
                             if settings.diagnosticsOverlay {
                                 MenuToggleRow(
                                     icon: "ladybug.fill",
-                                    label: "Diagnostics overlay",
+                                    label: String(localized: "Diagnostics overlay"),
                                     isOn: $showDebugOverlay
                                 )
                             }
                             if showControllerRemap {
-                                MenuRow(icon: "gamecontroller.fill", label: "Controller buttons") {
+                                MenuRow(icon: "gamecontroller.fill", label: String(localized: "Controller buttons")) {
                                     onControllerRemap()
                                     dismiss()
                                 }
                             }
-                            MenuRow(icon: "square.on.square", label: "Layout profile") {
+                            MenuRow(icon: "square.on.square", label: String(localized: "Layout profile")) {
                                 onLayoutProfile()
                                 dismiss()
                             }
@@ -125,13 +125,13 @@ struct PlayerMoreSheet: View {
                         content: {
                             MenuRow(
                                 icon: "pause.fill",
-                                label: "Pause \(gameTitle)"
+                                label: String(localized: "Pause \(gameTitle)")
                             ) {
                                 onPause()
                                 dismiss()
                             }
                             if core?.canKillSession == true {
-                                MenuRow(icon: "xmark", label: "Quit \(gameTitle)", role: .destructive) {
+                                MenuRow(icon: "xmark", label: String(localized: "Quit \(gameTitle)"), role: .destructive) {
                                     confirmQuit = true
                                 }
                             }
@@ -139,7 +139,7 @@ struct PlayerMoreSheet: View {
                     )
                 }
                 .clipShape(.rect(cornerRadius: Radius.md))
-                .alert("Quit \"\(gameTitle)\"?", isPresented: $confirmQuit) {
+                .alert(String(localized: "Quit \"\(gameTitle)\"?"), isPresented: $confirmQuit) {
                     Button("Cancel", role: .cancel) {}
                     Button("Quit", role: .destructive) {
                         onQuit()

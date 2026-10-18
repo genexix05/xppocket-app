@@ -33,8 +33,8 @@ enum CommunityLayoutAPI {
 
         var errorDescription: String? {
             switch self {
-            case .badStatus(let code): "Server responded with HTTP \(code)."
-            case .decodeFailed: "Could not read the layout catalog."
+            case .badStatus(let code): String(localized: "Server responded with HTTP \(code).")
+            case .decodeFailed: String(localized: "Could not read the layout catalog.")
             case .uploadRejected(let detail): detail
             }
         }
@@ -108,10 +108,10 @@ enum CommunityLayoutAPI {
     ) async throws -> LayoutSummary {
         let trimmedKey = adminKey.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedKey.isEmpty else {
-            throw Error.uploadRejected("Admin key is required.")
+            throw Error.uploadRejected(String(localized: "Admin key is required."))
         }
         guard !packData.isEmpty else {
-            throw Error.uploadRejected("Pack file is empty.")
+            throw Error.uploadRejected(String(localized: "Pack file is empty."))
         }
 
         let body = multipartBody(metadata: metadata, packData: packData, includeID: !replaceExisting)

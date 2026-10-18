@@ -50,5 +50,5 @@ enum AppInfo {
     static let supportEmail = "support@xppocket.app"
 
     /// Label for the built-in control layout shipped with the app.
-    static let builtInLayoutName = "Built-in default"
+    static let builtInLayoutName = String(localized: "Built-in default")
 }

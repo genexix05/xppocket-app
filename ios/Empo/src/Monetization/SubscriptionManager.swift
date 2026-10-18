@@ -41,9 +41,9 @@ final class SubscriptionManager {
                 product = nil
                 let bundleID = Bundle.main.bundleIdentifier ?? "unknown"
                 lastError =
-                    "App Store returned no product for \(Self.proProductID). "
-                    + "This app’s bundle ID is \(bundleID). "
-                    + "In App Store Connect the subscription must belong to that app, "
+                    String(localized: "App Store returned no product for \(Self.proProductID). ")
+                    + String(localized: "This app’s bundle ID is \(bundleID). ")
+                    + String(localized: "In App Store Connect the subscription must belong to that app, ")
                     + "with Paid Apps Agreement active. New products can take a few hours to appear."
             }
         } catch {
@@ -127,15 +127,15 @@ final class SubscriptionManager {
         var errorDescription: String? {
             switch self {
             case .productUnavailable:
-                "The Pro subscription is not available right now. Try again later."
+                String(localized: "The Pro subscription is not available right now. Try again later.")
             case .pending:
-                "Your purchase is pending approval."
+                String(localized: "Your purchase is pending approval.")
             case .userCancelled:
-                "Purchase cancelled."
+                String(localized: "Purchase cancelled.")
             case .unverifiedTransaction:
-                "Could not verify the App Store transaction."
+                String(localized: "Could not verify the App Store transaction.")
             case .manageUnavailable:
-                "Could not open subscription management. Try Settings → Apple ID → Subscriptions."
+                String(localized: "Could not open subscription management. Try Settings → Apple ID → Subscriptions.")
             }
         }
     }

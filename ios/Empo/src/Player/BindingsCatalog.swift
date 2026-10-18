@@ -35,26 +35,26 @@ enum BindingsCatalog {
     static let commonKeyAnnotations: [String: String] = [
         "Enter": "Confirm",
         "Space": "Confirm",
-        "Escape": "Cancel / menu",
-        "KeyX": "Cancel / menu",
+        "Escape": String(localized: "Cancel / menu"),
+        "KeyX": String(localized: "Cancel / menu"),
         "ShiftLeft": "Dash",
-        "KeyZ": "Confirm (VX/Ace)",
-        "KeyQ": "Page up (L)",
-        "KeyW": "Page down (R)",
+        "KeyZ": String(localized: "Confirm (VX/Ace)"),
+        "KeyQ": String(localized: "Page up (L)"),
+        "KeyW": String(localized: "Page down (R)"),
         "KeyA": "RPG Maker X button",
         "KeyS": "RPG Maker Y button",
         "KeyD": "RPG Maker Z button",
-        "F5": "Script hotkeys",
-        "F6": "Script hotkeys",
-        "F7": "Script hotkeys",
-        "F8": "Script hotkeys",
-        "F9": "Script hotkeys",
+        "F5": String(localized: "Script hotkeys"),
+        "F6": String(localized: "Script hotkeys"),
+        "F7": String(localized: "Script hotkeys"),
+        "F8": String(localized: "Script hotkeys"),
+        "F9": String(localized: "Script hotkeys"),
     ]
 
     private static let baseSections: [Section] = [
         Section(
             id: "face",
-            title: "Face buttons",
+            title: String(localized: "Face buttons"),
             elements: [
                 Row(source: .element("a"), label: "A / Cross (south)"),
                 Row(source: .element("b"), label: "B / Circle (east)"),
@@ -63,7 +63,7 @@ enum BindingsCatalog {
             ]),
         Section(
             id: "dpad",
-            title: "D-pad",
+            title: String(localized: "D-pad"),
             elements: [
                 Row(source: .element("dpup"), label: "D-pad up"),
                 Row(source: .element("dpdown"), label: "D-pad down"),
@@ -72,27 +72,27 @@ enum BindingsCatalog {
             ]),
         Section(
             id: "leftStick",
-            title: "Left stick",
+            title: String(localized: "Left stick"),
             elements: [
-                Row(source: .element("-leftx"), label: "Left stick left"),
-                Row(source: .element("+leftx"), label: "Left stick right"),
-                Row(source: .element("-lefty"), label: "Left stick up"),
-                Row(source: .element("+lefty"), label: "Left stick down"),
+                Row(source: .element("-leftx"), label: String(localized: "Left stick left")),
+                Row(source: .element("+leftx"), label: String(localized: "Left stick right")),
+                Row(source: .element("-lefty"), label: String(localized: "Left stick up")),
+                Row(source: .element("+lefty"), label: String(localized: "Left stick down")),
                 Row(source: .element("leftstick"), label: "L3 click"),
             ]),
         Section(
             id: "rightStick",
-            title: "Right stick",
+            title: String(localized: "Right stick"),
             elements: [
-                Row(source: .element("-rightx"), label: "Right stick left"),
-                Row(source: .element("+rightx"), label: "Right stick right"),
-                Row(source: .element("-righty"), label: "Right stick up"),
-                Row(source: .element("+righty"), label: "Right stick down"),
+                Row(source: .element("-rightx"), label: String(localized: "Right stick left")),
+                Row(source: .element("+rightx"), label: String(localized: "Right stick right")),
+                Row(source: .element("-righty"), label: String(localized: "Right stick up")),
+                Row(source: .element("+righty"), label: String(localized: "Right stick down")),
                 Row(source: .element("rightstick"), label: "R3 click"),
             ]),
         Section(
             id: "shoulders",
-            title: "Shoulders & triggers",
+            title: String(localized: "Shoulders & triggers"),
             elements: [
                 Row(source: .element("leftshoulder"), label: "LB / L1"),
                 Row(source: .element("rightshoulder"), label: "RB / R1"),
@@ -101,30 +101,30 @@ enum BindingsCatalog {
             ]),
         Section(
             id: "system",
-            title: "System",
+            title: String(localized: "System"),
             elements: [
-                Row(source: .element("start"), label: "Menu / Start"),
-                Row(source: .element("back"), label: "Options / Select"),
-                Row(source: .element("guide"), label: "Home / Guide (iOS usually takes this)"),
+                Row(source: .element("start"), label: String(localized: "Menu / Start")),
+                Row(source: .element("back"), label: String(localized: "Options / Select")),
+                Row(source: .element("guide"), label: String(localized: "Home / Guide (iOS usually takes this)")),
             ]),
     ]
 
     private static let extrasSection = Section(
         id: "extras",
-        title: "Extras",
+        title: String(localized: "Extras"),
         elements: [
-            Row(source: .element("paddle1"), label: "Paddle 1"),
-            Row(source: .element("paddle2"), label: "Paddle 2"),
-            Row(source: .element("paddle3"), label: "Paddle 3"),
-            Row(source: .element("paddle4"), label: "Paddle 4"),
-            Row(source: .element("touchpad"), label: "Touchpad click"),
+            Row(source: .element("paddle1"), label: String(localized: "Paddle 1")),
+            Row(source: .element("paddle2"), label: String(localized: "Paddle 2")),
+            Row(source: .element("paddle3"), label: String(localized: "Paddle 3")),
+            Row(source: .element("paddle4"), label: String(localized: "Paddle 4")),
+            Row(source: .element("touchpad"), label: String(localized: "Touchpad click")),
         ])
 
     static func sections(includingOptional exposed: Set<String>) -> [Section] {
         var result = baseSections
         let extras = extrasSection.elements.filter { exposed.contains($0.source.name) }
         if !extras.isEmpty {
-            result.append(Section(id: "extras", title: "Extras", elements: extras))
+            result.append(Section(id: "extras", title: String(localized: "Extras"), elements: extras))
         }
         return result
     }
@@ -168,7 +168,7 @@ enum BindingsCatalog {
     }
 
     static func displayName(for target: BindingMap.Target?) -> String {
-        guard let target else { return "None" }
+        guard let target else { return String(localized: "None") }
         switch target {
         case .key(let code):
             return KeyCodeTable.displayName(for: code) ?? code
@@ -178,9 +178,9 @@ enum BindingsCatalog {
             // Unknown = written by a newer Empo or by hand. The
             // binding stays in the map (W005 rule) and does nothing.
             return EmpoActionCatalog.action(id: name)?.displayName
-                ?? "Not supported in this version of \(AppInfo.name)"
+                ?? String(localized: "Not supported in this version of \(AppInfo.name)")
         case .unbound:
-            return "None"
+            return String(localized: "None")
         }
     }
 

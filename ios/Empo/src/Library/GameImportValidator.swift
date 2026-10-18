@@ -17,7 +17,7 @@ enum GameImportValidator {
             case .unzipFailed:
                 return "\(AppInfo.name) couldn't unpack this archive. Download the game again, then import it."
             case .corruptZip:
-                return "This archive is damaged. Download the game again, then import it."
+                return String(localized: "This archive is damaged. Download the game again, then import it.")
             case .notAGame:
                 return
                     "\(AppInfo.name) found no game here. Pick the folder that contains Game.exe or Game.rb, then import again."
@@ -25,7 +25,7 @@ enum GameImportValidator {
                 return detail
             case .missingScripts:
                 return
-                    "This game is missing the script file it needs to run. Download the game again, then import it."
+                    String(localized: "This game is missing the script file it needs to run. Download the game again, then import it.")
             case .invalidScripts:
                 return "\(AppInfo.name) can't read this game's script file. Download the game again, then import it."
             case .invalidJgpManifest:

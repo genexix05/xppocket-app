@@ -108,7 +108,7 @@ struct StandardSheet<Content: View>: View {
             .toolbar {
                 if let trailingButton {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button(trailingButton.label, action: trailingButton.action)
+                        Button(LocalizedStringKey(trailingButton.label), action: trailingButton.action)
                     }
                 }
             }
@@ -214,7 +214,7 @@ struct SheetPrimaryButton: View {
 
     var body: some View {
         Button(action: action) {
-            Text(title).frame(maxWidth: .infinity)
+            Text(LocalizedStringKey(title)).frame(maxWidth: .infinity)
         }
         .buttonStyle(PrimaryButtonStyle())
     }

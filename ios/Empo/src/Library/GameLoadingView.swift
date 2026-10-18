@@ -195,7 +195,7 @@ struct GameLoadingView: View {
                     .buttonStyle(.primary)
                     .padding(.top, Spacing.md)
             } else {
-                messageLine("To play again, close \(AppInfo.name) from the app switcher, then open it again.")
+                messageLine(String(localized: "To play again, close \(AppInfo.name) from the app switcher, then open it again."))
             }
             if !clean {
                 reportLine
@@ -222,11 +222,11 @@ struct GameLoadingView: View {
                 .centeredMessageWidth()
 
             FeedbackShareButton(
-                label: "Send report",
+                label: String(localized: "Send report"),
                 systemImage: "exclamationmark.bubble",
                 context: FeedbackReporter.Context(
                     gameTitle: game.title,
-                    errorSummary: "Game failed to start during loading.",
+                    errorSummary: String(localized: "Game failed to start during loading."),
                     container: game.container
                 ),
                 prominentStyle: true
