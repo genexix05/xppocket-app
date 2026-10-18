@@ -1,38 +1,66 @@
-These terms cover the Empo app and this documentation site.
+# Terms of use
 
-Last update: 7 September 2026.
+Last update: 26 August 2026.
 
-## The licence
+The authoritative version is the one published at [xppocket.app/terms](https://xppocket.app/terms).
 
-Empo is free. You may install it, use it, and stop using it at any time. The
-source code carries its own licence in the repository, and that licence governs
-the code.
+## Agreement
 
-## What you supply
+These Terms of use ("Terms") govern the use of the XP Pocket app for iOS and the services at
+xppocket.app and api.xppocket.app. By downloading or using XP Pocket, you accept these Terms. If you
+do not agree, do not use the app.
 
-Empo plays games that you supply. You are responsible for the files you import.
-Do not import a game that you have no right to hold or to play. Empo ships no
-game and hosts no game.
+## What XP Pocket is
 
-## Pre-release software
+XP Pocket is a player for RPG Maker / RGSS games that you import. The app does not include commercial
+games, ROMs or third-party content. You are responsible for having the rights to the files you import
+or play.
 
-Empo is pre-release and it is not on the App Store. You install it yourself. It
-can fail, lose a save file, or stop working after an iOS update.
+## Licence to use
 
-Keep your own copy of anything you care about.
+We grant you a personal, non-exclusive, non-transferable licence to use XP Pocket on Apple devices
+that you own or control, subject to the App Store terms and these Terms. XP Pocket includes open
+source components (for example GPL); those licences keep applying to their code.
 
-## No warranty
+## Accounts
 
-Empo comes as it is, with no warranty of any kind. To the limit the law permits,
-the author is not liable for lost data, lost time, or any other damage that
-follows from the use of Empo.
+Playing does not need an account. The optional Sign in with Apple enables Pro, cloud save and account
+features. You can delete your account in Settings → Account → Delete account. That removes your
+profile and cloud saves from our servers. It does not cancel an App Store subscription.
+
+## Subscriptions and in-app purchases
+
+XP Pocket Pro is an optional auto-renewing subscription sold through Apple In-App Purchase. The price
+and period show in the app before you buy and are charged to your Apple ID. Apple bills the payment.
+Manage or cancel in Settings → Apple ID → Subscriptions. Restore purchases is in the app. Apple
+handles refunds.
+
+## Ads (free tier)
+
+The free tier may show ads (for example Google AdMob) outside active gameplay. Pro removes
+those ads according to the benefits shown in the paywall.
+
+## Acceptable use
+
+You must not abuse the service, attempt unauthorised access, upload unlawful content, or use XP
+Pocket to distribute material without the rights. We may suspend accounts that abuse the service.
+
+## Disclaimer
+
+XP Pocket is provided "as is". Compatibility varies. We do not guarantee uninterrupted operation or
+that every imported game works. To the extent the law permits, we are not liable for lost saves, lost
+data or damage that follows from the use of the app or of imported content.
+
+## Privacy
+
+Our [privacy policy](https://xppocket.app/privacy) explains what data we process. By using an account
+or cloud save, you also accept that policy.
 
 ## Changes
 
-A change to these terms shows here with a new date at the top. Continued use
-after a change means you accept the new terms.
+We may update these Terms by publishing a new version on this page with an updated date. Continued use
+after the changes means acceptance where the law allows it.
 
 ## Contact
 
-Open an issue at [github.com/mateo-m/empo-app](https://github.com/mateo-m/empo-app/issues),
-or ask on the [Discord server](https://discord.gg/m3YnpXMxrB).
+Questions: [support@xppocket.app](mailto:support@xppocket.app).

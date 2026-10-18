@@ -10,11 +10,9 @@
   <a href="#languages"><img alt="Languages" src="https://img.shields.io/badge/languages-EN%20%7C%20ES%20%7C%20FR%20%7C%20DE-informational.svg" /></a>
 </p>
 
-<p align="center"><a href="https://xppocket.app">Website</a></p>
+<p align="center"><a href="https://apps.apple.com/es/app/xp-pocket-rpg-maker-player/id6804504844">App Store</a> · <a href="https://xppocket.app">Website</a></p>
 
 XP Pocket is a game launcher for iPhone and iPad. It runs RPG Maker XP, VX, VX Ace, MV, and MZ games, Pokemon Essentials games, and PSDK games. RPG Maker games run on [mkxp-z-apple-mobile](https://github.com/genexix05/mkxp-z-apple-mobile), an iOS fork of the [mkxp-z](https://github.com/mkxp-z/mkxp-z) engine. PSDK games run on [psdk-apple-mobile](https://github.com/mateo-m/psdk-apple-mobile), an iOS build of LiteRGSS2 and SFML with one Ruby for each PSDK release type. RPG Maker MV and MZ games bring their own JavaScript engine, and run in a web view.
-
-XP Pocket is a fork of [Empo](https://github.com/mateo-m/empo-app) by [mateo-m](https://github.com/mateo-m), and keeps its GPL license. See [Credits](#credits).
 
 ## Demo
 
@@ -53,7 +51,7 @@ is not translated.
 
 ## Availability
 
-XP Pocket is on the App Store. Playing is free and needs no account. The free version shows ads, and XP Pocket Pro removes them.
+[XP Pocket - RPG Maker Player](https://apps.apple.com/es/app/xp-pocket-rpg-maker-player/id6804504844) is on the App Store. Playing is free and needs no account. The free version shows ads, and XP Pocket Pro removes them.
 
 Sign in with Apple is optional and only needed for cloud save.
 
@@ -105,11 +103,11 @@ For build requirements, build steps, and PR guidelines, see [`CONTRIBUTING.md`](
 
 ## License
 
-[GPLv2+](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), the same license as upstream [mkxp-z](https://github.com/mkxp-z/mkxp-z) and Empo. The app shows the full dependency and font license set at **Settings → Open-source licenses**.
+[GPLv2+](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), the same license as upstream [mkxp-z](https://github.com/mkxp-z/mkxp-z) and the project XP Pocket builds on. The app shows the full dependency and font license set at **Settings → Open-source licenses**.
 
 ## Credits
 
-- [mateo-m](https://github.com/mateo-m) for [Empo](https://github.com/mateo-m/empo-app), the project XP Pocket is a fork of.
+- [mateo-m](https://github.com/mateo-m) for the original app that XP Pocket builds on, and for the iOS engine builds.
 - [Ancurio](https://github.com/Ancurio) for the original [mkxp](https://github.com/Ancurio/mkxp) engine.
 - The [mkxp-z contributors](https://github.com/mkxp-z/mkxp-z/graphs/contributors) for keeping it alive on desktop.
 - [JoiPlay](https://github.com/joiplay) for the [Ruby 1.8 cross-compilation work](https://github.com/joiplay/ruby) and the multi-Ruby dispatch model their RPG Maker plugin uses.

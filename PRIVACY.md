@@ -1,49 +1,74 @@
-Empo runs on your iPhone or iPad. There is no Empo account and no Empo server.
+# Privacy policy
 
-Last update: 7 September 2026.
+Last update: 6 October 2026.
 
-## What Empo collects
+The authoritative version is the one published at [xppocket.app/privacy](https://xppocket.app/privacy).
 
-Nothing. Empo has no analytics, no crash reporting service, and no advertising.
+## Controller
 
-Your games, your save files, and your settings stay in the app container on the
-device. iOS backs that container up to your own iCloud backup if you turn iCloud
-backup on. That is an Apple feature, and Empo does not control it.
+XP Pocket ([xppocket.app](https://xppocket.app)). Contact: [support@xppocket.app](mailto:support@xppocket.app).
 
-## What leaves the device
+## Summary
 
-Empo makes two kinds of network request.
+You can use XP Pocket without an account. If you sign in with Apple or use cloud save (Pro), some
+data is sent to our servers to provide that service. We do not sell personal data. The free version
+shows ads (Google AdMob). Pro removes them.
 
-A version check reads the latest release of the Empo repository from
-`api.github.com`. GitHub sees the request and the IP address it came from.
+## Data on the device
 
-A certificate refresh reads `cacert.pem` from `curl.se`. Games need it for HTTPS.
-The curl project sees the request and the IP address it came from.
+- Preferences (settings, touch layouts).
+- Games and save files that you import or create while playing.
+- File metadata that iOS uses (for example dates).
+- Optional diagnostic logs, local only, if you turn them on in Settings.
 
-Empo sends none of these to a server that Empo owns, because there is no such
-server.
+## Optional account (Sign in with Apple)
 
-## Device permissions
+If you choose to sign in:
 
-Empo asks for the camera only when you take a photo for custom game artwork.
-The photo stays on the device. When you pick an image from the photo library
-instead, iOS gives Empo only that one image.
+- We receive an Apple account identifier.
+- We may receive an email address (the real one or Apple's private relay address, depending on your choice).
+- We use that information to authenticate you and to tie account features (for example Pro and cloud save) to you.
 
-Empo links the CoreBluetooth framework because SDL2 uses it to find game
-controllers. Empo reads no Bluetooth data.
+## Cloud save (Pro, optional)
 
-Some games have local multiplayer. iOS asks for local network permission before
-such a game can find other players. Empo itself does not use the local network.
+If you upload or download saves to the cloud, the save file and game metadata (title, size, date) are
+stored on our servers and linked to your account. You control when to upload or delete. We do not use
+your saves for advertising and we do not share them with third parties.
+
+## Community layouts
+
+The app can connect to `api.xppocket.app` to list or download layouts. Those requests do not need an
+account. If you publish a layout (an administration feature), the content you send is stored.
+
+## Ads (free version)
+
+The free version shows ads through Google AdMob. AdMob may process device identifiers and ad
+interaction data under Google's privacy policy. On iOS, advertising tracking only turns on if you
+allow it in the tracking transparency prompt. XP Pocket Pro removes ads.
+
+## What we do not do
+
+- There is no third-party analytics SDK.
+- We do not track you across apps unless you allow it in the iOS prompt (this only affects ads in the free version).
+- We do not sell personal data.
+
+## Third parties
+
+XP Pocket includes open source software (mkxp-z, SDL, and others). Apple may receive anonymous crash
+reports if you turn them on in iOS. Sign in with Apple is run by Apple, and Apple's policy applies to
+the sign-in flow.
+
+## Legal basis and retention (EU)
+
+We process account and cloud save data to run the service you request. We keep the account and the
+saves while you keep the account, or until you ask for deletion. You can ask for access, correction or
+deletion at [support@xppocket.app](mailto:support@xppocket.app). You can also delete your account in
+**Settings → Account → Delete account**.
 
 ## Children
 
-Empo is not directed at children under 13 and collects no data from anybody.
+We do not knowingly collect data from children. Age rating and use follow the App Store rules.
 
 ## Changes
 
-A change to this policy shows here with a new date at the top.
-
-## Contact
-
-Open an issue at [github.com/mateo-m/empo-app](https://github.com/mateo-m/empo-app/issues),
-or ask on the [Discord server](https://discord.gg/m3YnpXMxrB).
+We will publish changes to this policy on this page with a new date.

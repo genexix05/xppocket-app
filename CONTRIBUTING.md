@@ -1,4 +1,4 @@
-# Contributing to Empo
+# Contributing to XP Pocket
 
 Issues, ideas, and PRs are welcome.
 
@@ -20,8 +20,8 @@ Each core comes from the release of its own repo: [mkxp-z-apple-mobile](https://
 
 ```sh
 brew install bun xcodegen gh
-git clone git@github.com:mateo-m/empo-app.git
-cd empo-app
+git clone git@github.com:genexix05/xppocket-app.git
+cd xppocket-app
 bun install
 
 xcodegen generate --spec ios/Empo/project.yml --project ios/Empo
@@ -45,7 +45,7 @@ To test an engine build before its release, put the tarball of `tools/package-io
 ```sh
 SIM=$(xcrun simctl list devices booted | grep -oE '[0-9A-F-]{36}' | head -1)
 xcrun simctl install "$SIM" "ios/Empo/build/Debug-iphonesimulator/XP Pocket.app"
-xcrun simctl launch "$SIM" sh.mateo.empo
+xcrun simctl launch "$SIM" app.xppocket.player.dev
 ```
 
 For device builds, swap `iphonesimulator` for `iphoneos` and create a gitignored `ios/Empo/Signing.xcconfig` with your `DEVELOPMENT_TEAM`.
@@ -54,12 +54,12 @@ For device builds, swap `iphonesimulator` for `iphoneos` and create a gitignored
 
 `scripts/run-swift-tests.sh` runs the GameProbe and Json5 package tests on macOS.
 
-`EmpoTests` runs inside the app on a simulator. It drives `ControllerInputManager` with snapshot controllers (`GCController.withMicroGamepad()`, `withExtendedGamepad()`), so it covers the controller path without a physical pad:
+`XPPocketTests` runs inside the app on a simulator. It drives `ControllerInputManager` with snapshot controllers (`GCController.withMicroGamepad()`, `withExtendedGamepad()`), so it covers the controller path without a physical pad:
 
 ```sh
 SIM=$(xcrun simctl list devices booted | grep -oE '[0-9A-F-]{36}' | head -1)
-xcodebuild test -project ios/Empo/Empo.xcodeproj -scheme Empo \
-  -destination "id=$SIM" -only-testing:EmpoTests CODE_SIGNING_ALLOWED=NO
+xcodebuild test -project ios/Empo/XPPocket.xcodeproj -scheme XPPocket \
+  -destination "id=$SIM" -only-testing:XPPocketTests CODE_SIGNING_ALLOWED=NO
 ```
 
 ## Notable hacks
@@ -74,7 +74,7 @@ If you read the code, note these unusual parts. The build depends on them:
 
 ## Pull requests
 
-- Run `bun install` once after you clone so that LeftHook installs the empo-app hooks.
+- Run `bun install` once after you clone so that LeftHook installs the repository hooks.
 - LeftHook enforces formatting and linting locally, and CI enforces them again.
 - Get a green build on the iOS Simulator before you request review.
 - Reference any related issue.
