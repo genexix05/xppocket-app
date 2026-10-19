@@ -122,6 +122,14 @@ struct ProPaywallView: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
+
+            // Always on screen: App Review 3.1.2(c) needs functional
+            // Terms of Use and Privacy Policy links in the purchase flow.
+            HStack(spacing: Spacing.lg) {
+                Link("Terms of Use", destination: AppInfo.termsURL)
+                Link("Privacy Policy", destination: AppInfo.privacyURL)
+            }
+            .font(.caption)
         }
         .padding(.horizontal, Spacing.xl)
         .padding(.vertical, Spacing.md)
@@ -203,8 +211,6 @@ struct ProPaywallView: View {
 
     private var legalSection: some View {
         Section {
-            Link("Privacy Policy", destination: AppInfo.privacyURL)
-            Link("Terms of Use", destination: AppInfo.termsURL)
             Text(
                 "Subscription renews automatically each month until cancelled in Settings → Apple ID → Subscriptions."
             )
