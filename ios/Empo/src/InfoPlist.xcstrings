@@ -1,7 +1,23 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "XP Pocket"
+          }
+        }
+      }
+    },
+    "JoiPlay game archive" : {
+
+    },
     "NSBluetoothAlwaysUsageDescription" : {
+      "comment" : "Privacy - Bluetooth Always Usage Description",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -30,6 +46,7 @@
       }
     },
     "NSCameraUsageDescription" : {
+      "comment" : "Privacy - Camera Usage Description",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -58,6 +75,7 @@
       }
     },
     "NSLocalNetworkUsageDescription" : {
+      "comment" : "Privacy - Local Network Usage Description",
       "localizations" : {
         "de" : {
           "stringUnit" : {

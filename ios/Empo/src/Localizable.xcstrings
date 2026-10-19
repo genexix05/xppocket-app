@@ -68,6 +68,7 @@
       }
     },
     "%@ are already in your library. Importing replaces their files with the new ones. Your saves and settings stay. You can't undo this." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -112,6 +113,7 @@
       }
     },
     "%@ can't run this game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -134,6 +136,7 @@
       }
     },
     "%@ closed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -244,6 +247,7 @@
       }
     },
     "%@ didn't start" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -265,7 +269,11 @@
         }
       }
     },
+    "%@ FPS" : {
+
+    },
     "%@ is already in your library. Importing replaces its files with the new ones. Your saves and settings stay. You can't undo this." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -332,6 +340,7 @@
       }
     },
     "%@ moved your duplicate games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -354,6 +363,7 @@
       }
     },
     "%@ stopped" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -376,6 +386,7 @@
       }
     },
     "%@, restored %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -397,7 +408,17 @@
         }
       }
     },
+    "%@%%" : {
+
+    },
+    "%@pt" : {
+
+    },
+    "%@x" : {
+
+    },
     "%lld FPS" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -420,6 +441,7 @@
       }
     },
     "%lld selected" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -442,6 +464,7 @@
       }
     },
     "%lld%%" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -464,6 +487,7 @@
       }
     },
     "%lldpt" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -486,6 +510,7 @@
       }
     },
     "%lldx" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -530,6 +555,7 @@
       }
     },
     "A game is paused" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -640,6 +666,7 @@
       }
     },
     "Actions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -662,6 +689,7 @@
       }
     },
     "Acts as this button" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -684,6 +712,7 @@
       }
     },
     "Add a Fast forward button to the in-game menu. While it is on, the game runs at the speed below." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -706,6 +735,7 @@
       }
     },
     "Add a key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -728,6 +758,7 @@
       }
     },
     "Add button" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -750,6 +781,7 @@
       }
     },
     "Add games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -772,6 +804,7 @@
       }
     },
     "Added longest ago" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -794,6 +827,7 @@
       }
     },
     "Added profile “%@”." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -816,6 +850,7 @@
       }
     },
     "Adds a toolbar button that shows frame rate, memory use, and details about the game engine while you play." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -838,6 +873,7 @@
       }
     },
     "Admin key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -860,6 +896,7 @@
       }
     },
     "Admin key is required." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -926,6 +963,7 @@
       }
     },
     "Already in your library" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -948,6 +986,7 @@
       }
     },
     "Alt key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -970,6 +1009,7 @@
       }
     },
     "App Store returned no product for %@. " : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1013,29 +1053,8 @@
         }
       }
     },
-    "Apple ID" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apple-ID"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apple ID"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apple ID"
-          }
-        }
-      }
-    },
     "Apple did not return a sign-in token." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1057,7 +1076,31 @@
         }
       }
     },
+    "Apple ID" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple-ID"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple ID"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple ID"
+          }
+        }
+      }
+    },
     "Archive entry path is invalid." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1080,6 +1123,7 @@
       }
     },
     "Artwork" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1124,6 +1168,7 @@
       }
     },
     "Author" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1146,6 +1191,7 @@
       }
     },
     "Auto-detect (%@)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1234,6 +1280,7 @@
       }
     },
     "Back" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1256,6 +1303,7 @@
       }
     },
     "Back to Library" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1278,6 +1326,7 @@
       }
     },
     "Back up and restore saves across devices." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1300,6 +1349,7 @@
       }
     },
     "Banner" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1322,6 +1372,7 @@
       }
     },
     "Bezel or shell image, usually at the bottom." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1344,6 +1395,7 @@
       }
     },
     "Branch" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1366,6 +1418,7 @@
       }
     },
     "Browse and install touch-control layouts shared by the XP Pocket community." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1388,6 +1441,7 @@
       }
     },
     "Build" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1410,6 +1464,7 @@
       }
     },
     "Build info" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1454,6 +1509,7 @@
       }
     },
     "Built-in default" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1498,6 +1554,7 @@
       }
     },
     "Cancel" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1520,6 +1577,7 @@
       }
     },
     "Cancel / menu" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1542,6 +1600,7 @@
       }
     },
     "Catalog entry" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1586,6 +1645,7 @@
       }
     },
     "Change banner image" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1608,6 +1668,7 @@
       }
     },
     "Change game artwork" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1652,6 +1713,7 @@
       }
     },
     "Changelog" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1674,6 +1736,7 @@
       }
     },
     "Cheats" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1696,6 +1759,7 @@
       }
     },
     "Checking game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1718,6 +1782,7 @@
       }
     },
     "Checking game, tap to stop" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1740,6 +1805,7 @@
       }
     },
     "Choose" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1784,6 +1850,7 @@
       }
     },
     "Choose file" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1806,6 +1873,7 @@
       }
     },
     "Choose game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1828,6 +1896,7 @@
       }
     },
     "Choose image" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1850,6 +1919,7 @@
       }
     },
     "Choose the games you want to add to your library." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1872,6 +1942,7 @@
       }
     },
     "Choose the new games to add. " : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1894,6 +1965,7 @@
       }
     },
     "Choose which games to update. " : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1916,6 +1988,7 @@
       }
     },
     "Clear default" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1938,6 +2011,7 @@
       }
     },
     "Clear search" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1982,6 +2056,7 @@
       }
     },
     "Clears the buttons you changed for all games. Buttons you changed for one game stay." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2004,6 +2079,7 @@
       }
     },
     "Clears the buttons you changed for this game." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2026,6 +2102,7 @@
       }
     },
     "Close and Play" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2070,6 +2147,7 @@
       }
     },
     "Cloud save (Pro)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2114,6 +2192,7 @@
       }
     },
     "Cloud save restored. Quit the game completely (not just pause) and launch it again to load the cloud copy." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2136,6 +2215,7 @@
       }
     },
     "Commit" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2158,6 +2238,7 @@
       }
     },
     "Common keys" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2180,6 +2261,7 @@
       }
     },
     "Community layouts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2202,6 +2284,7 @@
       }
     },
     "Compatibility mode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2224,6 +2307,7 @@
       }
     },
     "Confirm" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2246,6 +2330,7 @@
       }
     },
     "Confirm (VX/Ace)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2268,6 +2353,7 @@
       }
     },
     "Continue" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2312,6 +2398,7 @@
       }
     },
     "Control key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2334,6 +2421,7 @@
       }
     },
     "Controller buttons" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2356,6 +2444,7 @@
       }
     },
     "Controller haptics" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2400,6 +2489,7 @@
       }
     },
     "Controls over game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2422,6 +2512,7 @@
       }
     },
     "Could not build the layout pack." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2444,6 +2535,7 @@
       }
     },
     "Could not derive a valid profile name." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2466,6 +2558,7 @@
       }
     },
     "Could not encode the image." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2488,6 +2581,7 @@
       }
     },
     "Could not import" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2510,6 +2604,7 @@
       }
     },
     "Could not install" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2554,6 +2649,7 @@
       }
     },
     "Could not open subscription management. Try Settings → Apple ID → Subscriptions." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2576,6 +2672,7 @@
       }
     },
     "Could not pack save data." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2598,6 +2695,7 @@
       }
     },
     "Could not prepare a feedback report." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2620,6 +2718,7 @@
       }
     },
     "Could not publish" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2642,6 +2741,7 @@
       }
     },
     "Could not read the layout catalog." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2664,6 +2764,7 @@
       }
     },
     "Could not read the server response." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2686,6 +2787,7 @@
       }
     },
     "Could not save skin" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2708,6 +2810,7 @@
       }
     },
     "Could not save skin files." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2730,6 +2833,7 @@
       }
     },
     "Could not save the layout profile." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2752,6 +2856,7 @@
       }
     },
     "Could not verify the App Store transaction." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2774,6 +2879,7 @@
       }
     },
     "Couldn't delete \"%@\"" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2796,6 +2902,7 @@
       }
     },
     "Couldn't delete this game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2818,6 +2925,7 @@
       }
     },
     "Couldn't import %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2840,6 +2948,7 @@
       }
     },
     "Couldn't move the saves" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2862,6 +2971,7 @@
       }
     },
     "Create" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2884,6 +2994,7 @@
       }
     },
     "Create and edit saved layouts for the on-screen controls and the game screen." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2906,6 +3017,7 @@
       }
     },
     "Create profile" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2928,6 +3040,7 @@
       }
     },
     "Credits" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2972,6 +3085,7 @@
       }
     },
     "Custom profiles" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3016,6 +3130,7 @@
       }
     },
     "Dark" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3038,6 +3153,7 @@
       }
     },
     "Dash" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3060,6 +3176,7 @@
       }
     },
     "Date" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3082,6 +3199,7 @@
       }
     },
     "Date added" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3104,6 +3222,7 @@
       }
     },
     "Debug logs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3148,6 +3267,7 @@
       }
     },
     "Default profile" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3170,6 +3290,7 @@
       }
     },
     "Delete" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3192,6 +3313,7 @@
       }
     },
     "Delete %@? %@ You can't undo this." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3214,6 +3336,7 @@
       }
     },
     "Delete %lld games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3236,6 +3359,7 @@
       }
     },
     "Delete %lld games?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3258,6 +3382,7 @@
       }
     },
     "Delete 1 game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3280,6 +3405,7 @@
       }
     },
     "Delete account" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3302,6 +3428,7 @@
       }
     },
     "Delete account?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3324,6 +3451,7 @@
       }
     },
     "Delete and make %@ the default" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3346,6 +3474,7 @@
       }
     },
     "Delete and use no default" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3368,6 +3497,7 @@
       }
     },
     "Delete anyway" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3390,6 +3520,7 @@
       }
     },
     "Delete broken imports" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3434,6 +3565,7 @@
       }
     },
     "Delete image" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3456,6 +3588,7 @@
       }
     },
     "Delete this game?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3478,6 +3611,7 @@
       }
     },
     "Deletes games that failed to import the next time you open %@. You can't undo this." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3500,6 +3634,7 @@
       }
     },
     "Deleting" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3522,6 +3657,7 @@
       }
     },
     "Description" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3544,6 +3680,7 @@
       }
     },
     "Designed by Minor Adventures. Used under the Smallbits license." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3566,6 +3703,7 @@
       }
     },
     "Device frame" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3588,6 +3726,7 @@
       }
     },
     "Diagnostics overlay" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3610,6 +3749,7 @@
       }
     },
     "Directional pad" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3632,6 +3772,7 @@
       }
     },
     "Dismiss hint" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3676,6 +3817,7 @@
       }
     },
     "Display name" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3698,6 +3840,7 @@
       }
     },
     "Do nothing" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3742,6 +3885,7 @@
       }
     },
     "Down arrow key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3764,6 +3908,7 @@
       }
     },
     "Download save from cloud" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3786,6 +3931,7 @@
       }
     },
     "Drag to move the game screen" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3808,6 +3954,7 @@
       }
     },
     "Draw text as solid pixels, with no soft edges. This looks sharper in some games." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3830,6 +3977,7 @@
       }
     },
     "Draw the game at 2x its normal size. Sharper on high-resolution screens." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3852,6 +4000,7 @@
       }
     },
     "Draw the game at 4x its normal size. Sharpest, but harder on the battery." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3874,6 +4023,7 @@
       }
     },
     "Duplicate" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3896,6 +4046,7 @@
       }
     },
     "Duplicate as profile" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3917,29 +4068,31 @@
         }
       }
     },
-    "Edit D-pad" : {
+    "e.g. Z" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Steuerkreuz bearbeiten"
+            "value" : "z. B. Z"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Editar cruceta"
+            "value" : "p. ej. Z"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modifier la croix directionnelle"
+            "value" : "p. ex. Z"
           }
         }
       }
     },
     "Edit appearance" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3962,6 +4115,7 @@
       }
     },
     "Edit button" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3984,6 +4138,7 @@
       }
     },
     "Edit controls" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4005,7 +4160,31 @@
         }
       }
     },
+    "Edit D-pad" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Steuerkreuz bearbeiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar cruceta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier la croix directionnelle"
+          }
+        }
+      }
+    },
     "Edit game title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4028,6 +4207,7 @@
       }
     },
     "Edit joystick" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4050,6 +4230,7 @@
       }
     },
     "Editing %@. Changes apply to every game that uses it." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4072,6 +4253,7 @@
       }
     },
     "Empo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4137,7 +4319,54 @@
         }
       }
     },
+    "error" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehler"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "error"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "erreur"
+          }
+        }
+      }
+    },
+    "errors" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehler"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "errores"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "erreurs"
+          }
+        }
+      }
+    },
     "Escape key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4160,6 +4389,7 @@
       }
     },
     "Exclusive community control packs." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4182,6 +4412,7 @@
       }
     },
     "Export logs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4204,6 +4435,7 @@
       }
     },
     "Export pack file" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4226,6 +4458,7 @@
       }
     },
     "Extra large" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4248,6 +4481,7 @@
       }
     },
     "Extras" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4270,6 +4504,7 @@
       }
     },
     "Face buttons" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4292,6 +4527,7 @@
       }
     },
     "Fast forward" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4314,6 +4550,7 @@
       }
     },
     "Fast forward (%lldx)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4336,6 +4573,7 @@
       }
     },
     "Fast forward (%lldx) (Pro)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4358,6 +4596,7 @@
       }
     },
     "Fast forward is off for this game. The binding works in games that have Fast forward on." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4402,6 +4641,7 @@
       }
     },
     "Fast forward is off for this game. Turn it on in Game settings." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4424,6 +4664,7 @@
       }
     },
     "Feedback" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4446,6 +4687,7 @@
       }
     },
     "Feel a gentle tap when you press buttons and switches." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4512,6 +4754,7 @@
       }
     },
     "Fill the screen area outside the game picture with a color you choose." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4534,6 +4777,7 @@
       }
     },
     "Fill unused screen area" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4556,6 +4800,7 @@
       }
     },
     "Fixed aspect ratio" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4644,6 +4889,7 @@
       }
     },
     "Frame skip" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4666,6 +4912,7 @@
       }
     },
     "Free up space, then delete again." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4710,6 +4957,7 @@
       }
     },
     "Function keys" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4732,6 +4980,7 @@
       }
     },
     "Game core" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4754,6 +5003,7 @@
       }
     },
     "Game cores" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4798,6 +5048,7 @@
       }
     },
     "Game failed to start during loading." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4820,6 +5071,7 @@
       }
     },
     "Game layout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4864,6 +5116,7 @@
       }
     },
     "Game screen position" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4908,6 +5161,7 @@
       }
     },
     "Get XP Pocket Pro" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4952,6 +5206,7 @@
       }
     },
     "Grid" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4974,6 +5229,7 @@
       }
     },
     "Hide controls" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4996,6 +5252,7 @@
       }
     },
     "Hide keyboard" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5018,6 +5275,7 @@
       }
     },
     "High (2x)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5040,6 +5298,7 @@
       }
     },
     "Home / Guide (iOS usually takes this)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5150,6 +5409,7 @@
       }
     },
     "Icon pack (splash pattern)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5216,6 +5476,7 @@
       }
     },
     "Import" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5238,6 +5499,7 @@
       }
     },
     "Import a game to start playing." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5260,6 +5522,7 @@
       }
     },
     "Import as profile" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5282,6 +5545,7 @@
       }
     },
     "Import game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5304,6 +5568,7 @@
       }
     },
     "Import layout pack" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5326,6 +5591,7 @@
       }
     },
     "Import pack file" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5348,6 +5614,7 @@
       }
     },
     "Import stopped." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5370,6 +5637,7 @@
       }
     },
     "Import them one at a time, or rename one folder first." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5392,6 +5660,7 @@
       }
     },
     "Imported" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5414,6 +5683,7 @@
       }
     },
     "Importing replaces the installed games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5436,6 +5706,7 @@
       }
     },
     "In App Store Connect the subscription must belong to that app, " : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5458,6 +5729,7 @@
       }
     },
     "In-game cheat menu for supported games." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5480,6 +5752,7 @@
       }
     },
     "In-game keyboard" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5524,6 +5797,7 @@
       }
     },
     "Inside card" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5546,6 +5820,7 @@
       }
     },
     "Install" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5568,6 +5843,7 @@
       }
     },
     "Installed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5590,6 +5866,7 @@
       }
     },
     "Interface haptics" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5612,6 +5889,7 @@
       }
     },
     "Invalid controls.json: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5634,6 +5912,7 @@
       }
     },
     "Invalid screen.json: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5656,6 +5935,7 @@
       }
     },
     "Invalid skin.json: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5678,6 +5958,7 @@
       }
     },
     "JoiPlay compatibility" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5722,6 +6003,7 @@
       }
     },
     "Keep a lowercase index of every game file so lookups are faster. Turn it off if the game can't find its images or sounds." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5744,6 +6026,7 @@
       }
     },
     "Keep game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5766,6 +6049,7 @@
       }
     },
     "Keep importing" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5788,6 +6072,7 @@
       }
     },
     "Keep last %lld logs per game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5810,6 +6095,7 @@
       }
     },
     "Key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5898,6 +6184,7 @@
       }
     },
     "Large" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5920,6 +6207,7 @@
       }
     },
     "Largest first" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5942,6 +6230,7 @@
       }
     },
     "Last played" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5964,6 +6253,7 @@
       }
     },
     "Last session ended early" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6008,6 +6298,7 @@
       }
     },
     "Layout ID" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6052,6 +6343,7 @@
       }
     },
     "Layout profiles" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6074,6 +6366,7 @@
       }
     },
     "Least played" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6096,6 +6389,7 @@
       }
     },
     "Left arrow key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6118,6 +6412,7 @@
       }
     },
     "Left stick" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6140,6 +6435,7 @@
       }
     },
     "Left stick down" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6162,6 +6458,7 @@
       }
     },
     "Left stick left" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6184,6 +6481,7 @@
       }
     },
     "Left stick right" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6206,6 +6504,7 @@
       }
     },
     "Left stick up" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6228,6 +6527,7 @@
       }
     },
     "Legacy (older Ruby)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6250,6 +6550,7 @@
       }
     },
     "Legacy rewrites old Ruby code so newer Ruby can run it. Switch to Legacy if a Pokemon Essentials game crashes with a \"private method\" error." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6272,6 +6573,7 @@
       }
     },
     "Less than a minute" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6294,6 +6596,7 @@
       }
     },
     "Let this game use the internet for updates and online features. Some games send data unencrypted. When off, the game sees no network." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6316,6 +6619,7 @@
       }
     },
     "Letters" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6360,6 +6664,7 @@
       }
     },
     "Licenses" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6382,6 +6687,7 @@
       }
     },
     "Light" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6404,6 +6710,7 @@
       }
     },
     "List" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6426,6 +6733,7 @@
       }
     },
     "Loading catalog…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6448,6 +6756,7 @@
       }
     },
     "Loading game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6470,6 +6779,7 @@
       }
     },
     "Loading library…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6491,7 +6801,31 @@
         }
       }
     },
+    "locked" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "festgestellt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "bloqueada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "verrouillée"
+          }
+        }
+      }
+    },
     "Made with" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6514,6 +6848,7 @@
       }
     },
     "Manage subscription" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6536,6 +6871,7 @@
       }
     },
     "Medium" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6558,6 +6894,7 @@
       }
     },
     "Menu / Start" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6580,6 +6917,7 @@
       }
     },
     "Modern (newer Ruby)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6602,6 +6940,7 @@
       }
     },
     "More" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6624,6 +6963,7 @@
       }
     },
     "More options" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6646,6 +6986,7 @@
       }
     },
     "Most played" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6690,6 +7031,7 @@
       }
     },
     "Name" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6712,6 +7054,7 @@
       }
     },
     "Native game resolution." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6734,6 +7077,7 @@
       }
     },
     "Network access" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6800,6 +7144,7 @@
       }
     },
     "New profile" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6822,6 +7167,7 @@
       }
     },
     "Next" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6844,6 +7190,7 @@
       }
     },
     "Next, review the ones you already have." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6888,6 +7235,7 @@
       }
     },
     "No active Pro subscription was found for this Apple ID." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6910,6 +7258,7 @@
       }
     },
     "No ads" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6932,6 +7281,7 @@
       }
     },
     "No game uses it." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6954,6 +7304,7 @@
       }
     },
     "No games yet" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6976,6 +7327,7 @@
       }
     },
     "No layouts yet" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7020,6 +7372,7 @@
       }
     },
     "No save data found. Save in-game once, then try again.\n\nSearched:\n%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7042,6 +7395,7 @@
       }
     },
     "None" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7064,6 +7418,7 @@
       }
     },
     "Normal state." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7086,6 +7441,7 @@
       }
     },
     "Not enough space to import. Free up space on your device and try again." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7108,6 +7464,7 @@
       }
     },
     "Not now" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7130,6 +7487,7 @@
       }
     },
     "Not played yet" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7152,6 +7510,7 @@
       }
     },
     "Not selected" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7174,6 +7533,7 @@
       }
     },
     "Not supported in this version of %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7196,6 +7556,7 @@
       }
     },
     "Numbers" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7217,7 +7578,31 @@
         }
       }
     },
+    "off" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aus"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "desactivado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "désactivé"
+          }
+        }
+      }
+    },
     "OK" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7239,7 +7624,31 @@
         }
       }
     },
+    "on" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "an"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "activado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "activé"
+          }
+        }
+      }
+    },
     "Opacity" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7262,6 +7671,7 @@
       }
     },
     "Open in Files" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7284,6 +7694,7 @@
       }
     },
     "Open it again to keep playing." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7306,6 +7717,7 @@
       }
     },
     "Open-source licenses" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7328,6 +7740,7 @@
       }
     },
     "Opens this game's folder in Files" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7350,6 +7763,7 @@
       }
     },
     "Options / Select" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7394,6 +7808,7 @@
       }
     },
     "Orientation" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7416,6 +7831,7 @@
       }
     },
     "Outlines where your taps and drags control the game's cursor." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7438,6 +7854,7 @@
       }
     },
     "Pack file is empty." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7482,6 +7899,7 @@
       }
     },
     "Paddle 1" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7504,6 +7922,7 @@
       }
     },
     "Paddle 2" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7526,6 +7945,7 @@
       }
     },
     "Paddle 3" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7548,6 +7968,7 @@
       }
     },
     "Paddle 4" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7570,6 +7991,7 @@
       }
     },
     "Page down (R)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7592,6 +8014,7 @@
       }
     },
     "Page up (L)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7614,6 +8037,7 @@
       }
     },
     "Path cache" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7636,6 +8060,7 @@
       }
     },
     "Pause %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7658,6 +8083,7 @@
       }
     },
     "Paused" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7702,6 +8128,7 @@
       }
     },
     "Photos" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7723,29 +8150,8 @@
         }
       }
     },
-    "Pick PNG or JPEG images from Photos, Files, or the camera. They are saved inside the profile folder." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wähle PNG- oder JPEG-Bilder aus Fotos, Dateien oder der Kamera. Sie werden im Profilordner gespeichert."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elige imágenes PNG o JPEG desde Fotos, Archivos o la cámara. Se guardan dentro de la carpeta del perfil."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choisissez des images PNG ou JPEG depuis Photos, Fichiers ou l’appareil photo. Elles sont enregistrées dans le dossier du profil."
-          }
-        }
-      }
-    },
     "Pick a different name" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7789,7 +8195,30 @@
         }
       }
     },
+    "Pick PNG or JPEG images from Photos, Files, or the camera. They are saved inside the profile folder." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle PNG- oder JPEG-Bilder aus Fotos, Dateien oder der Kamera. Sie werden im Profilordner gespeichert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige imágenes PNG o JPEG desde Fotos, Archivos o la cámara. Se guardan dentro de la carpeta del perfil."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez des images PNG ou JPEG depuis Photos, Fichiers ou l’appareil photo. Elles sont enregistrées dans le dossier du profil."
+          }
+        }
+      }
+    },
     "Play" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7812,6 +8241,7 @@
       }
     },
     "Play \"%@\"?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7834,6 +8264,7 @@
       }
     },
     "Play anyway" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7856,6 +8287,7 @@
       }
     },
     "Play time" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7878,6 +8310,7 @@
       }
     },
     "Played longest ago" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7900,6 +8333,7 @@
       }
     },
     "Player actions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7944,6 +8378,7 @@
       }
     },
     "Playing stays free without an account. Sign in is optional — useful later for cloud save across devices." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7966,6 +8401,7 @@
       }
     },
     "Playtime" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8010,6 +8446,7 @@
       }
     },
     "Postload scripts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8032,6 +8469,7 @@
       }
     },
     "Premium layouts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8054,6 +8492,7 @@
       }
     },
     "Preserve the game's proportions instead of stretching to fill the screen." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8076,6 +8515,7 @@
       }
     },
     "Press a button" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8098,6 +8538,7 @@
       }
     },
     "Press the controller button or keyboard key you want to bind." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8142,6 +8583,7 @@
       }
     },
     "Price" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8164,6 +8606,7 @@
       }
     },
     "Privacy Policy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8186,6 +8629,7 @@
       }
     },
     "Pro details" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8208,6 +8652,7 @@
       }
     },
     "Profile" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8230,6 +8675,7 @@
       }
     },
     "Profile name is invalid." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8252,6 +8698,7 @@
       }
     },
     "Profiles" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8340,6 +8787,7 @@
       }
     },
     "Publish layout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8362,6 +8810,7 @@
       }
     },
     "Publish to community" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8384,6 +8833,7 @@
       }
     },
     "Published" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8450,6 +8900,7 @@
       }
     },
     "Purchase cancelled." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8472,6 +8923,7 @@
       }
     },
     "Quit" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8494,6 +8946,7 @@
       }
     },
     "Quit \"%@\"?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8516,6 +8969,7 @@
       }
     },
     "Quit %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8538,6 +8992,7 @@
       }
     },
     "Ready to play" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8560,6 +9015,7 @@
       }
     },
     "Recently added" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8582,6 +9038,7 @@
       }
     },
     "Recently played" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8604,6 +9061,7 @@
       }
     },
     "Refresh subscription" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8626,6 +9084,7 @@
       }
     },
     "Remember admin key on this device" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8648,6 +9107,7 @@
       }
     },
     "Remove banner and full-screen ads." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8670,6 +9130,7 @@
       }
     },
     "Rename" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8692,6 +9153,7 @@
       }
     },
     "Rename profile" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8714,6 +9176,7 @@
       }
     },
     "Render scale" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8736,6 +9199,7 @@
       }
     },
     "Replace local saves" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8780,6 +9244,7 @@
       }
     },
     "Reset" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8802,6 +9267,7 @@
       }
     },
     "Reset all settings?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8824,6 +9290,7 @@
       }
     },
     "Reset buttons for all games?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8846,6 +9313,7 @@
       }
     },
     "Reset buttons for this game?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8868,6 +9336,7 @@
       }
     },
     "Reset layout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8890,6 +9359,7 @@
       }
     },
     "Reset screen" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8912,6 +9382,7 @@
       }
     },
     "Reset screen to automatic placement" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8934,6 +9405,7 @@
       }
     },
     "Reset to %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8956,6 +9428,7 @@
       }
     },
     "Reset to default" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8978,6 +9451,7 @@
       }
     },
     "Reset to defaults" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9000,6 +9474,7 @@
       }
     },
     "Reset to game default" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9022,6 +9497,7 @@
       }
     },
     "Reset to game value" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9044,6 +9520,7 @@
       }
     },
     "Resize game screen, %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9066,6 +9543,7 @@
       }
     },
     "Restart %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9088,6 +9566,7 @@
       }
     },
     "Restart this game to apply: %@." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9110,6 +9589,7 @@
       }
     },
     "Restore purchases" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9154,6 +9634,7 @@
       }
     },
     "Resume" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9176,6 +9657,7 @@
       }
     },
     "Right arrow key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9198,6 +9680,7 @@
       }
     },
     "Right stick" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9220,6 +9703,7 @@
       }
     },
     "Right stick down" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9242,6 +9726,7 @@
       }
     },
     "Right stick left" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9264,6 +9749,7 @@
       }
     },
     "Right stick right" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9286,6 +9772,7 @@
       }
     },
     "Right stick up" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9308,6 +9795,7 @@
       }
     },
     "Ruby (bundled)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9330,6 +9818,7 @@
       }
     },
     "Ruby (runtime)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9352,6 +9841,7 @@
       }
     },
     "Ruby compatibility mode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9374,6 +9864,7 @@
       }
     },
     "Ruby version" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9396,6 +9887,7 @@
       }
     },
     "Run %@'s fix-up scripts after the game loads. They add the cheat menu and patch common RPG Maker and Pokemon Essentials problems." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9418,6 +9910,7 @@
       }
     },
     "Runs PSDK games released from December 2019 to about March 2021" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9440,6 +9933,7 @@
       }
     },
     "Runs RPG Maker MV and MZ games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9462,6 +9956,7 @@
       }
     },
     "Runs RPG Maker XP and VX games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9484,6 +9979,7 @@
       }
     },
     "Runs RPG Maker XP, VX and VX Ace games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9506,6 +10002,7 @@
       }
     },
     "Runs the Linux release of PSDK games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9528,6 +10025,7 @@
       }
     },
     "Runs the Mac release of PSDK games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9550,6 +10048,7 @@
       }
     },
     "Runs the Windows release of PSDK games since about March 2021" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9572,6 +10071,7 @@
       }
     },
     "Saves a log for each play session. Find them in Files, under %@ › Games › the game's name › Logs." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9594,6 +10094,7 @@
       }
     },
     "Saves recovered" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9638,6 +10139,7 @@
       }
     },
     "Scope" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9704,6 +10206,7 @@
       }
     },
     "Script hotkeys" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9726,6 +10229,7 @@
       }
     },
     "Search games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9748,6 +10252,7 @@
       }
     },
     "Search profiles" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9770,6 +10275,7 @@
       }
     },
     "See all changes on GitHub" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9814,6 +10320,7 @@
       }
     },
     "Select games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9836,6 +10343,7 @@
       }
     },
     "Select multiple" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9858,6 +10366,7 @@
       }
     },
     "Selected" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9880,6 +10389,7 @@
       }
     },
     "Send feedback" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9902,6 +10412,7 @@
       }
     },
     "Send report" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9924,6 +10435,7 @@
       }
     },
     "Send taps and drags on the game screen to the game as mouse input." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9968,6 +10480,7 @@
       }
     },
     "Server error (%lld): %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9990,6 +10503,7 @@
       }
     },
     "Server responded with HTTP %lld." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10012,6 +10526,7 @@
       }
     },
     "Set as default" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10056,6 +10571,7 @@
       }
     },
     "Shift key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10078,6 +10594,7 @@
       }
     },
     "Shoulders & triggers" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10100,6 +10617,7 @@
       }
     },
     "Show cheats" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10122,6 +10640,7 @@
       }
     },
     "Show cheats (Pro)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10144,6 +10663,7 @@
       }
     },
     "Show controls" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10166,6 +10686,7 @@
       }
     },
     "Show details" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10188,6 +10709,7 @@
       }
     },
     "Show games as a grid of cards or a compact list." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10210,6 +10732,7 @@
       }
     },
     "Show keyboard" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10232,6 +10755,7 @@
       }
     },
     "Show touch area" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10254,6 +10778,7 @@
       }
     },
     "Shown while a direction is held." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10276,6 +10801,7 @@
       }
     },
     "Shows a card at the top of your library for your last game." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10298,6 +10824,7 @@
       }
     },
     "Shows build details" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10320,6 +10847,7 @@
       }
     },
     "Sign in was rejected. Please try again." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10342,6 +10870,7 @@
       }
     },
     "Sign in with Apple first." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10364,6 +10893,7 @@
       }
     },
     "Sign in with Apple to enable cloud save on all your devices. Pro features on this device stay active without an account." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10386,6 +10916,7 @@
       }
     },
     "Sign out" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10408,6 +10939,7 @@
       }
     },
     "Signed in" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10430,6 +10962,7 @@
       }
     },
     "Size" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10452,6 +10985,7 @@
       }
     },
     "Size on disk" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10474,6 +11008,7 @@
       }
     },
     "Skip" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10496,6 +11031,7 @@
       }
     },
     "Skip frames when the game falls behind. The game keeps up better, but motion looks less smooth." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10518,6 +11054,7 @@
       }
     },
     "Small" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10540,6 +11077,7 @@
       }
     },
     "Smallbits" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10562,6 +11100,7 @@
       }
     },
     "Smallest first" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10584,6 +11123,7 @@
       }
     },
     "Smooth scaling" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10606,6 +11146,7 @@
       }
     },
     "Smooth the picture when the game scales up. Turn it off to keep the pixels crisp." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10628,6 +11169,7 @@
       }
     },
     "Snap to grid" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10650,6 +11192,7 @@
       }
     },
     "Solid fonts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10694,6 +11237,7 @@
       }
     },
     "Some games didn't import" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10716,6 +11260,7 @@
       }
     },
     "Something went wrong talking to the server (HTTP %lld)." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10738,6 +11283,7 @@
       }
     },
     "Sort by" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10760,6 +11306,7 @@
       }
     },
     "Sort games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10782,6 +11329,7 @@
       }
     },
     "Source code (GPL)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10826,6 +11374,7 @@
       }
     },
     "Speed up repetitive sections." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10848,6 +11397,7 @@
       }
     },
     "Standard" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10870,6 +11420,7 @@
       }
     },
     "Status" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10892,6 +11443,7 @@
       }
     },
     "Stop import" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10914,6 +11466,7 @@
       }
     },
     "Stop import?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10936,6 +11489,7 @@
       }
     },
     "Stop using" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10958,6 +11512,7 @@
       }
     },
     "Stop using %@?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10980,6 +11535,7 @@
       }
     },
     "Style" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11001,29 +11557,8 @@
         }
       }
     },
-    "Subscribe to Pro" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pro abonnieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suscribirse a Pro"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "S’abonner à Pro"
-          }
-        }
-      }
-    },
     "Subscribe — %@/month" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11045,7 +11580,31 @@
         }
       }
     },
+    "Subscribe to Pro" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro abonnieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suscribirse a Pro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S’abonner à Pro"
+          }
+        }
+      }
+    },
     "Subscription" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11090,6 +11649,7 @@
       }
     },
     "Switch to grid" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11112,6 +11672,7 @@
       }
     },
     "Switch to list" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11134,6 +11695,7 @@
       }
     },
     "System" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11156,6 +11718,7 @@
       }
     },
     "System follows your device's appearance setting." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11178,6 +11741,7 @@
       }
     },
     "Tab key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11200,6 +11764,7 @@
       }
     },
     "Tags (comma separated)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11222,6 +11787,7 @@
       }
     },
     "Take photo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11244,6 +11810,7 @@
       }
     },
     "Tap the artwork, banner, or title to customize them." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11266,6 +11833,7 @@
       }
     },
     "Tell the game it's running on JoiPlay. Some games switch to their mobile version. Worth trying if a game misbehaves here but works on PC." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11288,6 +11856,7 @@
       }
     },
     "Terms of Use" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11310,6 +11879,7 @@
       }
     },
     "Thanks — we received your report." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11332,6 +11902,7 @@
       }
     },
     "That layout profile is gone, so this game is using the %@ layout." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11375,51 +11946,8 @@
         }
       }
     },
-    "The Pro subscription is not available right now. Try again later." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das Pro-Abo ist gerade nicht verfügbar. Versuche es später erneut."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La suscripción Pro no está disponible ahora mismo. Inténtalo más tarde."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’abonnement Pro n’est pas disponible pour le moment. Réessayez plus tard."
-          }
-        }
-      }
-    },
-    "The XP Pocket service is temporarily unavailable. Please try again in a few minutes." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der XP-Pocket-Dienst ist vorübergehend nicht verfügbar. Bitte versuche es in ein paar Minuten erneut."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El servicio de XP Pocket no está disponible temporalmente. Inténtalo de nuevo en unos minutos."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le service XP Pocket est temporairement indisponible. Veuillez réessayer dans quelques minutes."
-          }
-        }
-      }
-    },
     "The buttons you changed for %@ go back to their defaults. You can't undo this." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11442,6 +11970,7 @@
       }
     },
     "The buttons you changed for all games go back to their defaults. Buttons you changed for one game stay. You can't undo this." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11464,6 +11993,7 @@
       }
     },
     "The cloud save pack was empty." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11486,6 +12016,7 @@
       }
     },
     "The game crashed last time. Your saves are safe. " : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11552,6 +12083,7 @@
       }
     },
     "The layout profile could not be found." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11596,6 +12128,7 @@
       }
     },
     "The others stay as they are, and saves are always kept." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11618,6 +12151,7 @@
       }
     },
     "The pack does not include controls.json." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11640,6 +12174,7 @@
       }
     },
     "The pack file is empty." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11683,7 +12218,31 @@
         }
       }
     },
+    "The Pro subscription is not available right now. Try again later." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Pro-Abo ist gerade nicht verfügbar. Versuche es später erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La suscripción Pro no está disponible ahora mismo. Inténtalo más tarde."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’abonnement Pro n’est pas disponible pour le moment. Réessayez plus tard."
+          }
+        }
+      }
+    },
     "The profile has no controls.json." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11706,6 +12265,7 @@
       }
     },
     "The rest, saves included, are in \"Duplicate Games\" in %@'s " : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11727,7 +12287,31 @@
         }
       }
     },
+    "The XP Pocket service is temporarily unavailable. Please try again in a few minutes." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der XP-Pocket-Dienst ist vorübergehend nicht verfügbar. Bitte versuche es in ein paar Minuten erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El servicio de XP Pocket no está disponible temporalmente. Inténtalo de nuevo en unos minutos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le service XP Pocket est temporairement indisponible. Veuillez réessayer dans quelques minutes."
+          }
+        }
+      }
+    },
     "Theme" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11750,6 +12334,7 @@
       }
     },
     "These games are already in your library" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11793,28 +12378,6 @@
         }
       }
     },
-    "This JoiPlay archive uses '%@', which %@ does not support. " : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses JoiPlay-Archiv verwendet „%@“, was %@ nicht unterstützt. "
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este archivo de JoiPlay usa «%@», que %@ no admite. "
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cette archive JoiPlay utilise « %@ », que %@ ne prend pas en charge. "
-          }
-        }
-      }
-    },
     "This app" : {
       "localizations" : {
         "de" : {
@@ -11838,6 +12401,7 @@
       }
     },
     "This app’s bundle ID is %@. " : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11860,6 +12424,7 @@
       }
     },
     "This archive contains unsafe file paths, so %@ stopped the import. Get the game from another source." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11882,6 +12447,7 @@
       }
     },
     "This archive is damaged. Download the game again, then import it." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11926,6 +12492,7 @@
       }
     },
     "This build of %@ has no %@, so it can't run \"%@\"." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11948,6 +12515,7 @@
       }
     },
     "This build of %@ has no %@, so it can't run this game." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11970,6 +12538,7 @@
       }
     },
     "This clears every change you made to \"%@\". You can't undo this." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11992,6 +12561,7 @@
       }
     },
     "This deletes \"%@\" from your device. %@ keeps the saves it recognizes and moves them to Rescued Saves. Any saves it doesn't recognize go with the game. You can't undo this." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12036,6 +12606,7 @@
       }
     },
     "This deletes your custom layout and returns the screen to automatic placement. You can't undo this." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12058,6 +12629,7 @@
       }
     },
     "This deletes your custom layout. You can't undo this." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12102,6 +12674,7 @@
       }
     },
     "This game is already being imported. " : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12124,6 +12697,7 @@
       }
     },
     "This game is already in your library" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12146,6 +12720,7 @@
       }
     },
     "This game is currently open. Close it from the app switcher and import again." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12168,6 +12743,7 @@
       }
     },
     "This game is missing the script file it needs to run. Download the game again, then import it." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12190,6 +12766,7 @@
       }
     },
     "This game is not installed on disk." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12212,6 +12789,7 @@
       }
     },
     "This game needs extra RPG Maker files" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12234,6 +12812,7 @@
       }
     },
     "This game requires %@. %@ does not support it right now." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12256,6 +12835,7 @@
       }
     },
     "This game stops using the profile %@. The profile keeps its layout." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12278,6 +12858,7 @@
       }
     },
     "This game won't open" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12300,6 +12881,7 @@
       }
     },
     "This game's controls file has %lld %@, so %@ used its own layout. Open Logs for details." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12344,6 +12926,7 @@
       }
     },
     "This import includes more than one game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12366,6 +12949,7 @@
       }
     },
     "This is a Pokémon Studio project, not a game you can play yet. In Pokémon Studio, choose Compile the project, then import the game it makes." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12387,7 +12971,31 @@
         }
       }
     },
+    "This JoiPlay archive uses '%@', which %@ does not support. " : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses JoiPlay-Archiv verwendet „%@“, was %@ nicht unterstützt. "
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo de JoiPlay usa «%@», que %@ no admite. "
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette archive JoiPlay utilise « %@ », que %@ ne prend pas en charge. "
+          }
+        }
+      }
+    },
     "This layout has the maximum of %lld buttons. Delete one to add another." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12432,6 +13040,7 @@
       }
     },
     "This stops importing \"%@\". If you were updating a game you already have, that copy stays as it is." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12454,6 +13063,7 @@
       }
     },
     "Tip" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12476,6 +13086,7 @@
       }
     },
     "Title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12498,6 +13109,7 @@
       }
     },
     "Title A to Z" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12519,29 +13131,8 @@
         }
       }
     },
-    "Title Z to A" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titel Z bis A"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Título de Z a A"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titre de Z à A"
-          }
-        }
-      }
-    },
     "Title position" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12563,7 +13154,31 @@
         }
       }
     },
+    "Title Z to A" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titel Z bis A"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título de Z a A"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titre de Z à A"
+          }
+        }
+      }
+    },
     "To play again, close %@ from the app switcher, then open it again." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12630,6 +13245,7 @@
       }
     },
     "Touch acts as mouse" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12652,6 +13268,7 @@
       }
     },
     "Touch and drag to move the character" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12674,6 +13291,7 @@
       }
     },
     "Touch and hold to lock the key down." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12696,6 +13314,7 @@
       }
     },
     "Touchpad click" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12718,6 +13337,7 @@
       }
     },
     "Try again" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12762,6 +13382,7 @@
       }
     },
     "Two games in this import share the same title. " : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12784,6 +13405,7 @@
       }
     },
     "Under card" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12806,6 +13428,7 @@
       }
     },
     "Undo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12828,6 +13451,7 @@
       }
     },
     "Undo layout change" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12872,6 +13496,7 @@
       }
     },
     "Untitled game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12894,6 +13519,7 @@
       }
     },
     "Up arrow key" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12916,6 +13542,7 @@
       }
     },
     "Update" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12938,6 +13565,7 @@
       }
     },
     "Update available" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12960,6 +13588,7 @@
       }
     },
     "Update game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12982,6 +13611,7 @@
       }
     },
     "Update layout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13004,6 +13634,7 @@
       }
     },
     "Update on community" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13048,6 +13679,7 @@
       }
     },
     "Updated" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13070,6 +13702,7 @@
       }
     },
     "Updated profile “%@” to the latest version." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13092,6 +13725,7 @@
       }
     },
     "Updated profile “%@”." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13114,6 +13748,7 @@
       }
     },
     "Updates the existing catalog entry." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13136,6 +13771,7 @@
       }
     },
     "Upload save to cloud" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13158,6 +13794,7 @@
       }
     },
     "Uploaded revision %lld (%@)." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13202,6 +13839,7 @@
       }
     },
     "Upstream project" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13224,6 +13862,7 @@
       }
     },
     "Use the game's own keyboard for names instead of the iOS one. Turn it on for Pokemon Essentials games with custom keys." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13245,7 +13884,30 @@
         }
       }
     },
+    "v%@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "v%@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "v%@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "v%@"
+          }
+        }
+      }
+    },
     "Version" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13290,6 +13952,7 @@
       }
     },
     "Very high (4x)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13312,6 +13975,7 @@
       }
     },
     "Vibration feedback on the on-screen game controls while you play." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13334,6 +13998,7 @@
       }
     },
     "Wait for the current import to finish, then try again." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13356,6 +14021,7 @@
       }
     },
     "Website" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13378,6 +14044,7 @@
       }
     },
     "What's new" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13400,6 +14067,7 @@
       }
     },
     "What's new in %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13422,6 +14090,7 @@
       }
     },
     "Where game titles show up on your library cards." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13444,6 +14113,7 @@
       }
     },
     "XP Pocket Pro" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13466,6 +14136,7 @@
       }
     },
     "XP Pocket Pro active" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13509,29 +14180,8 @@
         }
       }
     },
-    "Your Pro subscription is active." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dein Pro-Abo ist aktiv."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tu suscripción Pro está activa."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Votre abonnement Pro est actif."
-          }
-        }
-      }
-    },
     "Your edits will create a new profile." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13554,6 +14204,7 @@
       }
     },
     "Your layout profile has %lld %@, so %@ used its own layout. Open Logs for details." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13575,7 +14226,31 @@
         }
       }
     },
+    "Your Pro subscription is active." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein Pro-Abo ist aktiv."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu suscripción Pro está activa."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre abonnement Pro est actif."
+          }
+        }
+      }
+    },
     "Your purchase is pending approval." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13593,160 +14268,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Votre achat est en attente d’approbation."
-          }
-        }
-      }
-    },
-    "e.g. Z" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "z. B. Z"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "p. ej. Z"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "p. ex. Z"
-          }
-        }
-      }
-    },
-    "error" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fehler"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "error"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "erreur"
-          }
-        }
-      }
-    },
-    "errors" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fehler"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "errores"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "erreurs"
-          }
-        }
-      }
-    },
-    "locked" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "festgestellt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "bloqueada"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "verrouillée"
-          }
-        }
-      }
-    },
-    "off" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "aus"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "desactivado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "désactivé"
-          }
-        }
-      }
-    },
-    "on" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "an"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "activado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "activé"
-          }
-        }
-      }
-    },
-    "v%@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "v%@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "v%@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "v%@"
           }
         }
       }
