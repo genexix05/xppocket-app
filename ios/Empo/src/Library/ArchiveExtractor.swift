@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import Foundation
 
 /// Extracts zip, 7z, and rar archives via libarchive (shipped with iOS),
@@ -33,17 +36,24 @@ enum ArchiveExtractor {
         var errorDescription: String? {
             switch self {
             case .openFailed:
-                return
-                    "\(AppInfo.name) couldn't open this archive. It may be incomplete. Download the game again, then import it."
+                return String(
+                    localized:
+                        "XP Pocket couldn't open this archive. It may be incomplete. Download the game again, then import it."
+                )
             case .readFailed:
-                return
-                    "\(AppInfo.name) couldn't read this archive. It may be damaged. Download the game again, then import it."
+                return String(
+                    localized:
+                        "XP Pocket couldn't read this archive. It may be damaged. Download the game again, then import it."
+                )
             case .writeFailed:
-                return
-                    "\(AppInfo.name) couldn't write the game to your device. Free up space, then import again."
+                return String(
+                    localized:
+                        "XP Pocket couldn't write the game to your device. Free up space, then import again.")
             case .pathEscape:
-                return
-                    String(localized: "This archive contains unsafe file paths, so \(AppInfo.name) stopped the import. Get the game from another source.")
+                return String(
+                    localized:
+                        "This archive looks unsafe, so XP Pocket stopped the import. Get the game from a source you trust."
+                )
             case .cancelled:
                 return String(localized: "Import stopped.")
             }
@@ -442,7 +452,7 @@ enum ArchiveExtractor {
     private static func openFailureMessage(_ reader: OpaquePointer, archiveURL: URL) -> String {
         if Format(extension: archiveURL.pathExtension) == .exeSfx {
             return "\(archiveURL.lastPathComponent) does not look like a "
-                + "self-extracting archive. \(AppInfo.name) can import only .exe files "
+                + "self-extracting archive. XP Pocket can import only .exe files "
                 + "that unpack themselves (CAB, 7z, RAR, or zip based)."
         }
         return errorString(reader) ?? "Cannot open archive"

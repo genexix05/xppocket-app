@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import Foundation
 import GameProbe
 
@@ -12,19 +15,22 @@ enum RenderScale: String, Codable, CaseIterable, Hashable {
     case x2
     case x4
 
-    var label: String {
+    var label: LocalizedStringResource {
         switch self {
-        case .x1: String(localized: "Default")
-        case .x2: String(localized: "High (2x)")
-        case .x4: String(localized: "Very high (4x)")
+        case .x1:
+            LocalizedStringResource("Default", comment: "Render scale option: the game's own resolution.")
+        case .x2: "High (2x)"
+        case .x4: "Very high (4x)"
         }
     }
 
-    var description: String {
+    var description: LocalizedStringResource {
         switch self {
-        case .x1: String(localized: "Native game resolution.")
-        case .x2: String(localized: "Draw the game at 2x its normal size. Sharper on high-resolution screens.")
-        case .x4: String(localized: "Draw the game at 4x its normal size. Sharpest, but harder on the battery.")
+        case .x1: "Draw the game at its own resolution."
+        case .x2:
+            "Draw the game at 2x its normal size. Sharper on high-resolution screens. The game still fits the screen the same way."
+        case .x4:
+            "Draw the game at 4x its normal size. Sharpest, but uses more battery. The game still fits the screen the same way."
         }
     }
 

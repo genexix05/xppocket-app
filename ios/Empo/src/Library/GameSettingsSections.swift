@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import GameProbe
 import SwiftUI
 
@@ -12,7 +15,7 @@ struct GameplaySettingsSection: View {
         Section {
             VStack(alignment: .leading, spacing: Spacing.md) {
                 SettingsToggle(
-                    title: String(localized: "Fast forward"),
+                    title: "Fast forward",
                     isOn: Binding(
                         get: { model.fastForwardEnabled },
                         set: { on in
@@ -28,14 +31,14 @@ struct GameplaySettingsSection: View {
                         }
                     ),
                     description:
-                        String(localized: "Add a Fast forward button to the in-game menu. While it is on, the game runs at the speed below.")
+                        "Show a Fast forward switch in the More menu while you play. When the switch is on, the game runs at the speed below."
                 )
 
                 if model.fastForwardEnabled {
                     HStack {
                         Text("Speed")
                         Spacer()
-                        Text("\(model.effectiveSpeedMultiplier)x")
+                        Text("\(model.effectiveSpeedMultiplier)x", comment: "Fast forward speed, such as 4x")
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
                     }
@@ -74,7 +77,7 @@ struct DisplaySettingsSection<Extra: View>: View {
         Section {
             if model.displayDefaults.unreadable {
                 Text(
-                    "\(AppInfo.name) can't read this game's own settings, so the values below start from \(AppInfo.name)'s defaults."
+                    "XP Pocket can't read this game's own settings, so the values below start from XP Pocket's defaults."
                 )
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -99,13 +102,13 @@ struct DisplaySettingsSection<Extra: View>: View {
                 model.settings.smoothScaling = nil
             } content: {
                 SettingsToggle(
-                    title: String(localized: "Smooth scaling"),
+                    title: "Smooth scaling",
                     isOn: Binding(
                         get: { model.effectiveSmoothScaling },
                         set: { model.settings.smoothScaling = $0 }
                     ),
                     description:
-                        String(localized: "Smooth the picture when the game scales up. Turn it off to keep the pixels crisp.")
+                        "Smooth the picture when the game scales up. Turn it off to keep the pixels crisp."
                 )
             }
         case .fixedAspectRatio:
@@ -113,13 +116,13 @@ struct DisplaySettingsSection<Extra: View>: View {
                 model.settings.fixedAspectRatio = nil
             } content: {
                 SettingsToggle(
-                    title: String(localized: "Fixed aspect ratio"),
+                    title: "Fixed aspect ratio",
                     isOn: Binding(
                         get: { model.effectiveFixedAspectRatio },
                         set: { model.settings.fixedAspectRatio = $0 }
                     ),
                     description:
-                        String(localized: "Preserve the game's proportions instead of stretching to fill the screen.")
+                        "Preserve the game's proportions instead of stretching to fill the screen."
                 )
             }
         }
@@ -160,7 +163,11 @@ struct LayoutSettingsSection: View {
             )
             .onAppear { model.reloadResolvedScreen() }
         } header: {
-            Text("Layout")
+            Text(
+                "Screen layout",
+                comment:
+                    "Game settings section with the layout profile: the on-screen controls and where the game sits."
+            )
         } footer: {
             if model.resolvedScreen?.portrait.placement != nil
                 || model.resolvedScreen?.landscape.placement != nil
@@ -176,7 +183,9 @@ struct LayoutSettingsSection: View {
 
     private var currentPinLabel: String {
         switch LayoutProfilesManager.store.loadPin(forGameFolder: model.container.url).pin {
-        case .followChain: return String(localized: "Automatic")
+        case .followChain:
+            return String(
+                localized: "Automatic", comment: "Layout profile choice that picks a layout on its own.")
         case .profile(let name): return name
         case .gameLayout: return String(localized: "Game layout")
         case .defaultProfile: return String(localized: "Default profile")
@@ -189,12 +198,12 @@ struct TouchMouseToggle: View {
 
     var body: some View {
         SettingsToggle(
-            title: String(localized: "Touch acts as mouse"),
+            title: "Touch acts as mouse",
             isOn: Binding(
                 get: { model.settings.touchMouseEnabled },
                 set: { model.settings.touchMouse = $0 }
             ),
-            description: String(localized: "Send taps and drags on the game screen to the game as mouse input.")
+            description: "Send taps and drags on the game screen to the game as mouse input."
         )
     }
 }

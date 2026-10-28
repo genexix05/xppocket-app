@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import SwiftUI
 
 struct GameLoadingView: View {
@@ -173,16 +176,12 @@ struct GameLoadingView: View {
 
     private func endedContent(clean: Bool, started: Bool) -> some View {
         VStack(spacing: Spacing.md) {
-            Text(
-                clean
-                    ? "\(game.title) closed"
-                    : started ? "\(game.title) stopped" : "\(game.title) didn't start"
-            )
-            .font(.title)
-            .fontWeight(.bold)
-            .foregroundStyle(.white)
-            .multilineTextAlignment(.center)
-            .centeredMessageWidth()
+            Text(endedTitle(clean: clean, started: started))
+                .font(.title)
+                .fontWeight(.bold)
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.center)
+                .centeredMessageWidth()
 
             if !clean {
                 messageLine(
@@ -195,7 +194,7 @@ struct GameLoadingView: View {
                     .buttonStyle(.primary)
                     .padding(.top, Spacing.md)
             } else {
-                messageLine(String(localized: "To play again, close \(AppInfo.name) from the app switcher, then open it again."))
+                messageLine("To play again, close XP Pocket from the app switcher, then open it again.")
             }
             if !clean {
                 reportLine
@@ -205,7 +204,21 @@ struct GameLoadingView: View {
         .transition(.opacity)
     }
 
-    private func messageLine(_ text: String) -> some View {
+    private func endedTitle(clean: Bool, started: Bool) -> LocalizedStringResource {
+        if clean {
+            return LocalizedStringResource(
+                "\(game.title) closed", comment: "The placeholder is the game's name.")
+        }
+        if started {
+            return LocalizedStringResource(
+                "\(game.title) stopped",
+                comment: "The game ended because of a problem. The placeholder is the game's name.")
+        }
+        return LocalizedStringResource(
+            "\(game.title) didn't start", comment: "The placeholder is the game's name.")
+    }
+
+    private func messageLine(_ text: LocalizedStringResource) -> some View {
         Text(text)
             .font(.system(size: 15))
             .foregroundStyle(.white.opacity(0.85))
@@ -245,7 +258,7 @@ struct GameLoadingView: View {
             // 2.5.1 forbids it. So the label tells the user to close
             // Empo from the app switcher, which is the way iOS
             // allows. See `ios/Empo/docs/multi-session.md`.
-            Text("If loading is stuck, close \(AppInfo.name) from the app switcher and reopen.")
+            Text("If loading is stuck, close XP Pocket from the app switcher, then reopen it.")
                 .font(.system(size: 14))
                 .foregroundStyle(.white.opacity(0.8))
                 .multilineTextAlignment(.center)

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import GameProbe
 import SwiftUI
 
@@ -13,13 +16,13 @@ struct MkxpSettingsPage: View {
                 fontScaleRow
                 MkxpEngineRow(state: state, field: .solidFonts) {
                     SettingsToggle(
-                        title: String(localized: "Solid fonts"),
+                        title: "Solid fonts",
                         isOn: Binding(
                             get: { state.effectiveSolidFonts },
                             set: { state.engine.solidFonts = $0 }
                         ),
                         description:
-                            String(localized: "Draw text as solid pixels, with no soft edges. This looks sharper in some games.")
+                            "Draw text as solid pixels, with no soft edges. This looks sharper in some games."
                     )
                 }
             }
@@ -27,13 +30,13 @@ struct MkxpSettingsPage: View {
             Section {
                 MkxpEngineRow(state: state, field: .frameSkip) {
                     SettingsToggle(
-                        title: String(localized: "Frame skip"),
+                        title: "Frame skip",
                         isOn: Binding(
                             get: { state.effectiveFrameSkip },
                             set: { state.engine.frameSkip = $0 }
                         ),
                         description:
-                            String(localized: "Skip frames when the game falls behind. The game keeps up better, but motion looks less smooth.")
+                            "Skip frames when the game falls behind. The game keeps up better, but motion looks less smooth."
                     )
                 }
             } header: {
@@ -63,12 +66,9 @@ struct MkxpSettingsPage: View {
                 }
                 .pickerStyle(.navigationLink)
 
-                Text(
-                    state.effectiveRenderScale.description
-                        + " The game's size and layout stay the same, only sharper."
-                )
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                Text(state.effectiveRenderScale.description)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
             .padding(.vertical, Spacing.xxs)
         }
@@ -80,9 +80,12 @@ struct MkxpSettingsPage: View {
                 HStack {
                     Text("Font scale")
                     Spacer()
-                    Text(String(format: "%.1fx", state.effectiveFontScale))
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
+                    Text(
+                        verbatim:
+                            "\(state.effectiveFontScale.formatted(.number.precision(.fractionLength(1))))x"
+                    )
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
                 }
                 Slider(
                     value: Binding(

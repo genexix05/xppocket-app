@@ -117,7 +117,7 @@ struct ProfileSkinEditorView: View {
             isPresented: Binding(
                 get: { pickingSlot != nil },
                 set: { if !$0 { pickingSlot = nil } }),
-            title: pickingSlot?.pickerTitle ?? String(localized: "Choose image"),
+            title: pickingSlot?.pickerTitle ?? "Choose image",
             hasExisting: pickingSlot?.hasExisting(in: slice) ?? false,
             onImageSelected: { image in
                 guard let slot = pickingSlot else { return }
@@ -305,9 +305,9 @@ struct ProfileSkinEditorView: View {
             }
         }
 
-        var pickerTitle: String {
+        var pickerTitle: LocalizedStringResource {
             switch self {
-            case .frame: String(localized: "Device frame")
+            case .frame: "Device frame"
             case .dpad: "D-pad image"
             case .dpadPressed: "D-pad pressed image"
             case .button(_, let label, _): "\(label ?? "Button") image"

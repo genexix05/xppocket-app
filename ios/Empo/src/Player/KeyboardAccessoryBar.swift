@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import SwiftUI
 
 // The strip of game keys above the system keyboard, rendered with
@@ -159,7 +162,7 @@ struct AccessoryKey: Identifiable {
     let kind: Kind
     /// VoiceOver name. The visible face alone reads as a bare letter
     /// or symbol, which gives no hint that it is a game key.
-    let name: String
+    let name: LocalizedStringResource
 
     static func fKey(_ number: Int32) -> AccessoryKey {
         AccessoryKey(
@@ -198,33 +201,33 @@ struct KeyboardAccessoryBar: View {
         (1...12).map { .fKey(Int32($0)) } + [
             AccessoryKey(
                 id: "esc", face: .symbol("escape"), scancode: Int32(GAMECORE_SCANCODE_ESCAPE),
-                kind: .tap, name: String(localized: "Escape key")),
+                kind: .tap, name: "Escape key"),
             AccessoryKey(
                 id: "tab", face: .symbol("arrow.right.to.line"),
                 scancode: Int32(GAMECORE_SCANCODE_TAB),
-                kind: .tap, name: String(localized: "Tab key")),
+                kind: .tap, name: "Tab key"),
             AccessoryKey(
                 id: "ctrl", face: .text("Ctrl"), scancode: Int32(GAMECORE_SCANCODE_LCTRL),
-                kind: .modifier, name: String(localized: "Control key")),
+                kind: .modifier, name: "Control key"),
             AccessoryKey(
                 id: "shift", face: .text("Shift"), scancode: Int32(GAMECORE_SCANCODE_LSHIFT),
-                kind: .modifier, name: String(localized: "Shift key")),
+                kind: .modifier, name: "Shift key"),
             AccessoryKey(
                 id: "alt", face: .text("Alt"), scancode: Int32(GAMECORE_SCANCODE_LALT),
-                kind: .modifier, name: String(localized: "Alt key")),
+                kind: .modifier, name: "Alt key"),
             AccessoryKey(
                 id: "left", face: .symbol("chevron.left"), scancode: Int32(GAMECORE_SCANCODE_LEFT),
-                kind: .hold, name: String(localized: "Left arrow key")),
+                kind: .hold, name: "Left arrow key"),
             AccessoryKey(
                 id: "up", face: .symbol("chevron.up"), scancode: Int32(GAMECORE_SCANCODE_UP),
-                kind: .hold, name: String(localized: "Up arrow key")),
+                kind: .hold, name: "Up arrow key"),
             AccessoryKey(
                 id: "down", face: .symbol("chevron.down"), scancode: Int32(GAMECORE_SCANCODE_DOWN),
-                kind: .hold, name: String(localized: "Down arrow key")),
+                kind: .hold, name: "Down arrow key"),
             AccessoryKey(
                 id: "right", face: .symbol("chevron.right"),
                 scancode: Int32(GAMECORE_SCANCODE_RIGHT),
-                kind: .hold, name: String(localized: "Right arrow key")),
+                kind: .hold, name: "Right arrow key"),
         ]
 
     var body: some View {
@@ -339,8 +342,14 @@ private struct AccessoryKeyButton: View {
             }
         )
         .accessibilityLabel(key.name)
-        .accessibilityValue(isLatched ? "locked" : "")
-        .accessibilityHint(key.kind == .modifier ? "Touch and hold to lock the key down." : "")
+        .accessibilityValue(
+            isLatched
+                ? Text("Locked", comment: "Spoken state of a keyboard key held down by XP Pocket.")
+                : Text(verbatim: "")
+        )
+        .accessibilityHint(
+            key.kind == .modifier ? Text("Touch and hold to lock the key down.") : Text(verbatim: "")
+        )
         .onDisappear {
             latchTask?.cancel()
             latchTask = nil

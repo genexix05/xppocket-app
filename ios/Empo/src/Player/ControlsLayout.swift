@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import Foundation
 import GameProbe
 import Observation
@@ -287,32 +290,32 @@ class ControlsLayout {
         activeManifest?.touch != nil
     }
 
-    var resetConfirmationTitle: String {
+    var resetConfirmationTitle: LocalizedStringResource {
         if case .pinnedProfile(let name) = provenance {
-            return String(localized: "Stop using \(name)?")
+            return "Stop using \(name)?"
         }
-        return hasManifestTouchSection ? String(localized: "Reset to game default") : String(localized: "Reset to \(AppInfo.builtInLayoutName.lowercased())")
+        return hasManifestTouchSection ? "Reset to game default?" : "Reset to XP Pocket default?"
     }
 
-    var resetConfirmationActionTitle: String {
+    var resetConfirmationActionTitle: LocalizedStringResource {
         if case .pinnedProfile = provenance {
-            return String(localized: "Stop using")
+            return "Stop using"
         }
-        return String(localized: "Reset")
+        return "Reset"
     }
 
     /// A method, not a property: building the message resolves the
     /// post-reset screen chain (two file reads). Call it when the
     /// confirm alert shows, not per render.
-    func resetConfirmationMessage() -> String {
+    func resetConfirmationMessage() -> LocalizedStringResource {
         if case .pinnedProfile(let name) = provenance {
-            let base = String(localized: "This game stops using the profile \(name). The profile keeps its layout.")
             return screenChangesOnReset()
-                ? base + " The screen returns to automatic placement." : base
+                ? "This game stops using the profile \(name). The profile keeps its layout. The screen returns to automatic placement."
+                : "This game stops using the profile \(name). The profile keeps its layout."
         }
         return screenChangesOnReset()
-            ? String(localized: "This deletes your custom layout and returns the screen to automatic placement. You can't undo this.")
-            : String(localized: "This deletes your custom layout. You can't undo this.")
+            ? "This deletes your custom layout and returns the screen to automatic placement. You can't undo this."
+            : "This deletes your custom layout. You can't undo this."
     }
 
     /// The reset clause must only promise "automatic placement" when
@@ -1187,6 +1190,11 @@ class ControlsLayout {
     /// underneath the header. Never persisted.
     var editChromeFrames: [CGRect] = []
 
+    /// The play toolbar's column in a sensor strip, in window space:
+    /// `ControlsZone.toolbarKeepout`. Controls never render or drop
+    /// there. Pushed by PlayerView. Never persisted.
+    var toolbarKeepout: CGRect = .null
+
     /// The canvas geometry an edit surface last rendered with, so
     /// the ADD flow can run a fresh control through the same
     /// clamp + collision + chrome-wall solve a drag gets. Pushed by
@@ -1265,7 +1273,7 @@ class ControlsLayout {
             let absolute = ControlsZone.absolutePosition(
                 for: relativeCenter, in: geoSize,
                 controlSize: CGSize(width: size, height: size),
-                safeArea: safeArea, controlsMinY: controlsMinY)
+                safeArea: safeArea, controlsMinY: controlsMinY, keepout: toolbarKeepout)
             obstacles.append(
                 EditDragSolver.Circle(
                     x: Double(absolute.x), y: Double(absolute.y),
@@ -1284,7 +1292,7 @@ class ControlsLayout {
     }
 
     private var chromeWalls: [EditDragSolver.Rect] {
-        editChromeFrames.map {
+        (editChromeFrames + [toolbarKeepout].filter { !$0.isNull }).map {
             EditDragSolver.Rect(
                 x: Double($0.minX), y: Double($0.minY),
                 width: Double($0.width), height: Double($0.height))
@@ -1362,7 +1370,7 @@ class ControlsLayout {
             let clamped = ControlsZone.absolutePosition(
                 for: circle.center, in: geoSize,
                 controlSize: CGSize(width: circle.size, height: circle.size),
-                safeArea: safeArea, controlsMinY: controlsMinY
+                safeArea: safeArea, controlsMinY: controlsMinY, keepout: toolbarKeepout
             )
             return (x: Double(clamped.x), y: Double(clamped.y), size: Double(circle.size))
         }
@@ -1379,7 +1387,7 @@ class ControlsLayout {
         let dpadClamped = ControlsZone.absolutePosition(
             for: dpadRelativeCenter, in: geoSize,
             controlSize: CGSize(width: dpadSize, height: dpadSize),
-            safeArea: safeArea, controlsMinY: controlsMinY
+            safeArea: safeArea, controlsMinY: controlsMinY, keepout: toolbarKeepout
         )
 
         // Separation must stay inside the clamp BAND, not the full
@@ -1405,11 +1413,23 @@ class ControlsLayout {
             )
         ]
 
+        let keepout = toolbarKeepout.insetBy(
+            dx: -ControlsZone.innerPadding, dy: -ControlsZone.innerPadding)
+        let walls =
+            keepout.isNull
+            ? []
+            : [
+                EditDragSolver.Rect(
+                    x: Double(keepout.minX) - bandMinX, y: Double(keepout.minY) - bandMinY,
+                    width: Double(keepout.width), height: Double(keepout.height))
+            ]
+
         let result = ButtonSeparation.separate(
             bandInputs,
             width: bandWidth,
             height: bandHeight,
-            obstacles: obstacles
+            obstacles: obstacles,
+            walls: walls
         )
 
         if result.movedCount > 0 {
@@ -1758,9 +1778,13 @@ class ControlsLayout {
         case .pinToExisting(let profile, let renameToShared, let hash):
             var target = profile
             if renameToShared {
-                let shared = store.uniqueName(base: "Shared layout")
+                let shared = store.uniqueName(
+                    base: String(
+                        localized: "Shared layout",
+                        comment: "Name of a layout profile that XP Pocket makes when several games share edits."))
                 if LayoutProfilesManager.renameProfile(from: profile, to: shared) {
                     target = shared
+                    record.sharedProfiles.insert(shared)
                     for (gameID, entry) in record.games where entry.profile == profile {
                         record.games[gameID]?.profile = shared
                     }
@@ -2088,11 +2112,11 @@ class ControlsLayout {
             portraitTop = Double(safeArea.top) + portraitWidth * 0.75 + ControlsZone.toolbarGap
         }
 
-        // Landscape lateral insets = the notch / home-indicator depth,
-        // which the render clamp reserves on both edges. When currently
-        // landscape, the live safe area has the exact values. In
-        // portrait the notch depth appears as safeArea.top, so use it
-        // as the estimate for both landscape edges.
+        // Side insets for the sideways layout: the notch depth, which
+        // the render clamp keeps clear on both edges. A sideways window
+        // has the exact values. In an upright window the notch is
+        // usually at the top, but the closed iPhone Duo puts its camera
+        // and status bar on the right edge (top 0, trailing 84).
         let isLandscapeNow = bounds.width > bounds.height
         let landscapeLeading: Double
         let landscapeTrailing: Double
@@ -2100,8 +2124,9 @@ class ControlsLayout {
             landscapeLeading = Double(safeArea.leading)
             landscapeTrailing = Double(safeArea.trailing)
         } else {
-            landscapeLeading = Double(safeArea.top)
-            landscapeTrailing = Double(safeArea.top)
+            let notchDepth = Double(max(safeArea.top, safeArea.leading, safeArea.trailing))
+            landscapeLeading = notchDepth
+            landscapeTrailing = notchDepth
         }
 
         return TouchZoneMetrics(

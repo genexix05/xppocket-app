@@ -1,30 +1,36 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import SwiftUI
 
 struct ImportButton: View {
+    @Environment(\.colorScheme) private var colorScheme
     enum Phase: Hashable {
         case idle
         case validating
         case multipleGames
 
-        var title: String {
+        var title: LocalizedStringResource {
             switch self {
             case .idle:
-                return String(localized: "Import game")
+                return "Import game"
             case .validating:
-                return String(localized: "Checking game")
+                return LocalizedStringResource(
+                    "Checking game", comment: "Import button while XP Pocket checks the picked game")
             case .multipleGames:
-                return String(localized: "Choose game")
+                return LocalizedStringResource(
+                    "Choose games", comment: "Import button when the import holds more than one game")
             }
         }
 
-        var accessibilityLabel: String {
+        var accessibilityLabel: LocalizedStringResource {
             switch self {
             case .idle:
-                return String(localized: "Import game")
+                return "Import game"
             case .validating:
-                return String(localized: "Checking game, tap to stop")
+                return "Checking game. Double-tap to stop."
             case .multipleGames:
-                return String(localized: "Choose game")
+                return "Choose games"
             }
         }
 
@@ -45,18 +51,15 @@ struct ImportButton: View {
     /// inspection has confirmed an ambiguous import that needs user
     /// input.
     var phase: Phase = .idle
+    /// Collapsed center for this view's size, when the button sits in
+    /// the sensor strip column instead of the header.
+    var collapsedCenter: ((CGSize) -> CGPoint)?
     var onRequestCancelValidation: (() -> Void)?
 
-    @Environment(\.colorScheme) private var colorScheme
     @State private var importShimmer: CGFloat = -1
     @State private var importMoveTrigger = 0
+    @State private var buttonHeight: CGFloat = AppSize.minTapTarget
     @State private var revealed = false
-
-    /// Fixed estimate for expanded label height. Measuring via
-    /// `onGeometryChange` and feeding it back into `.position`
-    /// caused an AttributeGraph layout loop that tripped the
-    /// scene-create watchdog (0x8BADF00D) on iOS 27 review devices.
-    private static let expandedButtonHeight: CGFloat = 52
 
     var body: some View {
         GeometryReader { geo in
@@ -64,11 +67,12 @@ struct ImportButton: View {
             let buttonSize: CGFloat = AppSize.toolbarButton
 
             // End positions (center coordinates)
-            let collapsedX = geo.size.width - 16 - buttonSize / 2
-            let collapsedY = headerHeight / 2
+            let stripCenter = collapsedCenter?(geo.size)
+            let collapsedX = stripCenter?.x ?? geo.size.width - 16 - buttonSize / 2
+            let collapsedY = stripCenter?.y ?? headerHeight / 2
             let expandedX = geo.size.width / 2
             let emptyStateBottom = geo.size.height / 2 + emptyStateOffset + emptyStateHeight / 2
-            let expandedY = emptyStateBottom + Spacing._4xl + Self.expandedButtonHeight / 2
+            let expandedY = emptyStateBottom + Spacing._4xl + buttonHeight / 2
 
             // Arc: find center of rotation on perpendicular bisector
             let chordDX = collapsedX - expandedX
@@ -96,9 +100,26 @@ struct ImportButton: View {
                 importButtonLabel(collapsed: collapsed)
             }
             .buttonStyle(.plain)
+            // Label text is either hidden ("+" only, collapsed state)
+            // or localised to "Import game". Either way VoiceOver
+            // needs a stable announcement that doesn't flip between
+            // "Plus button" and "Import game button" during the
+            // collapsed<->expanded morph.
             .accessibilityLabel(phase.accessibilityLabel)
             .onChange(of: collapsed) { _, _ in
                 Haptics.tap()
+            }
+            .onGeometryChange(for: CGFloat.self) {
+                $0.size.height
+            } action: {
+                // SwiftUI snaps the measured height to the pixel grid
+                // at the button's position, and the position depends on
+                // this height. On some window sizes (iPhone Duo, closed
+                // and sideways) the two settle on no value: 37.33 and
+                // 38 swap forever and the first frame never commits.
+                if abs($0 - buttonHeight) >= 1 {
+                    buttonHeight = $0
+                }
             }
             .overlay {
                 Capsule()
@@ -132,9 +153,16 @@ struct ImportButton: View {
                     SpringKeyframe(1.0, duration: 0.3, spring: .smooth)
                 }
             }
+            // Entrance reveal (before arc transforms so it's in local space)
             .opacity(revealed ? 1 : 0)
             .scaleEffect(revealed ? 1 : 0.8)
             .blur(radius: revealed ? 0 : 10)
+            // Counter-rotate to keep content upright through the
+            // sweep. The three modifiers below step the button
+            // from the expanded anchor to the collapsed anchor
+            // along an arc: offset to the expanded position
+            // relative to the arc center, rotate by the sweep
+            // angle, then place at the arc center.
             .rotationEffect(.degrees(collapsed ? -arcDeg : 0))
             .offset(x: offX, y: offY)
             .rotationEffect(.degrees(collapsed ? arcDeg : 0))

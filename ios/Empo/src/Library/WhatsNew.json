@@ -1,16 +1,38 @@
 [
   {
+    "version": 4,
+    "appVersion": "0.8.1",
+    "items": [
+      {
+        "symbol": "iphone",
+        "title": "iPhone Duo support",
+        "detail": "XP Pocket now starts on iPhone Duo and puts the on-screen buttons in the right place."
+      }
+    ]
+  },
+  {
+    "version": 3,
+    "appVersion": "0.8.0",
+    "items": [
+      {
+        "symbol": "globe",
+        "title": "XP Pocket speaks your language",
+        "detail": "XP Pocket now comes in 10 languages and uses the language of your device. To pick another one, go to Settings."
+      }
+    ]
+  },
+  {
     "version": 2,
     "appVersion": "0.7.1",
     "items": [
       {
         "symbol": "gamecontroller",
         "title": "RPG Maker MV and MZ",
-        "detail": "Empo now plays games made with RPG Maker MV and MZ. Import one the same way as any other game."
+        "detail": "XP Pocket now plays games made with RPG Maker MV and MZ. Import one the same way as any other game."
       },
       {
         "symbol": "checkmark.circle",
-        "title": "More games start",
+        "title": "More XP games start",
         "detail": "Some RPG Maker XP games that stopped at launch, such as Vinemon, now start."
       }
     ]
@@ -22,7 +44,7 @@
       {
         "symbol": "gamecontroller",
         "title": "PSDK games",
-        "detail": "Empo now plays games made with PSDK. Import one the same way you import an RPG Maker game."
+        "detail": "XP Pocket now plays games made with PSDK. Import one the same way you import an RPG Maker game."
       },
       {
         "symbol": "slider.horizontal.3",
@@ -32,7 +54,7 @@
       {
         "symbol": "cpu",
         "title": "Game cores",
-        "detail": "See the game cores built into Empo in Settings."
+        "detail": "See the game cores built into XP Pocket in Settings."
       }
     ]
   }

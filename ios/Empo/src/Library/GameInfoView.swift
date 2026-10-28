@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import SwiftUI
 
 struct GameInfoView: View {
@@ -108,13 +111,13 @@ struct GameInfoView: View {
 
                         GroupedSection("Details") {
                             if let madeWith, let coreName {
-                                DetailRow(String(localized: "Made with")) {
+                                DetailRow("Made with") {
                                     Text(madeWith)
                                 }
 
                                 Divider().padding(.leading, Spacing.xl)
 
-                                DetailRow(String(localized: "Game core")) {
+                                DetailRow("Game core") {
                                     Text(coreName)
                                         .multilineTextAlignment(.trailing)
                                 }
@@ -122,7 +125,7 @@ struct GameInfoView: View {
                                 Divider().padding(.leading, Spacing.xl)
                             }
 
-                            DetailRow(String(localized: "Date added")) {
+                            DetailRow("Date added") {
                                 if let date = metadata.dateAdded {
                                     Text(Self.dateFormatter.string(from: date))
                                 } else {
@@ -132,7 +135,7 @@ struct GameInfoView: View {
 
                             Divider().padding(.leading, Spacing.xl)
 
-                            DetailRow(String(localized: "Last played")) {
+                            DetailRow("Last played") {
                                 if let date = metadata.lastPlayed {
                                     Text(
                                         Self.relativeDateFormatter.localizedString(
@@ -145,14 +148,14 @@ struct GameInfoView: View {
                             if let time = metadata.totalPlayTime, time > 0 {
                                 Divider().padding(.leading, Spacing.xl)
 
-                                DetailRow(String(localized: "Play time")) {
+                                DetailRow("Play time") {
                                     Text(GameMetadata.formatPlayTime(metadata.totalPlayTime))
                                 }
                             }
 
                             Divider().padding(.leading, Spacing.xl)
 
-                            DetailRow(String(localized: "Size on disk")) {
+                            DetailRow("Size on disk") {
                                 if let size = diskSize {
                                     Text(GameMetadata.formatDiskSize(size))
                                 } else {
@@ -177,7 +180,7 @@ struct GameInfoView: View {
                         if settings.debugLogs, !runtimeRows.isEmpty {
                             GroupedSection("Runtime") {
                                 ForEach(runtimeRows) { row in
-                                    DetailRow(row.label) {
+                                    DetailRow(Text(row.label)) {
                                         if let value = row.value {
                                             Text(value).monospaced()
                                         } else {
@@ -254,14 +257,17 @@ struct GameInfoView: View {
             }
             .imageSourcePicker(
                 isPresented: $showArtworkPicker,
-                title: String(localized: "Artwork"),
+                title: LocalizedStringResource(
+                    "Artwork", comment: "Title of the sheet that changes the game's cover image"),
                 hasExisting: hasCustomArtwork,
                 onImageSelected: { saveArtwork($0) },
                 onRemove: { removeArtwork() }
             )
             .imageSourcePicker(
                 isPresented: $showBannerPicker,
-                title: String(localized: "Banner"),
+                title: LocalizedStringResource(
+                    "Banner",
+                    comment: "Title of the sheet that changes the wide image at the top of the game's page"),
                 hasExisting: hasCustomBanner,
                 onImageSelected: { saveBanner($0) },
                 onRemove: { removeBanner() }
@@ -572,10 +578,10 @@ struct GameInfoView: View {
 }
 
 private struct GroupedSection<Content: View>: View {
-    let header: String?
+    let header: LocalizedStringResource?
     @ViewBuilder let content: Content
 
-    init(_ header: String? = nil, @ViewBuilder content: () -> Content) {
+    init(_ header: LocalizedStringResource? = nil, @ViewBuilder content: () -> Content) {
         self.header = header
         self.content = content()
     }
@@ -602,17 +608,21 @@ private struct GroupedSection<Content: View>: View {
 }
 
 private struct DetailRow<Content: View>: View {
-    let label: String
+    let label: Text
     @ViewBuilder let value: Content
 
-    init(_ label: String, @ViewBuilder value: () -> Content) {
+    init(_ label: Text, @ViewBuilder value: () -> Content) {
         self.label = label
         self.value = value()
     }
 
+    init(_ label: LocalizedStringResource, @ViewBuilder value: () -> Content) {
+        self.init(Text(label), value: value)
+    }
+
     var body: some View {
         HStack {
-            Text(label)
+            label
             Spacer()
             value
                 .foregroundStyle(.secondary)

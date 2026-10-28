@@ -105,6 +105,8 @@ For build requirements, build steps, and PR guidelines, see [`CONTRIBUTING.md`](
 
 [GPLv2+](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), the same license as upstream [mkxp-z](https://github.com/mkxp-z/mkxp-z) and the project XP Pocket builds on. The app shows the full dependency and font license set at **Settings → Open-source licenses**.
 
+Code taken from Empo 0.7.4 and later is under the [GPLv3](LICENSE) with the [additional terms](ADDITIONAL-TERMS.md) of its author, Copyright (C) 2026 Mateo M. (https://github.com/mateo-m/empo-app). XP Pocket is a modified version of Empo.
+
 ## Credits
 
 - [mateo-m](https://github.com/mateo-m) for the original app that XP Pocket builds on, and for the iOS engine builds.

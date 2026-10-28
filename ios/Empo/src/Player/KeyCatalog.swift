@@ -1,18 +1,49 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import Foundation
 
 struct KeyEntry: Identifiable {
     let id = UUID()
     let label: String
-    var hint: String?
+    var hint: LocalizedStringResource?
     let scancode: Int32
 }
 
 let keyCatalog: [KeyEntry] = [
     // Common RPG Maker keys
-    KeyEntry(label: "Z", hint: String(localized: "Confirm"), scancode: Int32(GAMECORE_SCANCODE_Z)),
-    KeyEntry(label: "X", hint: String(localized: "Cancel"), scancode: Int32(GAMECORE_SCANCODE_X)),
-    KeyEntry(label: "Shift", hint: String(localized: "Dash"), scancode: Int32(GAMECORE_SCANCODE_LSHIFT)),
-    KeyEntry(label: "Ctrl", hint: String(localized: "Skip"), scancode: Int32(GAMECORE_SCANCODE_LCTRL)),
+    KeyEntry(
+        label: "Z",
+        hint: LocalizedStringResource(
+            "Confirm",
+            comment: "What this key does in most RPG Maker games. Shown next to the key name in the key list."
+        ),
+        scancode: Int32(GAMECORE_SCANCODE_Z)
+    ),
+    KeyEntry(
+        label: "X",
+        hint: LocalizedStringResource(
+            "Cancel",
+            comment: "What this key does in most RPG Maker games. Shown next to the key name in the key list."
+        ),
+        scancode: Int32(GAMECORE_SCANCODE_X)
+    ),
+    KeyEntry(
+        label: "Shift",
+        hint: LocalizedStringResource(
+            "Dash",
+            comment: "What this key does in most RPG Maker games. Shown next to the key name in the key list."
+        ),
+        scancode: Int32(GAMECORE_SCANCODE_LSHIFT)
+    ),
+    KeyEntry(
+        label: "Ctrl",
+        hint: LocalizedStringResource(
+            "Skip",
+            comment: "What this key does in most RPG Maker games. Shown next to the key name in the key list."
+        ),
+        scancode: Int32(GAMECORE_SCANCODE_LCTRL)
+    ),
     KeyEntry(label: "Space", scancode: Int32(GAMECORE_SCANCODE_SPACE)),
     KeyEntry(label: "Enter", scancode: Int32(GAMECORE_SCANCODE_RETURN)),
     KeyEntry(label: "Escape", scancode: Int32(GAMECORE_SCANCODE_ESCAPE)),
@@ -75,5 +106,7 @@ func scancodeDisplayName(_ sc: Int32) -> String {
     for entry in keyCatalog where entry.scancode == sc {
         return entry.label
     }
-    return "Unknown key"
+    return String(
+        localized: "Unknown key",
+        comment: "Shown as the key of an on-screen button when XP Pocket does not know its key.")
 }

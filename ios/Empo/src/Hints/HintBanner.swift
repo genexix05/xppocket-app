@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import SwiftUI
 
 struct HintBanner: View {
@@ -57,12 +60,12 @@ struct HintBanner: View {
 
 private struct HintDetailSheet: View {
     let icon: String
-    let excerpt: String
-    let description: String
+    let excerpt: LocalizedStringResource
+    let description: LocalizedStringResource
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        StandardSheet(title: String(localized: "Tip"), emblem: icon) {
+        StandardSheet(title: "Tip", emblem: icon) {
             Text(excerpt)
                 .font(.subheadline.weight(.semibold))
                 .frame(maxWidth: .infinity, alignment: .leading)

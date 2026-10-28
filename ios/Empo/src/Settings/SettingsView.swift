@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import SwiftUI
 
 struct SettingsView: View {
@@ -20,10 +23,12 @@ struct SettingsView: View {
                 AccountSettingsSection()
 
                 Section {
+                    LanguagePicker()
+
                     SettingsPicker(
-                        title: String(localized: "Theme"),
+                        title: "Theme",
                         selection: $settings.theme,
-                        description: String(localized: "System follows your device's appearance setting.")
+                        description: "System follows your device's appearance setting."
                     ) {
                         ForEach(AppTheme.allCases, id: \.self) { theme in
                             Text(theme.label).tag(theme)
@@ -31,9 +36,9 @@ struct SettingsView: View {
                     }
 
                     SettingsPicker(
-                        title: String(localized: "Layout"),
+                        title: "Layout",
                         selection: $settings.libraryDisplayMode,
-                        description: String(localized: "Show games as a grid of cards or a compact list.")
+                        description: "Show games as a grid of cards or a compact list."
                     ) {
                         ForEach(LibraryDisplayMode.allCases, id: \.self) { mode in
                             Text(mode.label).tag(mode)
@@ -45,9 +50,9 @@ struct SettingsView: View {
                     // artwork. Hide the row when it would be a no-op.
                     if settings.libraryDisplayMode == .grid {
                         SettingsPicker(
-                            title: String(localized: "Title position"),
+                            title: "Title position",
                             selection: $settings.titlePosition,
-                            description: String(localized: "Where game titles show up on your library cards.")
+                            description: "Where game titles show up on your library cards."
                         ) {
                             ForEach(TitlePosition.allCases, id: \.self) { position in
                                 Text(position.label).tag(position)
@@ -56,17 +61,17 @@ struct SettingsView: View {
                     }
 
                     SettingsToggle(
-                        title: String(localized: "Interface haptics"),
+                        title: "Interface haptics",
                         isOn: $settings.interfaceHaptics,
                         description:
-                            String(localized: "Feel a gentle tap when you press buttons and switches.")
+                            "Feel a gentle tap when you press buttons and switches."
                     )
 
                     SettingsToggle(
-                        title: String(localized: "Continue playing"),
+                        title: "Continue playing",
                         isOn: $settings.showContinuePlaying,
                         description:
-                            String(localized: "Shows a card at the top of your library for your last game.")
+                            "Shows a card at the top of your library for your last game."
                     )
                 } header: {
                     Text("Appearance")
@@ -74,25 +79,25 @@ struct SettingsView: View {
 
                 Section {
                     SettingsNavigationRow(
-                        title: String(localized: "Layout profiles"),
+                        title: "Layout profiles",
                         description:
-                            String(localized: "Create and edit saved layouts for the on-screen controls and the game screen.")
+                            "Create and edit saved layouts for the on-screen controls and the game screen."
                     ) {
                         LayoutProfilesSettingsView()
                     }
 
                     SettingsNavigationRow(
-                        title: String(localized: "Community layouts"),
+                        title: "Community layouts",
                         description:
-                            String(localized: "Browse and install touch-control layouts shared by the XP Pocket community.")
+                            "Browse and install touch-control layouts shared by the XP Pocket community."
                     ) {
                         CommunityLayoutsView()
                     }
 
                     SettingsToggle(
-                        title: String(localized: "Controller haptics"),
+                        title: "On-screen control haptics",
                         isOn: $settings.controllerHaptics,
-                        description: String(localized: "Vibration feedback on the on-screen game controls while you play.")
+                        description: "Feel a gentle tap when you press the on-screen controls while you play."
                     )
                 } header: {
                     Text("Gameplay")
@@ -100,17 +105,17 @@ struct SettingsView: View {
 
                 Section {
                     SettingsToggle(
-                        title: String(localized: "Diagnostics overlay"),
+                        title: "Diagnostics overlay",
                         isOn: $settings.diagnosticsOverlay,
                         description:
-                            String(localized: "Adds a toolbar button that shows frame rate, memory use, and details about the game engine while you play.")
+                            "Adds a toolbar button that shows frame rate, memory use, and details about the game engine while you play."
                     )
 
                     SettingsToggle(
-                        title: String(localized: "Fill unused screen area"),
+                        title: "Fill unused screen area",
                         isOn: $settings.showViewportBounds,
                         description:
-                            String(localized: "Fill the screen area outside the game picture with a color you choose.")
+                            "Fill the screen area outside the game picture with a color you choose."
                     )
 
                     if settings.showViewportBounds {
@@ -128,24 +133,24 @@ struct SettingsView: View {
                     }
 
                     SettingsToggle(
-                        title: String(localized: "Show touch area"),
+                        title: "Show touch area",
                         isOn: $settings.showTouchZone,
                         description:
-                            String(localized: "Outlines where your taps and drags control the game's cursor.")
+                            "Outlines where your taps and drags control the game's cursor."
                     )
 
                     SettingsToggle(
-                        title: String(localized: "Delete broken imports"),
+                        title: "Delete broken imports",
                         isOn: $settings.cleanupInvalidGames,
                         description:
-                            String(localized: "Deletes games that failed to import the next time you open \(AppInfo.name). You can't undo this.")
+                            "Deletes games that failed to import the next time you open \(AppInfo.name). You can't undo this."
                     )
 
                     SettingsToggle(
-                        title: String(localized: "Debug logs"),
+                        title: "Debug logs",
                         isOn: $settings.debugLogs,
                         description:
-                            String(localized: "Saves a log for each play session. Find them in Files, under \(AppInfo.name) › Games › the game's name › Logs.")
+                            "Saves a log for each play session. Find them in Files, under \(AppInfo.name) › Games › the game's name › Logs."
                     )
 
                     if settings.debugLogs {
@@ -162,7 +167,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Advanced")
                 } footer: {
-                    Text("These options are for debugging and troubleshooting.")
+                    Text("Use these if a game misbehaves or you want to report a bug.")
                 }
 
                 Section {
@@ -269,7 +274,7 @@ struct SettingsView: View {
         Button {
             showBuildInfo = true
         } label: {
-            Text("v\(AppInfo.version)")
+            Text(verbatim: "v\(AppInfo.version)")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
@@ -320,37 +325,39 @@ private struct BuildInfoSheet: View {
     /// the text-selection range. Users can then long-press to copy only
     /// the canonical value (e.g. the commit hash without the
     /// "(uncommitted changes)" suffix).
-    private struct Row: Identifiable {
-        let label: String
+    private struct Row {
+        let label: LocalizedStringResource
         let value: String
-        var annotation: String?
-        var id: String { label }
+        var annotation: LocalizedStringResource?
     }
 
     private var rows: [Row] {
         var r: [Row] = []
-        r.append(Row(label: String(localized: "Version"), value: AppInfo.version))
-        r.append(Row(label: String(localized: "Build"), value: AppInfo.build))
+        r.append(Row(label: "Version", value: AppInfo.version))
         r.append(
             Row(
-                label: String(localized: "Commit"),
+                label: LocalizedStringResource(
+                    "Build", comment: "Build info sheet: the app build number row."), value: AppInfo.build))
+        r.append(
+            Row(
+                label: "Commit",
                 value: GitInfo.commit,
                 annotation: GitInfo.dirty ? "(uncommitted changes)" : nil
             ))
         if !GitInfo.branch.isEmpty, GitInfo.branch != GitInfo.defaultBranch {
-            r.append(Row(label: String(localized: "Branch"), value: GitInfo.branch))
+            r.append(Row(label: "Branch", value: GitInfo.branch))
         }
         return r
     }
 
     var body: some View {
         StandardSheet(
-            title: String(localized: "Build info"),
+            title: "Build info",
             chromeAllowance: AppSize.libraryHeader,
             trailingButton: SheetBarAction("Done") { dismiss() }
         ) {
             SheetCard {
-                ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
+                ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
                     if index > 0 {
                         Divider().padding(.leading, Spacing.xl)
                     }

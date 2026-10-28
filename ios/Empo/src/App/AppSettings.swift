@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import Foundation
 import Observation
 import SwiftUI
@@ -7,10 +10,10 @@ enum LibraryDisplayMode: String, CaseIterable {
     case grid
     case list
 
-    var label: String {
+    var label: LocalizedStringResource {
         switch self {
-        case .grid: String(localized: "Grid")
-        case .list: String(localized: "List")
+        case .grid: LocalizedStringResource("Grid", comment: "Library layout option: games as cards.")
+        case .list: LocalizedStringResource("List", comment: "Library layout option: games as rows.")
         }
     }
 }
@@ -27,18 +30,18 @@ enum LibrarySortOption: String, CaseIterable {
     case largestSize
     case smallestSize
 
-    var label: String {
+    var label: LocalizedStringResource {
         switch self {
-        case .titleAZ: String(localized: "Title A to Z")
-        case .titleZA: String(localized: "Title Z to A")
-        case .recentlyAdded: String(localized: "Recently added")
-        case .leastRecentlyAdded: String(localized: "Added longest ago")
-        case .recentlyPlayed: String(localized: "Recently played")
-        case .leastRecentlyPlayed: String(localized: "Played longest ago")
-        case .mostPlayed: String(localized: "Most played")
-        case .leastPlayed: String(localized: "Least played")
-        case .largestSize: String(localized: "Largest first")
-        case .smallestSize: String(localized: "Smallest first")
+        case .titleAZ: "Title A to Z"
+        case .titleZA: "Title Z to A"
+        case .recentlyAdded: "Recently added"
+        case .leastRecentlyAdded: "Added longest ago"
+        case .recentlyPlayed: "Recently played"
+        case .leastRecentlyPlayed: "Played longest ago"
+        case .mostPlayed: "Most played"
+        case .leastPlayed: "Least played"
+        case .largestSize: "Largest first"
+        case .smallestSize: "Smallest first"
         }
     }
 
@@ -56,32 +59,40 @@ enum LibrarySortOption: String, CaseIterable {
     /// order in the UI. Each group's options also render in the
     /// listed order.
     static let groups: [LibrarySortGroup] = [
-        LibrarySortGroup(title: String(localized: "Title"), options: [.titleAZ, .titleZA]),
         LibrarySortGroup(
-            title: String(localized: "Date"),
+            title: LocalizedStringResource(
+                "Title", comment: "Library sort sheet: section for sorting by game title."),
+            options: [.titleAZ, .titleZA]),
+        LibrarySortGroup(
+            title: LocalizedStringResource(
+                "Date", comment: "Library sort sheet: section for sorting by when a game was added or played."
+            ),
             options: [
                 .recentlyAdded, .leastRecentlyAdded,
                 .recentlyPlayed, .leastRecentlyPlayed,
             ]),
-        LibrarySortGroup(title: String(localized: "Playtime"), options: [.mostPlayed, .leastPlayed]),
-        LibrarySortGroup(title: String(localized: "Size"), options: [.largestSize, .smallestSize]),
+        LibrarySortGroup(title: "Play time", options: [.mostPlayed, .leastPlayed]),
+        LibrarySortGroup(
+            title: LocalizedStringResource(
+                "Size", comment: "Library sort sheet: section for sorting by game size on disk."),
+            options: [.largestSize, .smallestSize]),
     ]
 }
 
 struct LibrarySortGroup: Identifiable {
-    let title: String
+    let title: LocalizedStringResource
     let options: [LibrarySortOption]
-    var id: String { title }
+    var id: LibrarySortOption? { options.first }
 }
 
 enum TitlePosition: String, CaseIterable {
     case inside
     case under
 
-    var label: String {
+    var label: LocalizedStringResource {
         switch self {
-        case .inside: String(localized: "Inside card")
-        case .under: String(localized: "Under card")
+        case .inside: "Inside card"
+        case .under: "Under card"
         }
     }
 }
@@ -91,11 +102,13 @@ enum AppTheme: String, CaseIterable {
     case light
     case auto
 
-    var label: String {
+    var label: LocalizedStringResource {
         switch self {
-        case .dark: String(localized: "Dark")
-        case .light: String(localized: "Light")
-        case .auto: String(localized: "System")
+        case .dark: LocalizedStringResource("Dark", comment: "Theme option.")
+        case .light: LocalizedStringResource("Light", comment: "Theme option.")
+        case .auto:
+            LocalizedStringResource(
+                "System", comment: "Option that follows the device setting, for the theme or the language.")
         }
     }
 

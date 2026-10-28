@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import Foundation
 import GameProbe
 
@@ -7,9 +10,16 @@ import GameProbe
 @MainActor
 enum BindingsCatalog {
 
-    enum Scope: String, CaseIterable {
-        case thisGame = "This game"
-        case allGames = "All games"
+    enum Scope: CaseIterable {
+        case thisGame
+        case allGames
+
+        var title: LocalizedStringResource {
+            switch self {
+            case .thisGame: "This game"
+            case .allGames: "All games"
+            }
+        }
     }
 
     enum Provenance {
@@ -33,17 +43,26 @@ enum BindingsCatalog {
 
     /// RPG Maker meaning hints for the Common key group (ticket 005 section 4).
     static let commonKeyAnnotations: [String: String] = [
-        "Enter": "Confirm",
-        "Space": "Confirm",
-        "Escape": String(localized: "Cancel / menu"),
+        "Enter": String(
+            localized: "Confirm",
+            comment: "What this key does in most RPG Maker games. Shown next to the key name in the key list."
+        ),
+        "Space": String(localized: "Confirm"),
+        "Escape": String(
+            localized: "Cancel / menu",
+            comment: "What this key does in most RPG Maker games. Shown next to the key name in the key list."
+        ),
         "KeyX": String(localized: "Cancel / menu"),
-        "ShiftLeft": "Dash",
+        "ShiftLeft": String(
+            localized: "Dash",
+            comment: "What this key does in most RPG Maker games. Shown next to the key name in the key list."
+        ),
         "KeyZ": String(localized: "Confirm (VX/Ace)"),
         "KeyQ": String(localized: "Page up (L)"),
         "KeyW": String(localized: "Page down (R)"),
-        "KeyA": "RPG Maker X button",
-        "KeyS": "RPG Maker Y button",
-        "KeyD": "RPG Maker Z button",
+        "KeyA": String(localized: "RPG Maker X button"),
+        "KeyS": String(localized: "RPG Maker Y button"),
+        "KeyD": String(localized: "RPG Maker Z button"),
         "F5": String(localized: "Script hotkeys"),
         "F6": String(localized: "Script hotkeys"),
         "F7": String(localized: "Script hotkeys"),
@@ -56,39 +75,75 @@ enum BindingsCatalog {
             id: "face",
             title: String(localized: "Face buttons"),
             elements: [
-                Row(source: .element("a"), label: "A / Cross (south)"),
-                Row(source: .element("b"), label: "B / Circle (east)"),
-                Row(source: .element("x"), label: "X / Square (west)"),
-                Row(source: .element("y"), label: "Y / Triangle (north)"),
+                Row(
+                    source: .element("a"),
+                    label: String(localized: "A / Cross (south)")),
+                Row(
+                    source: .element("b"),
+                    label: String(localized: "B / Circle (east)")),
+                Row(
+                    source: .element("x"),
+                    label: String(localized: "X / Square (west)")),
+                Row(
+                    source: .element("y"),
+                    label: String(localized: "Y / Triangle (north)")),
             ]),
         Section(
             id: "dpad",
             title: String(localized: "D-pad"),
             elements: [
-                Row(source: .element("dpup"), label: "D-pad up"),
-                Row(source: .element("dpdown"), label: "D-pad down"),
-                Row(source: .element("dpleft"), label: "D-pad left"),
-                Row(source: .element("dpright"), label: "D-pad right"),
+                Row(
+                    source: .element("dpup"),
+                    label: String(localized: "D-pad up")),
+                Row(
+                    source: .element("dpdown"),
+                    label: String(localized: "D-pad down")),
+                Row(
+                    source: .element("dpleft"),
+                    label: String(localized: "D-pad left")),
+                Row(
+                    source: .element("dpright"),
+                    label: String(localized: "D-pad right")),
             ]),
         Section(
             id: "leftStick",
             title: String(localized: "Left stick"),
             elements: [
-                Row(source: .element("-leftx"), label: String(localized: "Left stick left")),
-                Row(source: .element("+leftx"), label: String(localized: "Left stick right")),
-                Row(source: .element("-lefty"), label: String(localized: "Left stick up")),
-                Row(source: .element("+lefty"), label: String(localized: "Left stick down")),
-                Row(source: .element("leftstick"), label: "L3 click"),
+                Row(
+                    source: .element("-leftx"),
+                    label: String(localized: "Left stick left")),
+                Row(
+                    source: .element("+leftx"),
+                    label: String(localized: "Left stick right")),
+                Row(
+                    source: .element("-lefty"),
+                    label: String(localized: "Left stick up")),
+                Row(
+                    source: .element("+lefty"),
+                    label: String(localized: "Left stick down")),
+                Row(
+                    source: .element("leftstick"),
+                    label: String(localized: "L3 click")),
             ]),
         Section(
             id: "rightStick",
             title: String(localized: "Right stick"),
             elements: [
-                Row(source: .element("-rightx"), label: String(localized: "Right stick left")),
-                Row(source: .element("+rightx"), label: String(localized: "Right stick right")),
-                Row(source: .element("-righty"), label: String(localized: "Right stick up")),
-                Row(source: .element("+righty"), label: String(localized: "Right stick down")),
-                Row(source: .element("rightstick"), label: "R3 click"),
+                Row(
+                    source: .element("-rightx"),
+                    label: String(localized: "Right stick left")),
+                Row(
+                    source: .element("+rightx"),
+                    label: String(localized: "Right stick right")),
+                Row(
+                    source: .element("-righty"),
+                    label: String(localized: "Right stick up")),
+                Row(
+                    source: .element("+righty"),
+                    label: String(localized: "Right stick down")),
+                Row(
+                    source: .element("rightstick"),
+                    label: String(localized: "R3 click")),
             ]),
         Section(
             id: "shoulders",
@@ -101,11 +156,19 @@ enum BindingsCatalog {
             ]),
         Section(
             id: "system",
-            title: String(localized: "System"),
+            title: String(
+                localized: "System buttons",
+                comment: "Section of controller buttons: Menu, Options, and Home."),
             elements: [
-                Row(source: .element("start"), label: String(localized: "Menu / Start")),
-                Row(source: .element("back"), label: String(localized: "Options / Select")),
-                Row(source: .element("guide"), label: String(localized: "Home / Guide (iOS usually takes this)")),
+                Row(
+                    source: .element("start"),
+                    label: String(localized: "Menu / Start")),
+                Row(
+                    source: .element("back"),
+                    label: String(localized: "Options / Select")),
+                Row(
+                    source: .element("guide"),
+                    label: String(localized: "Home / Guide (iOS often uses this)")),
             ]),
     ]
 
@@ -113,18 +176,40 @@ enum BindingsCatalog {
         id: "extras",
         title: String(localized: "Extras"),
         elements: [
-            Row(source: .element("paddle1"), label: String(localized: "Paddle 1")),
-            Row(source: .element("paddle2"), label: String(localized: "Paddle 2")),
-            Row(source: .element("paddle3"), label: String(localized: "Paddle 3")),
-            Row(source: .element("paddle4"), label: String(localized: "Paddle 4")),
-            Row(source: .element("touchpad"), label: String(localized: "Touchpad click")),
+            Row(
+                source: .element("paddle1"),
+                label: String(
+                    localized: "Paddle 1", comment: "A game controller button, in the controller button list."
+                )),
+            Row(
+                source: .element("paddle2"),
+                label: String(
+                    localized: "Paddle 2", comment: "A game controller button, in the controller button list."
+                )),
+            Row(
+                source: .element("paddle3"),
+                label: String(
+                    localized: "Paddle 3", comment: "A game controller button, in the controller button list."
+                )),
+            Row(
+                source: .element("paddle4"),
+                label: String(
+                    localized: "Paddle 4", comment: "A game controller button, in the controller button list."
+                )),
+            Row(
+                source: .element("touchpad"),
+                label: String(localized: "Touchpad click")),
         ])
 
     static func sections(includingOptional exposed: Set<String>) -> [Section] {
         var result = baseSections
         let extras = extrasSection.elements.filter { exposed.contains($0.source.name) }
         if !extras.isEmpty {
-            result.append(Section(id: "extras", title: String(localized: "Extras"), elements: extras))
+            result.append(
+                Section(
+                    id: "extras",
+                    title: String(localized: "Extras"),
+                    elements: extras))
         }
         return result
     }
@@ -141,7 +226,12 @@ enum BindingsCatalog {
             return name
         case .key(let code):
             let name = KeyCodeTable.displayName(for: code) ?? code
-            return name == code ? name : "\(name) (\(code))"
+            return name == code
+                ? name
+                : String(
+                    localized: "\(name) (\(code))",
+                    comment: "A keyboard key: its name, then its key code in parentheses."
+                )
         }
     }
 
@@ -168,7 +258,9 @@ enum BindingsCatalog {
     }
 
     static func displayName(for target: BindingMap.Target?) -> String {
-        guard let target else { return String(localized: "None") }
+        guard let target else {
+            return String(localized: "None", comment: "A controller button that does nothing.")
+        }
         switch target {
         case .key(let code):
             return KeyCodeTable.displayName(for: code) ?? code
@@ -177,10 +269,10 @@ enum BindingsCatalog {
         case .action(let name):
             // Unknown = written by a newer Empo or by hand. The
             // binding stays in the map (W005 rule) and does nothing.
-            return EmpoActionCatalog.action(id: name)?.displayName
-                ?? String(localized: "Not supported in this version of \(AppInfo.name)")
+            return EmpoActionCatalog.action(id: name)?.localizedName
+                ?? String(localized: "Not supported in this version of XP Pocket")
         case .unbound:
-            return String(localized: "None")
+            return String(localized: "None", comment: "A controller button that does nothing.")
         }
     }
 

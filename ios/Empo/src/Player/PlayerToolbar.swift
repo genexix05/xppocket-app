@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import SwiftUI
 
 /// Top-right toolbar overlay shown during play. It stays a standalone
@@ -17,16 +20,30 @@ struct PlayerToolbar: View {
     let onShowMore: () -> Void
     let onResetIdleTimer: () -> Void
 
+    private static let buttonCount = 4
+
+    static func placement(
+        isPortrait: Bool, safeArea: EdgeInsets, geoSize: CGSize
+    ) -> ControlsZone.ToolbarPlacement {
+        ControlsZone.toolbarPlacement(
+            safeArea: safeArea, geoSize: geoSize, occluded: AppWindow.occludedRects,
+            btnSize: IconButtonSize.sm.points, gap: gap(isPortrait: isPortrait), count: CGFloat(buttonCount))
+    }
+
+    private static func gap(isPortrait: Bool) -> CGFloat { isPortrait ? Spacing.sm : Spacing.md }
+
     var body: some View {
-        let btnSize = IconButtonSize.sm.points
-        let gap: CGFloat = isPortrait ? Spacing.sm : Spacing.md
-
+        let gap = Self.gap(isPortrait: isPortrait)
         let buttons = toolbarButtons()
-        let toolbarPosition = ControlsZone.toolbarOrigin(
-            safeArea: safeArea, geoSize: geoSize, btnSize: btnSize, gap: gap, count: CGFloat(buttons.count))
+        let placement = Self.placement(isPortrait: isPortrait, safeArea: safeArea, geoSize: geoSize)
+        let stack =
+            placement.isVertical
+            ? AnyLayout(VStackLayout(spacing: gap)) : AnyLayout(HStackLayout(spacing: gap))
 
-        HStack(spacing: gap) {
-            ForEach(Array(buttons.enumerated()), id: \.offset) { _, entry in
+        let ordered = placement.isVertical ? Array(buttons.reversed()) : buttons
+
+        stack {
+            ForEach(Array(ordered.enumerated()), id: \.offset) { _, entry in
                 IconButton(
                     entry.icon,
                     label: entry.label,
@@ -48,14 +65,14 @@ struct PlayerToolbar: View {
         // the full proposed space.
         .chromeHitRegion("toolbar")
         .opacity(toolbarOpacity)
-        .position(toolbarPosition)
+        .position(placement.center)
     }
 
     private func toolbarButtons() -> [ToolbarEntry] {
-        [
+        let buttons = [
             ToolbarEntry(
                 icon: "keyboard",
-                label: keyboardShown ? String(localized: "Hide keyboard") : String(localized: "Show keyboard"),
+                label: keyboardShown ? "Hide keyboard" : "Show keyboard",
                 tint: .white,
                 action: onToggleKeyboard
             ),
@@ -63,21 +80,23 @@ struct PlayerToolbar: View {
             // fits the controls-edit mode better than a generic
             // gear/settings.
             ToolbarEntry(
-                icon: "square.and.pencil", label: String(localized: "Edit controls"), tint: .white, action: onToggleEditMode),
+                icon: "square.and.pencil", label: "Edit controls", tint: .white, action: onToggleEditMode),
             ToolbarEntry(
                 icon: controlsHidden ? "eye.slash.fill" : "eye.fill",
-                label: controlsHidden ? String(localized: "Show controls") : String(localized: "Hide controls"),
+                label: controlsHidden ? "Show controls" : "Hide controls",
                 tint: .white,
                 action: onToggleHideControls
             ),
             ToolbarEntry(
-                icon: "ellipsis.circle", label: String(localized: "More options"), tint: .white, action: onShowMore),
+                icon: "ellipsis.circle", label: "More options", tint: .white, action: onShowMore),
         ]
+        assert(buttons.count == Self.buttonCount)
+        return buttons
     }
 
     private struct ToolbarEntry {
         let icon: String
-        let label: String
+        let label: LocalizedStringResource
         let tint: Color?
         let action: () -> Void
     }
@@ -197,12 +216,12 @@ struct PlayerEditToolbar: View {
     /// full-screen region.
     private var actionsRow: some View {
         HStack(spacing: Spacing.md) {
-            IconButton("plus", label: String(localized: "Add button"), style: .outline, size: .sm, tint: .white) {
+            IconButton("plus", label: "Add button", style: .outline, size: .sm, tint: .white) {
                 showAddSheet = true
             }
 
             IconButton(
-                "arrow.uturn.backward", label: String(localized: "Undo layout change"), style: .outline, size: .sm,
+                "arrow.uturn.backward", label: "Undo layout change", style: .outline, size: .sm,
                 tint: .white.opacity(layout.canUndo ? 1 : Alpha.disabled)
             ) {
                 layout.undoLastEdit()
@@ -210,7 +229,7 @@ struct PlayerEditToolbar: View {
             .disabled(!layout.canUndo)
 
             IconButton(
-                "grid", label: String(localized: "Snap to grid"), style: .outline, size: .sm,
+                "grid", label: "Snap to grid", style: .outline, size: .sm,
                 tint: snapToGrid ? .brand : .white
             ) {
                 // On: round every control onto the lattice now. Off:
@@ -224,10 +243,13 @@ struct PlayerEditToolbar: View {
                     layout.revertGridSnap()
                 }
             }
-            .accessibilityValue(snapToGrid ? "on" : "off")
+            .accessibilityValue(
+                snapToGrid
+                    ? Text("On", comment: "Spoken state of a switch.")
+                    : Text("Off", comment: "Spoken state of a switch."))
 
             IconButton(
-                "arrow.counterclockwise", label: String(localized: "Reset layout"), style: .outline, size: .sm, tint: .brand
+                "arrow.counterclockwise", label: "Reset layout", style: .outline, size: .sm, tint: .brand
             ) {
                 showResetConfirm = true
             }
@@ -248,12 +270,12 @@ struct PlayerEditToolbar: View {
         .darkGlass()
     }
 
-    private var editBannerText: String {
+    private var editBannerText: LocalizedStringResource {
         switch layout.provenance {
         case .pinnedProfile(let name):
-            return String(localized: "Editing \(name). Changes apply to every game that uses it.")
+            return "Editing \(name). Changes apply to every game that uses it."
         case .gameLayout, .defaultProfile, .builtin:
-            return String(localized: "Your edits will create a new profile.")
+            return "Your edits will create a new profile."
         }
     }
 }

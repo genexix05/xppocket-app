@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 // Writes docs/changelog.mdx from CHANGELOG.md and from the engine commits
 // between the engine pins of two releases. The docs scripts run it before
 // Blume, and the output is git-ignored, so the site page can never drift

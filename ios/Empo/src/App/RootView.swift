@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import SwiftUI
 
 struct RootView: View {
@@ -123,7 +126,7 @@ struct RootView: View {
             if hasPro { showLaunchProSheet = false }
         }
         .alert(
-            (engineHung || appState.phase != nil) ? String(localized: "Restart \(AppInfo.name)") : String(localized: "Last session ended early"),
+            (engineHung || appState.phase != nil) ? Text("Restart XP Pocket") : Text("Last session ended early"),
             isPresented: showErrorAlert
         ) {
             Button("Got it") {
@@ -138,10 +141,10 @@ struct RootView: View {
             }
         } message: {
             if engineHung {
-                Text("The game stopped responding. Close \(AppInfo.name) and reopen it.")
+                Text("The game stopped responding. Close XP Pocket from the app switcher, then reopen it.")
             } else if appState.phase != nil {
                 Text(
-                    "\(appState.errorMessage ?? "The game stopped.")\n\nClose \(AppInfo.name) from the app switcher, then reopen it."
+                    "\(appState.errorMessage ?? String(localized: "The game stopped."))\n\nClose XP Pocket from the app switcher, then reopen it."
                 )
             } else {
                 Text(appState.errorMessage ?? "")
@@ -232,7 +235,9 @@ struct RootView: View {
     private var infoAlertTitle: String {
         appState.selectedGame?.title
             ?? PauseManager.shared.pausedGame?.title
-            ?? "Game message"
+            ?? String(
+                localized: "Game message",
+                comment: "Title of an alert that shows a message from the running game.")
     }
 
     /// Unblocks the core that waits for the info alert to close.

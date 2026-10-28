@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import Foundation
 
 /// App metadata read from the Info.plist at runtime.
@@ -19,7 +22,7 @@ enum AppInfo {
         if let bundle = info?["CFBundleName"] as? String, !bundle.isEmpty {
             return bundle
         }
-        return "Empo"
+        return "XP Pocket"
     }()
 
     /// Marketing version string (e.g. "1.0").

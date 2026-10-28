@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import SwiftUI
 
 /// Bottom sheet of secondary in-game actions reachable from the
@@ -14,9 +17,8 @@ import SwiftUI
 struct PlayerMoreSheet: View {
     /// Display title of the running game. The pause row interpolates
     /// it ("Pause <title>") so the user sees exactly what they act
-    /// on. Falls back to "this game" if `selectedGame` is nil at
-    /// present time.
-    let gameTitle: String
+    /// on. Nil if `selectedGame` is nil at present time.
+    let gameTitle: String?
     @Binding var showDebugOverlay: Bool
     @Binding var fastForwardActive: Bool
     /// Multiplier the user configured in Game Settings. nil means
@@ -48,6 +50,18 @@ struct PlayerMoreSheet: View {
         (fastForwardMultiplier ?? 0) >= 2
     }
 
+    private var pauseLabel: LocalizedStringResource {
+        if let gameTitle { "Pause \(gameTitle)" } else { "Pause game" }
+    }
+
+    private var quitLabel: LocalizedStringResource {
+        if let gameTitle { "Quit \(gameTitle)" } else { "Quit game" }
+    }
+
+    private var quitQuestion: LocalizedStringResource {
+        if let gameTitle { "Quit \"\(gameTitle)\"?" } else { "Quit this game?" }
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: Spacing.lg) {
@@ -60,12 +74,12 @@ struct PlayerMoreSheet: View {
                         content: {
                             if core?.supportsCheats == true {
                                 if cheatsAvailable {
-                                    MenuRow(icon: "wand.and.stars", label: String(localized: "Show cheats")) {
+                                    MenuRow(icon: "wand.and.stars", label: "Show cheats") {
                                         onCheats()
                                         dismiss()
                                     }
                                 } else {
-                                    MenuRow(icon: "lock.fill", label: String(localized: "Show cheats (Pro)")) {
+                                    MenuRow(icon: "lock.fill", label: "Show cheats (Pro)") {
                                         showProInfo = true
                                     }
                                 }
@@ -74,13 +88,13 @@ struct PlayerMoreSheet: View {
                                 if fastForwardProAvailable {
                                     MenuToggleRow(
                                         icon: "hare.fill",
-                                        label: String(localized: "Fast forward (\(fastForwardMultiplier ?? 2)x)"),
+                                        label: "Fast forward (\(fastForwardMultiplier ?? 2)x)",
                                         isOn: $fastForwardActive
                                     )
                                 } else {
                                     MenuRow(
                                         icon: "lock.fill",
-                                        label: String(localized: "Fast forward (\(fastForwardMultiplier ?? 2)x) (Pro)")
+                                        label: "Fast forward (\(fastForwardMultiplier ?? 2)x) (Pro)"
                                     ) {
                                         showProInfo = true
                                     }
@@ -89,17 +103,17 @@ struct PlayerMoreSheet: View {
                             if settings.diagnosticsOverlay {
                                 MenuToggleRow(
                                     icon: "ladybug.fill",
-                                    label: String(localized: "Diagnostics overlay"),
+                                    label: "Diagnostics overlay",
                                     isOn: $showDebugOverlay
                                 )
                             }
                             if showControllerRemap {
-                                MenuRow(icon: "gamecontroller.fill", label: String(localized: "Controller buttons")) {
+                                MenuRow(icon: "gamecontroller.fill", label: "Controller buttons") {
                                     onControllerRemap()
                                     dismiss()
                                 }
                             }
-                            MenuRow(icon: "square.on.square", label: String(localized: "Layout profile")) {
+                            MenuRow(icon: "square.on.square", label: "Layout profile") {
                                 onLayoutProfile()
                                 dismiss()
                             }
@@ -125,13 +139,13 @@ struct PlayerMoreSheet: View {
                         content: {
                             MenuRow(
                                 icon: "pause.fill",
-                                label: String(localized: "Pause \(gameTitle)")
+                                label: pauseLabel
                             ) {
                                 onPause()
                                 dismiss()
                             }
                             if core?.canKillSession == true {
-                                MenuRow(icon: "xmark", label: String(localized: "Quit \(gameTitle)"), role: .destructive) {
+                                MenuRow(icon: "xmark", label: quitLabel, role: .destructive) {
                                     confirmQuit = true
                                 }
                             }
@@ -139,7 +153,7 @@ struct PlayerMoreSheet: View {
                     )
                 }
                 .clipShape(.rect(cornerRadius: Radius.md))
-                .alert(String(localized: "Quit \"\(gameTitle)\"?"), isPresented: $confirmQuit) {
+                .alert(quitQuestion, isPresented: $confirmQuit) {
                     Button("Cancel", role: .cancel) {}
                     Button("Quit", role: .destructive) {
                         onQuit()
@@ -217,7 +231,7 @@ private struct InterleavedRows<Separator: View, Content: View>: View {
 /// styling can diverge if needed.
 private struct MenuRow: View {
     let icon: String
-    let label: String
+    let label: LocalizedStringResource
     var role: ButtonRole?
     let action: () -> Void
 
@@ -242,7 +256,7 @@ private struct MenuRow: View {
 /// text rather than the system tint so it reads as one unit.
 private struct MenuToggleRow: View {
     let icon: String
-    let label: String
+    let label: LocalizedStringResource
     @Binding var isOn: Bool
 
     var body: some View {

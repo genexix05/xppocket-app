@@ -1,4 +1,7 @@
 #!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 # Generate the C file that lets Empo call the open core without linking
 # it. The same file serves every core, because every core exports each
 # name of GameCore.h as it is.

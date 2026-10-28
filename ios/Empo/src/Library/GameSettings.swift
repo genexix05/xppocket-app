@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
+
 import Foundation
 
 enum VerticalAlignment: String, Codable, CaseIterable {
@@ -5,11 +8,11 @@ enum VerticalAlignment: String, Codable, CaseIterable {
     case topCenter
     case center
 
-    var label: String {
+    var label: LocalizedStringResource {
         switch self {
-        case .top: String(localized: "Top")
-        case .topCenter: String(localized: "Top-center")
-        case .center: String(localized: "Center")
+        case .top: LocalizedStringResource("Top", comment: "Where the game sits on screen")
+        case .topCenter: LocalizedStringResource("Top-center", comment: "Where the game sits on screen")
+        case .center: LocalizedStringResource("Center", comment: "Where the game sits on screen")
         }
     }
 
