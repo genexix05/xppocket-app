@@ -447,7 +447,127 @@
         }
       }
     },
-    "%@" : {},
+    "(uncommitted changes)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(nicht committete Änderungen)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(cambios sin confirmar)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(modifications non commitées)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(modifiche non committate)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "（未コミットの変更）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(커밋되지 않은 변경 사항)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(alterações sem commit)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(незакоммиченные изменения)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "（有未提交的更改）"
+          }
+        }
+      }
+    },
+    "[report it on GitHub](%@)" : {
+      "comment" : "A Markdown link. Translate the words in brackets. Keep the placeholder in parentheses as it is.",
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[melde es auf GitHub](%@)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[repórtalo en GitHub](%@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[signale-le sur GitHub](%@)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[segnalalo su GitHub](%@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[GitHubで報告してください](%@)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[GitHub에 알려 주세요](%@)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[avise no GitHub](%@)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[сообщите об этом на GitHub](%@)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[到 GitHub 上反馈](%@)"
+          }
+        }
+      }
+    },
+    "%@" : {
+
+    },
     "%@\n\nClose %@ from the app switcher, then reopen it." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -597,6 +717,12 @@
     },
     "%@ / month" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / Monat"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -608,17 +734,17 @@
             "state" : "translated",
             "value" : "%@ / mois"
           }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ / Monat"
-          }
         }
       }
     },
     "%@ / year" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / Jahr"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -629,12 +755,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ / an"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ / Jahr"
           }
         }
       }
@@ -1749,9 +1869,15 @@
         }
       }
     },
-    "%@ hit a problem while loading this game." : {},
-    "%@ hit a problem while running this game." : {},
-    "%@ image" : {},
+    "%@ hit a problem while loading this game." : {
+
+    },
+    "%@ hit a problem while running this game." : {
+
+    },
+    "%@ image" : {
+
+    },
     "%@ is %@. %@ asks about games over %@." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3265,16 +3391,6 @@
         }
       }
     },
-    "%@%@%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@%2$@%3$@"
-          }
-        }
-      }
-    },
     "%@, %@" : {
       "localizations" : {
         "de" : {
@@ -3394,6 +3510,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@，已恢复 %@"
+          }
+        }
+      }
+    },
+    "%@%@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@%3$@"
           }
         }
       }
@@ -5523,6 +5649,65 @@
         }
       }
     },
+    "%lld×" : {
+      "comment" : "Fast forward speed, such as 4×",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld×"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld×"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld×"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld×"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld×"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld×"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld×"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld×"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld×"
+          }
+        }
+      }
+    },
     "%lldpt" : {
       "comment" : "Size of an on-screen control, in points.",
       "localizations" : {
@@ -5638,123 +5823,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lldx"
-          }
-        }
-      }
-    },
-    "%lld×" : {
-      "comment" : "Fast forward speed, such as 4×",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld×"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld×"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld×"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld×"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld×"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld×"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld×"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld×"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld×"
-          }
-        }
-      }
-    },
-    "(uncommitted changes)" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(nicht committete Änderungen)"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(cambios sin confirmar)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(modifications non commitées)"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(modifiche non committate)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "（未コミットの変更）"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(커밋되지 않은 변경 사항)"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(alterações sem commit)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(незакоммиченные изменения)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "（有未提交的更改）"
           }
         }
       }
@@ -6229,66 +6297,6 @@
         }
       }
     },
-    "[report it on GitHub](%@)" : {
-      "comment" : "A Markdown link. Translate the words in brackets. Keep the placeholder in parentheses as it is.",
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[melde es auf GitHub](%@)"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[repórtalo en GitHub](%@)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[signale-le sur GitHub](%@)"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[segnalalo su GitHub](%@)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[GitHubで報告してください](%@)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[GitHub에 알려 주세요](%@)"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[avise no GitHub](%@)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[сообщите об этом на GitHub](%@)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[到 GitHub 上反馈](%@)"
-          }
-        }
-      }
-    },
     "A / Cross (south)" : {
       "localizations" : {
         "de" : {
@@ -6406,7 +6414,9 @@
         }
       }
     },
-    "A backup is running. Wait for it to finish, then try again." : {},
+    "A backup is running. Wait for it to finish, then try again." : {
+
+    },
     "A backup location" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -13341,7 +13351,9 @@
         }
       }
     },
-    "Can't start the game" : {},
+    "Can't start the game" : {
+
+    },
     "Can't use this file" : {
       "localizations" : {
         "de" : {
@@ -18554,6 +18566,65 @@
         }
       }
     },
+    "Couldn’t save the setup. Try again." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Einrichtung konnte nicht gespeichert werden. Versuch es noch mal."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar la configuración. Inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d'enregistrer la configuration. Réessaie."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile salvare la configurazione. Riprova."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定を保存できませんでした。もう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정을 저장하지 못했어요. 다시 시도하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível salvar a configuração. Tente novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось сохранить настройку. Попробуйте ещё раз."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法保存设置。请重试。"
+          }
+        }
+      }
+    },
     "Couldn't save your buttons. This game's controls file has errors. Fix it in Finder and try again." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -18900,65 +18971,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "无法通过 Patreon 登录。请重试。"
-          }
-        }
-      }
-    },
-    "Couldn’t save the setup. Try again." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die Einrichtung konnte nicht gespeichert werden. Versuch es noch mal."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo guardar la configuración. Inténtalo de nuevo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Impossible d'enregistrer la configuration. Réessaie."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Impossibile salvare la configurazione. Riprova."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定を保存できませんでした。もう一度お試しください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "설정을 저장하지 못했어요. 다시 시도하세요."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não foi possível salvar a configuração. Tente novamente."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Не удалось сохранить настройку. Попробуйте ещё раз."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法保存设置。请重试。"
           }
         }
       }
@@ -19391,7 +19403,9 @@
         }
       }
     },
-    "D-pad image" : {},
+    "D-pad image" : {
+
+    },
     "D-pad left" : {
       "localizations" : {
         "de" : {
@@ -19450,7 +19464,9 @@
         }
       }
     },
-    "D-pad pressed image" : {},
+    "D-pad pressed image" : {
+
+    },
     "D-pad right" : {
       "localizations" : {
         "de" : {
@@ -25823,6 +25839,66 @@
         }
       }
     },
+    "Fast Forward (%lld×)" : {
+      "comment" : "Menu item that turns fast forward on and off. The placeholder is the speed, such as 4.",
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schnellvorlauf (%lld×)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avance rápido (%lld×)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avance rapide (%lld×)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avanti veloce (%lld×)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "早送り（%lld倍）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빨리 감기 (%lld×)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avanço Rápido (%lld×)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ускорение (%lld×)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快进（%lld×）"
+          }
+        }
+      }
+    },
     "Fast forward (%lldx)" : {
       "localizations" : {
         "de" : {
@@ -25899,66 +25975,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Avance rapide (%lldx) (Pro)"
-          }
-        }
-      }
-    },
-    "Fast Forward (%lld×)" : {
-      "comment" : "Menu item that turns fast forward on and off. The placeholder is the speed, such as 4.",
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Schnellvorlauf (%lld×)"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avance rápido (%lld×)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avance rapide (%lld×)"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avanti veloce (%lld×)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "早送り（%lld倍）"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "빨리 감기 (%lld×)"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avanço Rápido (%lld×)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ускорение (%lld×)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "快进（%lld×）"
           }
         }
       }
@@ -33509,6 +33525,64 @@
         }
       }
     },
+    "Keeps the last 5 backups, one a day for 3 days, and one a week for 2 weeks." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Behält die letzten 5 Backups, 3 Tage lang eines pro Tag und 2 Wochen lang eines pro Woche."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conserva las últimas 5 copias de seguridad, una al día durante 3 días y una a la semana durante 2 semanas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conserve les 5 dernières copies de secours, une par jour pendant 3 jours et une par semaine pendant 2 semaines."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conserva gli ultimi 5 backup, uno al giorno per 3 giorni e uno a settimana per 2 settimane."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最新のバックアップ5件に加えて、3日間は1日1件、2週間は1週間に1件を残します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최근 백업 5개와 함께, 3일 동안은 하루에 1개, 2주 동안은 일주일에 1개를 보관해요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantém os últimos 5 backups, um por dia durante 3 dias e um por semana durante 2 semanas."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Хранит последние 5 копий, по одной в день за 3 дня и по одной в неделю за 2 недели."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保留最近 5 个备份，3 天内每天 1 个，2 周内每周 1 个。"
+          }
+        }
+      }
+    },
     "Keeps the last 10 backups, one a day for 7 days, and one a week for 4 weeks." : {
       "localizations" : {
         "de" : {
@@ -33621,64 +33695,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保留最近 20 个备份，14 天内每天 1 个，8 周内每周 1 个。"
-          }
-        }
-      }
-    },
-    "Keeps the last 5 backups, one a day for 3 days, and one a week for 2 weeks." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Behält die letzten 5 Backups, 3 Tage lang eines pro Tag und 2 Wochen lang eines pro Woche."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conserva las últimas 5 copias de seguridad, una al día durante 3 días y una a la semana durante 2 semanas."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conserve les 5 dernières copies de secours, une par jour pendant 3 jours et une par semaine pendant 2 semaines."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conserva gli ultimi 5 backup, uno al giorno per 3 giorni e uno a settimana per 2 settimane."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "最新のバックアップ5件に加えて、3日間は1日1件、2週間は1週間に1件を残します。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "최근 백업 5개와 함께, 3일 동안은 하루에 1개, 2주 동안은 일주일에 1개를 보관해요."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantém os últimos 5 backups, um por dia durante 3 dias e um por semana durante 2 semanas."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Хранит последние 5 копий, по одной в день за 3 дня и по одной в неделю за 2 недели."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "保留最近 5 个备份，3 天内每天 1 个，2 周内每周 1 个。"
           }
         }
       }
@@ -37204,6 +37220,12 @@
     },
     "Monthly" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monatlich"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37214,12 +37236,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mensuel"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monatlich"
           }
         }
       }
@@ -40819,6 +40835,12 @@
     },
     "Only %@ / month" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur %@ pro Monat"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40829,12 +40851,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seulement %@ par mois"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nur %@ pro Monat"
           }
         }
       }
@@ -44168,6 +44184,7 @@
       }
     },
     "Price" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -44248,7 +44265,9 @@
         }
       }
     },
-    "Privacy choices" : {},
+    "Privacy choices" : {
+
+    },
     "Privacy policy" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -51257,6 +51276,12 @@
     },
     "Save %lld%%" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spare %lld %%"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -51267,12 +51292,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Économisez %lld %%"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spare %lld %%"
           }
         }
       }
@@ -53183,6 +53202,28 @@
         }
       }
     },
+    "Server error (%lld): %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serverfehler (%lld): %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error del servidor (%lld): %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur du serveur (%lld) : %@"
+          }
+        }
+      }
+    },
     "Server error %@" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -53238,28 +53279,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "服务器错误（%@）"
-          }
-        }
-      }
-    },
-    "Server error (%lld): %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serverfehler (%lld): %@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Error del servidor (%lld): %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erreur du serveur (%lld) : %@"
           }
         }
       }
@@ -59198,6 +59217,50 @@
         }
       }
     },
+    "Subscribe — %@/month" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abonnieren — %@/Monat"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suscribirse — %@/mes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S’abonner — %@/mois"
+          }
+        }
+      }
+    },
+    "Subscribe — %@/year" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abonnieren — %@/Jahr"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suscribirse — %@/año"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S'abonner — %@/an"
+          }
+        }
+      }
+    },
     "Subscribe for %@ a month" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -59279,50 +59342,6 @@
         }
       }
     },
-    "Subscribe — %@/month" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abonnieren — %@/Monat"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suscribirse — %@/mes"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "S’abonner — %@/mois"
-          }
-        }
-      }
-    },
-    "Subscribe — %@/year" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suscribirse — %@/año"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "S'abonner — %@/an"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abonnieren — %@/Jahr"
-          }
-        }
-      }
-    },
     "Subscription" : {
       "localizations" : {
         "de" : {
@@ -59347,6 +59366,12 @@
     },
     "Subscription renews automatically at the end of each period (month or year) until cancelled in Settings → Apple ID → Subscriptions." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Abo verlängert sich am Ende jedes Zeitraums (Monat oder Jahr) automatisch, bis du es unter Einstellungen → Apple-ID → Abonnements kündigst."
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -59358,16 +59383,11 @@
             "state" : "translated",
             "value" : "L'abonnement se renouvelle automatiquement à la fin de chaque période (mois ou année) jusqu'à son annulation dans Réglages → Identifiant Apple → Abonnements."
           }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das Abo verlängert sich am Ende jedes Zeitraums (Monat oder Jahr) automatisch, bis du es unter Einstellungen → Apple-ID → Abonnements kündigst."
-          }
         }
       }
     },
     "Subscription renews automatically each month until cancelled in Settings → Apple ID → Subscriptions." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -59387,8 +59407,7 @@
             "value" : "L’abonnement se renouvelle automatiquement chaque mois jusqu’à son annulation dans Réglages → Apple ID → Abonnements."
           }
         }
-      },
-      "extractionState" : "stale"
+      }
     },
     "Switch to grid" : {
       "localizations" : {
@@ -66844,6 +66863,29 @@
         }
       }
     },
+    "This JoiPlay archive uses '%@', which %@ does not support. " : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses JoiPlay-Archiv verwendet „%@“, was %@ nicht unterstützt. "
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo de JoiPlay usa «%@», que %@ no admite. "
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette archive JoiPlay utilise « %@ », que %@ ne prend pas en charge. "
+          }
+        }
+      }
+    },
     "This JoiPlay archive uses \"%@\", which XP Pocket can't run. XP Pocket imports only JoiPlay archives of %@." : {
       "comment" : "First placeholder: the game type the archive names. Second: a list of game kinds, such as \"RPG Maker XP, VX, and VX Ace games\".",
       "localizations" : {
@@ -66905,29 +66947,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这个 JoiPlay 压缩包使用的是“%@”，XP Pocket 无法运行。XP Pocket 只能导入 %@ 的 JoiPlay 压缩包。"
-          }
-        }
-      }
-    },
-    "This JoiPlay archive uses '%@', which %@ does not support. " : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses JoiPlay-Archiv verwendet „%@“, was %@ nicht unterstützt. "
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este archivo de JoiPlay usa «%@», que %@ no admite. "
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cette archive JoiPlay utilise « %@ », que %@ ne prend pas en charge. "
           }
         }
       }
@@ -72643,7 +72662,9 @@
         }
       }
     },
-    "XP Pocket" : {},
+    "XP Pocket" : {
+
+    },
     "XP Pocket %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -78427,6 +78448,12 @@
     },
     "Yearly" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jährlich"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -78437,12 +78464,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annuel"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jährlich"
           }
         }
       }
