@@ -19,6 +19,10 @@ struct ProPaywallView: View {
     var embedsOwnNavigation = true
 
     @State private var errorMessage: String?
+    /// The annual plan starts selected: it is the better deal.
+    @State private var selectedPlan: Plan = .annual
+
+    enum Plan { case annual, monthly }
 
     private var subscriptions: SubscriptionManager { SubscriptionManager.shared }
 
@@ -136,11 +140,21 @@ struct ProPaywallView: View {
         .background(.bar)
     }
 
-    private var subscribeButtonTitle: String {
-        if let product = subscriptions.product {
-            return String(localized: "Subscribe — \(product.displayPrice)/month")
+    /// The selected plan, or the other one when the store did not
+    /// return the selected one.
+    private var selectedProduct: Product? {
+        switch selectedPlan {
+        case .annual: subscriptions.annualProduct ?? subscriptions.monthlyProduct
+        case .monthly: subscriptions.monthlyProduct ?? subscriptions.annualProduct
         }
-        return String(localized: "Subscribe to Pro")
+    }
+
+    private var subscribeButtonTitle: String {
+        guard let product = selectedProduct else { return String(localized: "Subscribe to Pro") }
+        if product.id == SubscriptionManager.annualProductID {
+            return String(localized: "Subscribe — \(product.displayPrice)/year")
+        }
+        return String(localized: "Subscribe — \(product.displayPrice)/month")
     }
 
     @ViewBuilder
@@ -152,9 +166,25 @@ struct ProPaywallView: View {
                     ProgressView()
                     Spacer()
                 }
-            } else if let product = subscriptions.product {
-                LabeledContent("XP Pocket Pro", value: "1 month")
-                LabeledContent("Price", value: product.displayPrice + " / month")
+            } else if subscriptions.product != nil {
+                if let annual = subscriptions.annualProduct {
+                    planRow(
+                        .annual,
+                        title: String(localized: "Yearly"),
+                        price: String(localized: "\(annual.displayPrice) / year"),
+                        detail: monthlyEquivalent(of: annual),
+                        badge: subscriptions.annualSavingsPercent.map {
+                            String(localized: "Save \($0)%")
+                        })
+                }
+                if let monthly = subscriptions.monthlyProduct {
+                    planRow(
+                        .monthly,
+                        title: String(localized: "Monthly"),
+                        price: String(localized: "\(monthly.displayPrice) / month"),
+                        detail: nil,
+                        badge: nil)
+                }
             } else {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     Text("Could not load subscription pricing from the App Store.")
@@ -212,7 +242,7 @@ struct ProPaywallView: View {
     private var legalSection: some View {
         Section {
             Text(
-                "Subscription renews automatically each month until cancelled in Settings → Apple ID → Subscriptions."
+                "Subscription renews automatically at the end of each period (month or year) until cancelled in Settings → Apple ID → Subscriptions."
             )
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -220,16 +250,16 @@ struct ProPaywallView: View {
     }
 
     private func subscribe() async {
-        if subscriptions.product == nil {
+        if selectedProduct == nil {
             await subscriptions.loadProducts()
-            guard subscriptions.product != nil else {
-                errorMessage = subscriptions.lastError
-                    ?? SubscriptionManager.PurchaseError.productUnavailable.localizedDescription
-                return
-            }
+        }
+        guard let product = selectedProduct else {
+            errorMessage = subscriptions.lastError
+                ?? SubscriptionManager.PurchaseError.productUnavailable.localizedDescription
+            return
         }
         do {
-            try await subscriptions.purchase(session: session)
+            try await subscriptions.purchase(product, session: session)
             if session.hasPro {
                 dismiss()
             }
@@ -263,6 +293,57 @@ struct ProPaywallView: View {
 
     private var errorPresented: Binding<Bool> {
         Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
+    }
+
+    /// "2,50 € / month" for the annual plan: its price over twelve months,
+    /// in the store's own currency format.
+    private func monthlyEquivalent(of product: Product) -> String {
+        let perMonth = product.price / 12
+        let formatted = perMonth.formatted(product.priceFormatStyle)
+        return String(localized: "Only \(formatted) / month")
+    }
+
+    private func planRow(
+        _ plan: Plan, title: String, price: String, detail: String?, badge: String?
+    ) -> some View {
+        let isSelected = selectedProduct?.id == productID(of: plan)
+        return Button {
+            selectedPlan = plan
+        } label: {
+            HStack(spacing: Spacing.md) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(isSelected ? Color.brand : Color.secondary)
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    HStack(spacing: Spacing.sm) {
+                        Text(title).font(.headline)
+                        if let badge {
+                            Text(badge)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(Color.onBrand)
+                                .padding(.horizontal, Spacing.sm)
+                                .padding(.vertical, 2)
+                                .background(Capsule().fill(Color.brand))
+                        }
+                    }
+                    if let detail {
+                        Text(detail).font(.footnote).foregroundStyle(.secondary)
+                    }
+                }
+                Spacer(minLength: Spacing.sm)
+                Text(price).font(.subheadline.weight(.semibold))
+            }
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func productID(of plan: Plan) -> String {
+        switch plan {
+        case .annual: SubscriptionManager.annualProductID
+        case .monthly: SubscriptionManager.monthlyProductID
+        }
     }
 
     private func featureRow(_ icon: String, _ title: String, _ detail: String) -> some View {

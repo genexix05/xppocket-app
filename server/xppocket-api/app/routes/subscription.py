@@ -41,7 +41,7 @@ async def verify_subscription(
     body: SubscriptionVerifyRequest,
     account: dict = Depends(require_account),
 ) -> SubscriptionVerifyResponse:
-    if body.product_id != settings.pro_product_id:
+    if body.product_id not in settings.pro_product_id_set:
         raise HTTPException(status_code=400, detail="Unknown subscription product.")
 
     try:

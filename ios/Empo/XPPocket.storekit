@@ -10,12 +10,8 @@
     ]
   },
   "identifier" : "XPPocketLocal",
-  "nonRenewingSubscriptions" : [
-
-  ],
-  "products" : [
-
-  ],
+  "nonRenewingSubscriptions" : [],
+  "products" : [],
   "settings" : {
     "_failTransactionsEnabled" : false,
     "_storeKitErrors" : [
@@ -69,18 +65,12 @@
   "subscriptionGroups" : [
     {
       "id" : "22332903",
-      "localizations" : [
-
-      ],
+      "localizations" : [],
       "name" : "XP Pocket Pro",
       "subscriptions" : [
         {
-          "adHocOffers" : [
-
-          ],
-          "codeOffers" : [
-
-          ],
+          "adHocOffers" : [],
+          "codeOffers" : [],
           "displayPrice" : "2.99",
           "familyShareable" : false,
           "groupNumber" : 1,
@@ -103,9 +93,34 @@
           "referenceName" : "Pro Monthly",
           "subscriptionGroupID" : "22332903",
           "type" : "RecurringSubscription",
-          "winbackOffers" : [
-
-          ]
+          "winbackOffers" : []
+        },
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "29.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6824219260",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "No ads, cloud save and Pro extras.",
+              "displayName" : "XP Pocket Pro (yearly)",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Sin anuncios, guardado en la nube y extras Pro.",
+              "displayName" : "XP Pocket Pro (anual)",
+              "locale" : "es_ES"
+            }
+          ],
+          "productID" : "app.xppocket.player.pro.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Pro Annual",
+          "subscriptionGroupID" : "22332903",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : []
         }
       ]
     }

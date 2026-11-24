@@ -12,10 +12,29 @@ import UIKit
 final class SubscriptionManager {
     static let shared = SubscriptionManager()
 
-    /// Must match the auto-renewable product id in App Store Connect.
-    static let proProductID = "app.xppocket.player.pro.monthly"
+    /// Must match the auto-renewable product ids in App Store Connect. Both
+    /// are in the "XP Pocket Pro" group, so a user holds one at a time and
+    /// can switch between them.
+    static let monthlyProductID = "app.xppocket.player.pro.monthly"
+    static let annualProductID = "app.xppocket.player.pro.annual"
+    static let proProductIDs: Set<String> = [monthlyProductID, annualProductID]
 
-    private(set) var product: Product?
+    private(set) var monthlyProduct: Product?
+    private(set) var annualProduct: Product?
+
+    /// Any loaded plan, for code that only needs to know the store answered.
+    var product: Product? { annualProduct ?? monthlyProduct }
+
+    /// Whole percent the annual plan saves against twelve monthly payments.
+    var annualSavingsPercent: Int? {
+        guard let monthly = monthlyProduct?.price, let annual = annualProduct?.price, monthly > 0 else {
+            return nil
+        }
+        let yearOfMonths = monthly * 12
+        let saving = (yearOfMonths - annual) / yearOfMonths * 100
+        let percent = NSDecimalNumber(decimal: saving).intValue
+        return percent > 0 ? percent : nil
+    }
     private(set) var isLoadingProducts = false
     private(set) var isPurchasing = false
     private(set) var lastError: String?
@@ -33,21 +52,22 @@ final class SubscriptionManager {
         isLoadingProducts = true
         defer { isLoadingProducts = false }
         do {
-            let products = try await Product.products(for: [Self.proProductID])
-            if let loaded = products.first {
-                product = loaded
+            let products = try await Product.products(for: Self.proProductIDs)
+            monthlyProduct = products.first { $0.id == Self.monthlyProductID }
+            annualProduct = products.first { $0.id == Self.annualProductID }
+            if !products.isEmpty {
                 lastError = nil
             } else {
-                product = nil
                 let bundleID = Bundle.main.bundleIdentifier ?? "unknown"
                 lastError =
-                    String(localized: "App Store returned no product for \(Self.proProductID). ")
+                    String(localized: "App Store returned no product for \(Self.monthlyProductID). ")
                     + String(localized: "This app’s bundle ID is \(bundleID). ")
                     + String(localized: "In App Store Connect the subscription must belong to that app, ")
                     + "with Paid Apps Agreement active. New products can take a few hours to appear."
             }
         } catch {
-            product = nil
+            monthlyProduct = nil
+            annualProduct = nil
             lastError = error.localizedDescription
         }
     }
@@ -57,7 +77,7 @@ final class SubscriptionManager {
         var active = false
         for await result in Transaction.currentEntitlements {
             guard let transaction = try? verified(result) else { continue }
-            if transaction.productID == Self.proProductID {
+            if Self.proProductIDs.contains(transaction.productID), transaction.revocationDate == nil {
                 active = true
                 break
             }
@@ -65,14 +85,8 @@ final class SubscriptionManager {
         AccountSession.shared.applyStoreKitPro(active)
     }
 
-    /// Purchases Pro. Does not require Sign in with Apple.
-    func purchase(session: AccountSession) async throws {
-        guard let product else {
-            await loadProducts()
-            guard let product else { throw PurchaseError.productUnavailable }
-            try await purchase(product: product, session: session)
-            return
-        }
+    /// Purchases a Pro plan. Does not require Sign in with Apple.
+    func purchase(_ product: Product, session: AccountSession) async throws {
         try await purchase(product: product, session: session)
     }
 
@@ -94,7 +108,7 @@ final class SubscriptionManager {
         for await result in Transaction.currentEntitlements {
             do {
                 let transaction = try verified(result)
-                guard transaction.productID == Self.proProductID else { continue }
+                guard Self.proProductIDs.contains(transaction.productID) else { continue }
                 try await submit(transaction: transaction, session: session)
             } catch {
                 lastError = error.localizedDescription
@@ -172,7 +186,7 @@ final class SubscriptionManager {
         for await result in Transaction.updates {
             do {
                 let transaction = try verified(result)
-                guard transaction.productID == Self.proProductID else {
+                guard Self.proProductIDs.contains(transaction.productID) else {
                     await transaction.finish()
                     continue
                 }
@@ -201,7 +215,8 @@ final class SubscriptionManager {
 
     private func submit(transaction: Transaction, session: AccountSession) async throws {
         guard let token = session.accessToken else { return }
-        let expiresAt = transaction.expirationDate ?? Date().addingTimeInterval(30 * 24 * 3600)
+        let fallbackDays: Double = transaction.productID == Self.annualProductID ? 365 : 30
+        let expiresAt = transaction.expirationDate ?? Date().addingTimeInterval(fallbackDays * 24 * 3600)
         try await AccountAPI.verifySubscription(
             accessToken: token,
             productID: transaction.productID,

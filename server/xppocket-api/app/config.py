@@ -14,12 +14,17 @@ class Settings(BaseSettings):
     apple_client_id: str = "app.xppocket.player"
     apple_client_id_dev: str = "app.xppocket.player.dev"
     dev_auth: bool = False
-    pro_product_id: str = "app.xppocket.player.pro.monthly"
+    # Comma-separated auto-renewable product ids that grant Pro.
+    pro_product_ids: str = "app.xppocket.player.pro.monthly,app.xppocket.player.pro.annual"
 
     @property
     def apple_client_audiences(self) -> list[str]:
         ids = [self.apple_client_id.strip(), self.apple_client_id_dev.strip()]
         return list(dict.fromkeys(i for i in ids if i))
+
+    @property
+    def pro_product_id_set(self) -> set[str]:
+        return {i.strip() for i in self.pro_product_ids.split(",") if i.strip()}
 
     @property
     def db_path(self) -> Path:
