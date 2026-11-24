@@ -253,16 +253,18 @@ enum LayoutPackInstaller {
             updated = false
         }
 
-        let wrote: Bool
-        if updated {
-            wrote = store.writeProfile(targetName, touch: touch)
-        } else {
-            wrote = store.createProfile(targetName, touch: touch)
+        do {
+            if updated {
+                try store.writeProfile(targetName, touch: touch)
+            } else {
+                try store.createProfile(targetName, touch: touch)
+            }
+        } catch {
+            throw Error.writeFailed
         }
-        guard wrote else { throw Error.writeFailed }
 
         if screenPortrait != nil || screenLandscape != nil {
-            _ = store.writeScreen(targetName, portrait: screenPortrait, landscape: screenLandscape)
+            try? store.writeScreen(targetName, portrait: screenPortrait, landscape: screenLandscape)
         }
 
         let profileURL = store.profileURL(targetName)

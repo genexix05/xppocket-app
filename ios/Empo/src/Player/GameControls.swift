@@ -617,15 +617,3 @@ private struct DarkGlassUnlessSkin: ViewModifier {
         }
     }
 }
-
-private struct DarkGlassUnlessSkin: ViewModifier {
-    let usesSkin: Bool
-
-    func body(content: Content) -> some View {
-        if usesSkin {
-            content
-        } else {
-            content.darkGlass()
-        }
-    }
-}

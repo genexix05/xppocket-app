@@ -27,14 +27,21 @@ struct SheetBarButton: View {
     }
 
     var body: some View {
+        // `toolbarVerticalEdge` ships in the iOS 27.1 SDK (Swift 6.4). An
+        // older Xcode builds the plain button.
+        #if compiler(>=6.4)
         if #available(iOS 27.1, macOS 27.1, *) {
             VerticalBarButton(title: title, systemImage: systemImage, action: action)
         } else {
             Button(title, action: action)
         }
+        #else
+        Button(title, action: action)
+        #endif
     }
 }
 
+#if compiler(>=6.4)
 @available(iOS 27.1, macOS 27.1, *)
 private struct VerticalBarButton: View {
     let title: LocalizedStringResource
@@ -52,3 +59,4 @@ private struct VerticalBarButton: View {
         }
     }
 }
+#endif
