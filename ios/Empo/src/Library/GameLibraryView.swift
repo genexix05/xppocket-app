@@ -381,7 +381,10 @@ struct GameLibraryView: View {
             }
             .overlay(alignment: .bottom) { bulkDeleteOverlay }
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                if launchChromeReady {
+                // Not while a game plays: the library is then hidden but
+                // mounted, and a banner there would refresh and count
+                // impressions nobody sees (invalid traffic for AdMob).
+                if launchChromeReady && !dormant && appState.phase != .playing {
                     AdBannerView()
                 }
             }

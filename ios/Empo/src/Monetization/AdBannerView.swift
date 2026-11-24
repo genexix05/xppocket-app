@@ -1,25 +1,36 @@
 import GoogleMobileAds
 import SwiftUI
 
-/// Fixed library banner for free users.
+/// Anchored adaptive banner of the library, for free users. Google sizes it
+/// for the screen width. It fills more requests and pays more than the
+/// fixed 320x50 banner.
 struct AdBannerView: View {
     @Environment(\.accountSession) private var session
+    @State private var width: CGFloat = 0
+
+    private var adSize: GADAdSize {
+        width > 0 ? GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(width) : GADAdSizeBanner
+    }
 
     var body: some View {
         if !session.hasPro, AdsConfig.isConfigured {
-            AdBannerRepresentable()
-                .frame(height: 50)
+            AdBannerRepresentable(adSize: adSize)
+                .frame(height: adSize.size.height)
+                .frame(maxWidth: .infinity)
                 .background(Color(.secondarySystemBackground))
+                .onGeometryChange(for: CGFloat.self, of: { $0.size.width.rounded() }) { width = $0 }
                 .onAppear { AdCoordinator.shared.prepare() }
         }
     }
 }
 
 private struct AdBannerRepresentable: UIViewRepresentable {
+    let adSize: GADAdSize
+
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeUIView(context: Context) -> GADBannerView {
-        let banner = GADBannerView(adSize: GADAdSizeBanner)
+        let banner = GADBannerView(adSize: adSize)
         banner.adUnitID = AdsConfig.bannerUnitID
         banner.delegate = context.coordinator
         context.coordinator.attach(banner)
@@ -32,6 +43,11 @@ private struct AdBannerRepresentable: UIViewRepresentable {
         // on its own schedule.
         if let presenter = AppWindow.topViewController, uiView.rootViewController !== presenter {
             uiView.rootViewController = presenter
+        }
+        // A new width (rotation, split view) needs a banner of the new
+        // size. Changing it on a loaded banner makes the SDK load again.
+        if !GADAdSizeEqualToSize(uiView.adSize, adSize) {
+            uiView.adSize = adSize
         }
         context.coordinator.requestLoadIfNeeded()
     }
@@ -65,7 +81,7 @@ private struct AdBannerRepresentable: UIViewRepresentable {
                 banner.rootViewController != nil
             else { return }
             inFlight = true
-            banner.load(AdsConfig.nonPersonalizedRequest())
+            banner.load(AdsConfig.adRequest())
         }
 
         func bannerViewDidReceiveAd(_ bannerView: GADBannerView) {

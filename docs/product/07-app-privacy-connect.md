@@ -2,7 +2,7 @@
 
 Usa esto en **App Store Connect → App Privacy → Edit**.
 Debe coincidir con el binario: Sign in with Apple opcional, cloud save Pro,
-StoreKit, AdMob **no personalizado** (`npa=1`, sin ATT).
+StoreKit, AdMob **personalizado si el usuario lo permite** (UMP en EEA/UK + aviso ATT).
 
 ## Pregunta inicial
 
@@ -14,10 +14,9 @@ StoreKit, AdMob **no personalizado** (`npa=1`, sin ATT).
 
 | Pregunta | Respuesta |
 |----------|-----------|
-| ¿Usas los datos para trackear? | **No** en todos los tipos |
+| ¿Usas los datos para trackear? | **Sí**: Device ID y Advertising Data (AdMob, solo con ATT permitido) |
 
-No declares Advertising Data ni Coarse Location como usados para **tracking**.
-Si Connect ya los tiene marcados así, **edítalos o elimínalos** — eso fue el rechazo 5.1.2(i).
+El resto de tipos se declaran **sin** tracking.
 
 ## Datos a declarar
 
@@ -53,27 +52,22 @@ Si Connect ya los tiene marcados así, **edítalos o elimínalos** — eso fue e
 | Linked to user | **Yes** |
 | Used for | **App Functionality** |
 
-### 5. Advertising Data (solo si Connect lo exige por AdMob)
+### 5. AdMob (versión gratuita)
 
-Si debes declarar datos de publicidad **sin** tracking:
-
-| Campo | Valor |
-|-------|--------|
-| ¿Tracking? | **No** |
-| Linked to user | **No** |
-| Used for | **Third-Party Advertising** |
-
-No declares **Coarse Location** salvo que realmente la uses (esta app no).
+| Tipo | ¿Tracking? | Linked to user | Used for |
+|------|-----------|----------------|----------|
+| Identifiers → **Device ID** | **Yes** | **No** | Third-Party Advertising, Analytics |
+| Usage Data → **Advertising Data** | **Yes** | **No** | Third-Party Advertising, Analytics |
+| Usage Data → **Product Interaction** | **No** | **No** | Third-Party Advertising, Analytics |
+| Location → **Coarse Location** (IP) | **No** | **No** | Third-Party Advertising |
 
 ### 6. Diagnostics (opcional)
 
 Crash Data de Apple → tracking **No**.
 
-## No declares (v1)
+## No declares
 
-- Location (coarse / precise)
-- Tracking = **Yes** en cualquier categoría
-- ATT / `NSUserTrackingUsageDescription` (no hace falta con ads `npa=1`)
+- Precise Location
 
 ## Privacy Policy URL
 
@@ -99,7 +93,7 @@ Privacy Policy: https://xppocket.app/privacy
 
 | Sitio | Estado |
 |-------|--------|
-| Ads | `AdsConfig.nonPersonalizedRequest()` (`npa=1`) |
-| `PrivacyInfo.xcprivacy` | `NSPrivacyTracking` = false |
+| Ads | `AdsConfig.adRequest()`: UMP + ATT deciden la personalización |
+| `PrivacyInfo.xcprivacy` | `NSPrivacyTracking` = true; Device ID y Advertising Data con tracking |
 | Paywall | Privacy + Terms of Use |
-| Connect App Privacy | Tracking = No; sin Location |
+| Connect App Privacy | Tracking = Sí (Device ID, Advertising Data) |

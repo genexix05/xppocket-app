@@ -4,8 +4,9 @@ import GoogleMobileAds
 /// AdMob identifiers. Production values belong in `Ads.xcconfig` (see
 /// `Ads.xcconfig.example`) and map into Info.plist via build settings.
 ///
-/// Requests always ask for **non-personalized** ads (`npa=1`) so the app
-/// does not need App Tracking Transparency for advertising (App Review 5.1.2).
+/// Ads are personalized only when the user allows it: the Google UMP
+/// consent (EEA/UK) and the App Tracking Transparency prompt. The SDK
+/// reads both on its own, so a request carries no `npa` flag.
 enum AdsConfig {
     /// Google's official test App ID — safe for Simulator and dev builds.
     private static let testAppID = "ca-app-pub-3940256099942544~1458002511"
@@ -48,13 +49,10 @@ enum AdsConfig {
     /// Minimum seconds between interstitials (free tier). Game launches ignore it.
     static let interstitialCooldown: TimeInterval = 10 * 60
 
-    /// AdMob request that opts out of personalized advertising / IDFA use.
-    static func nonPersonalizedRequest() -> GADRequest {
-        let request = GADRequest()
-        let extras = GADExtras()
-        extras.additionalParameters = ["npa": "1"]
-        request.register(extras)
-        return request
+    /// AdMob request. Personalization follows the UMP consent and the ATT
+    /// choice, which the SDK reads itself.
+    static func adRequest() -> GADRequest {
+        GADRequest()
     }
 
     private static func stringPlistKey(_ key: String) -> String? {

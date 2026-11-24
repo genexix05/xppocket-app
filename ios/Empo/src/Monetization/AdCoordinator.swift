@@ -1,3 +1,4 @@
+import AppTrackingTransparency
 import GoogleMobileAds
 import UIKit
 import UserMessagingPlatform
@@ -22,9 +23,14 @@ final class AdCoordinator {
     private static let interstitialLifetime: TimeInterval = 55 * 60
     private static let retryBaseDelay: TimeInterval = 15
     private static let retryMaxDelay: TimeInterval = 10 * 60
+    /// After this many no-fills in a row the interstitial stops retrying
+    /// on its own. The next moment an ad could show loads again. Each
+    /// request without an ad lowers the match rate.
+    private static let maxBackgroundRetries = 4
 
     private(set) var isShowingInterstitial = false
     private var startedSDK = false
+    private var sdkReady = false
     private var isGatheringConsent = false
     private var interstitial: GADInterstitialAd?
     private var interstitialLoadedAt: Date?
@@ -51,11 +57,13 @@ final class AdCoordinator {
 
     /// True once consent is resolved and the SDK has started. Ad requests
     /// before this point would go out without a valid consent state.
-    var canRequestAds: Bool { startedSDK }
+    var canRequestAds: Bool { sdkReady }
 
     func prepare() {
         guard shouldShowAds, AdsConfig.isConfigured else { return }
         if startedSDK {
+            // A new moment to show an ad: retry even after a no-fill streak.
+            interstitialFailures = min(interstitialFailures, Self.maxBackgroundRetries - 1)
             preloadInterstitial()
             return
         }
@@ -103,15 +111,37 @@ final class AdCoordinator {
             NSLog("AdCoordinator: consent flow failed: \(error.localizedDescription)")
         }
 
+        await requestTrackingAuthorizationIfNeeded()
+
         if info.canRequestAds { startSDK() }
+    }
+
+    /// Google's order: the UMP consent first, then the ATT prompt. A user
+    /// who allows both gets personalized ads, which fill more requests and
+    /// pay more. The prompt only shows once, and only while the app is
+    /// active: iOS denies it at once otherwise.
+    private func requestTrackingAuthorizationIfNeeded() async {
+        guard ATTrackingManager.trackingAuthorizationStatus == .notDetermined else { return }
+        for _ in 0..<40 where UIApplication.shared.applicationState != .active {
+            try? await Task.sleep(for: .milliseconds(250))
+        }
+        guard UIApplication.shared.applicationState == .active else { return }
+        _ = await ATTrackingManager.requestTrackingAuthorization()
     }
 
     private func startSDK() {
         guard !startedSDK else { return }
         startedSDK = true
-        GADMobileAds.sharedInstance().start(completionHandler: nil)
-        NotificationCenter.default.post(name: Self.didBecomeReadyNotification, object: nil)
-        preloadInterstitial()
+        // Load only after the SDK finished starting: the first requests
+        // then go out with every adapter and the consent state ready.
+        GADMobileAds.sharedInstance().start { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+                self.sdkReady = true
+                NotificationCenter.default.post(name: Self.didBecomeReadyNotification, object: nil)
+                self.preloadInterstitial()
+            }
+        }
     }
 
     /// Returns after the interstitial is dismissed or skipped by policy.
@@ -239,7 +269,7 @@ final class AdCoordinator {
         isLoadingInterstitial = true
         GADInterstitialAd.load(
             withAdUnitID: AdsConfig.interstitialUnitID,
-            request: AdsConfig.nonPersonalizedRequest()
+            request: AdsConfig.adRequest()
         ) {
             [weak self] ad, error in
             Task { @MainActor in
@@ -264,6 +294,12 @@ final class AdCoordinator {
     /// streak does not turn into thousands of useless requests.
     private func scheduleInterstitialRetry() {
         interstitialFailures += 1
+        guard interstitialFailures < Self.maxBackgroundRetries else {
+            interstitialRetryTask?.cancel()
+            interstitialRetryTask = nil
+            interstitialRetryAt = nil
+            return
+        }
         let delay = min(
             Self.retryBaseDelay * pow(2, Double(interstitialFailures - 1)),
             Self.retryMaxDelay)

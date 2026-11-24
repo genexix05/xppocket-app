@@ -211,6 +211,36 @@
           }
         }
       }
+    },
+    "NSUserTrackingUsageDescription" : {
+      "comment" : "App Tracking Transparency prompt shown before personalized ads.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "XP Pocket uses this to show ads that are more relevant to you. The free version is paid for by these ads."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket lo usa para mostrarte anuncios más relevantes para ti. Estos anuncios pagan la versión gratuita."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket l'utilise pour te montrer des publicités plus pertinentes. Ces publicités financent la version gratuite."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket nutzt dies, um dir passendere Werbung zu zeigen. Diese Werbung finanziert die kostenlose Version."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
