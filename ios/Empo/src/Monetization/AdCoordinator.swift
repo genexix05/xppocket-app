@@ -42,6 +42,7 @@ final class AdCoordinator {
     /// True once the game reached `AdsConfig.playTimeInterval` of play and
     /// was paused for the ad. It stays true until an ad shows.
     private(set) var playTimeAdDue = false
+    private var presentingDelegate: InterstitialDelegate?
     private static let playTimeTick: TimeInterval = 10
 
     private var playSeconds: TimeInterval {
@@ -175,9 +176,16 @@ final class AdCoordinator {
             preloadInterstitial()
         }
         await withCheckedContinuation { continuation in
-            interstitial.fullScreenContentDelegate = InterstitialDelegate {
+            // The SDK keeps its delegate weak, so this one must be held
+            // here until the ad closes. Without it the delegate was gone
+            // before the close, the continuation never resumed, and the
+            // game that waited for the ad never started.
+            let delegate = InterstitialDelegate { [weak self] in
+                self?.presentingDelegate = nil
                 continuation.resume()
             }
+            presentingDelegate = delegate
+            interstitial.fullScreenContentDelegate = delegate
             interstitial.present(fromRootViewController: presenter)
         }
     }
@@ -313,21 +321,28 @@ final class AdCoordinator {
     }
 
     private final class InterstitialDelegate: NSObject, GADFullScreenContentDelegate {
-        let onDismiss: () -> Void
+        private var onDismiss: (() -> Void)?
 
         init(onDismiss: @escaping () -> Void) {
             self.onDismiss = onDismiss
         }
 
+        /// A continuation resumes once only.
+        private func finish() {
+            let callback = onDismiss
+            onDismiss = nil
+            callback?()
+        }
+
         func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
-            onDismiss()
+            finish()
         }
 
         func ad(
             _ ad: GADFullScreenPresentingAd,
             didFailToPresentFullScreenContentWithError error: Error
         ) {
-            onDismiss()
+            finish()
         }
     }
 }

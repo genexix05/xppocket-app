@@ -8,14 +8,29 @@ struct AdBannerView: View {
     @Environment(\.accountSession) private var session
     @State private var width: CGFloat = 0
 
+    /// The measured width, capped at the window: a bottom inset can
+    /// report a width wider than the screen, and AdMob then refuses the
+    /// banner ("Ad size will not fit on screen").
     private var adSize: GADAdSize {
-        width > 0 ? GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(width) : GADAdSizeBanner
+        var screen = AppWindow.currentScreenBounds.width
+        if screen <= 0 {
+            screen = UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.screen.bounds.width }
+                .first ?? 0
+        }
+        let limit = screen > 0 ? screen : width
+        let usable = width > 0 ? min(width, limit) : limit
+        guard usable >= 320 else { return GADAdSizeBanner }
+        return GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(usable)
     }
 
     var body: some View {
         if !session.hasPro, AdsConfig.isConfigured {
+            // A fixed frame: the banner must never size its container.
+            // The width is read from the container below, so a banner
+            // that sized it would feed its own width back and grow.
             AdBannerRepresentable(adSize: adSize)
-                .frame(height: adSize.size.height)
+                .frame(width: adSize.size.width, height: adSize.size.height)
                 .frame(maxWidth: .infinity)
                 .background(Color(.secondarySystemBackground))
                 .onGeometryChange(for: CGFloat.self, of: { $0.size.width.rounded() }) { width = $0 }

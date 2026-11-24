@@ -10,7 +10,8 @@ import GoogleMobileAds
 enum AdsConfig {
     /// Google's official test App ID — safe for Simulator and dev builds.
     private static let testAppID = "ca-app-pub-3940256099942544~1458002511"
-    private static let testBannerUnitID = "ca-app-pub-3940256099942544/2934735716"
+    /// Google's test unit for adaptive banners.
+    private static let testBannerUnitID = "ca-app-pub-3940256099942544/2435281174"
     private static let testInterstitialUnitID = "ca-app-pub-3940256099942544/4411468910"
 
     static var isConfigured: Bool {

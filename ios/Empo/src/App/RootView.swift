@@ -11,6 +11,7 @@ struct RootView: View {
     @Environment(\.accountSession) private var accountSession
     @Namespace private var hero
     @State private var showLaunchProSheet = false
+    @MainActor private static var didRunLaunchTask = false
     /// The library goes quiet after the loading→playing fade. It
     /// stays mounted and keeps its navigation stack, but the pushed
     /// loading view renders nothing, so Ken Burns and the container
@@ -102,6 +103,10 @@ struct RootView: View {
             }
         }
         .task {
+            // A full-screen ad over the root makes this view appear again,
+            // and the launch work (and its Pro promo) must run once only.
+            guard !Self.didRunLaunchTask else { return }
+            Self.didRunLaunchTask = true
             if appState.pendingCrashRecovery {
                 appState.consumeCrashRecovery()
             }
