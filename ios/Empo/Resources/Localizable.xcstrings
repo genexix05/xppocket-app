@@ -61,6 +61,7 @@
       }
     },
     "\"%@\" is still running. Resume it from its card, or force-close the app to play a different game." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -328,7 +329,126 @@
         }
       }
     },
+    "(uncommitted changes)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(nicht committete Änderungen)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(cambios sin confirmar)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(modifications non commitées)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(modifiche non committate)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "（未コミットの変更）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(커밋되지 않은 변경 사항)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(alterações sem commit)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(незакоммиченные изменения)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "（有未提交的更改）"
+          }
+        }
+      }
+    },
+    "[report it on GitHub](%@)" : {
+      "comment" : "A Markdown link. Translate the words in brackets. Keep the placeholder in parentheses as it is.",
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[melde es auf GitHub](%@)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[repórtalo en GitHub](%@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[signale-le sur GitHub](%@)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[segnalalo su GitHub](%@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[GitHubで報告してください](%@)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[GitHub에 알려 주세요](%@)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[avise no GitHub](%@)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[сообщите об этом на GitHub](%@)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[到 GitHub 上反馈](%@)"
+          }
+        }
+      }
+    },
     "%@\n\nClose %@ from the app switcher, then reopen it." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -473,7 +593,6 @@
         }
       }
     },
-    "%@ FPS" : {},
     "%@ are already in your library. Importing replaces their files with the new ones. Your saves and settings stay. You can't undo this." : {
       "comment" : "The placeholder is a list of game names.",
       "localizations" : {
@@ -593,6 +712,7 @@
       }
     },
     "%@ can't read this game's own settings, so the values below start from %@'s defaults." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -615,7 +735,6 @@
       }
     },
     "%@ can't run this game" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -879,6 +998,15 @@
         }
       }
     },
+    "%@ hit a problem while loading this game." : {
+
+    },
+    "%@ hit a problem while running this game." : {
+
+    },
+    "%@ image" : {
+
+    },
     "%@ is already in your library. Importing replaces its files with the new ones. Your saves and settings stay. You can't undo this." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -925,6 +1053,7 @@
       }
     },
     "%@ is still checking this game. Stopping now discards it." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -947,7 +1076,6 @@
       }
     },
     "%@ moved your duplicate games" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1028,7 +1156,6 @@
         }
       }
     },
-    "%@%%" : {},
     "%@, restored %@" : {
       "comment" : "First placeholder: the game's name. Second: a list of save file names.",
       "localizations" : {
@@ -1094,8 +1221,6 @@
         }
       }
     },
-    "%@pt" : {},
-    "%@x" : {},
     "%lld FPS" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1463,64 +1588,6 @@
         }
       }
     },
-    "(uncommitted changes)" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(nicht committete Änderungen)"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(cambios sin confirmar)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(modifications non commitées)"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(modifiche non committate)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "（未コミットの変更）"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(커밋되지 않은 변경 사항)"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(alterações sem commit)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(незакоммиченные изменения)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "（有未提交的更改）"
-          }
-        }
-      }
-    },
     "A / Cross (south)" : {
       "localizations" : {
         "de" : {
@@ -1639,6 +1706,7 @@
       }
     },
     "A core runs the games in its list. %@ opens the core a game needs when you start the game." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1741,6 +1809,7 @@
       }
     },
     "A new profile starts from the XP Pocket default layout." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2273,7 +2342,6 @@
       }
     },
     "Added profile “%@”." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2354,7 +2422,6 @@
       }
     },
     "Admin key" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2377,7 +2444,6 @@
       }
     },
     "Admin key is required." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2632,7 +2698,6 @@
       }
     },
     "App Store returned no product for %@. " : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2712,31 +2777,7 @@
         }
       }
     },
-    "Apple ID" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apple-ID"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apple ID"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apple ID"
-          }
-        }
-      }
-    },
     "Apple did not return a sign-in token." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2754,6 +2795,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple n’a pas renvoyé de jeton de connexion."
+          }
+        }
+      }
+    },
+    "Apple ID" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple-ID"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple ID"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple ID"
           }
         }
       }
@@ -2817,7 +2880,6 @@
       }
     },
     "Archive entry path is invalid." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2921,7 +2983,6 @@
       }
     },
     "Author" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3177,7 +3238,30 @@
         }
       }
     },
+    "Automatic tries the game's own layout, then your default profile, then the built-in default." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„Automatisch“ probiert zuerst das eigene Layout des Spiels, dann dein Standardprofil und zuletzt das integrierte Layout."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automático prueba primero el diseño propio del juego, luego tu perfil predeterminado y por último el diseño integrado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatique essaie d’abord la disposition propre au jeu, puis votre profil par défaut, puis celle intégrée."
+          }
+        }
+      }
+    },
     "Automatic tries the game's own layout, then your default profile, then the XP Pocket default." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3231,28 +3315,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "“自动”会先用游戏自带的布局，然后是你的默认方案，最后是 XP Pocket 默认布局。"
-          }
-        }
-      }
-    },
-    "Automatic tries the game's own layout, then your default profile, then the built-in default." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "„Automatisch“ probiert zuerst das eigene Layout des Spiels, dann dein Standardprofil und zuletzt das integrierte Layout."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automático prueba primero el diseño propio del juego, luego tu perfil predeterminado y por último el diseño integrado."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatique essaie d’abord la disposition propre au jeu, puis votre profil par défaut, puis celle intégrée."
           }
         }
       }
@@ -3432,7 +3494,6 @@
       }
     },
     "Back up and restore saves across devices." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3514,7 +3575,6 @@
       }
     },
     "Bezel or shell image, usually at the bottom." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3595,7 +3655,6 @@
       }
     },
     "Browse and install touch-control layouts shared by the XP Pocket community." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3793,7 +3852,6 @@
       }
     },
     "Built-in default" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3992,7 +4050,6 @@
       }
     },
     "Catalog entry" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4248,7 +4305,6 @@
       }
     },
     "Changelog" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4271,7 +4327,6 @@
       }
     },
     "Cheats" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4294,6 +4349,7 @@
       }
     },
     "Check for updates" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4352,6 +4408,7 @@
       }
     },
     "Checking for updates" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4410,6 +4467,7 @@
       }
     },
     "Checking for updates…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4608,7 +4666,6 @@
       }
     },
     "Choose" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5360,87 +5417,6 @@
         }
       }
     },
-    "Close XP Pocket from the app switcher, then reopen it to use the new language." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Schließ XP Pocket im App-Umschalter und öffne es wieder, um die neue Sprache zu nutzen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cierra XP Pocket desde el selector de apps y vuelve a abrirlo para usar el nuevo idioma."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ferme XP Pocket depuis le sélecteur d'apps, puis rouvre-le pour utiliser la nouvelle langue."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chiudi XP Pocket dall'App Switcher, poi riaprilo per usare la nuova lingua."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新しい言語にするには、AppスイッチャーでXP Pocketを閉じてから、もう一度開いてください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "새 언어를 쓰려면 앱 전환기에서 XP Pocket를 닫고 다시 열어 주세요."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Feche o XP Pocket no seletor de apps e abra de novo para usar o novo idioma."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Закройте XP Pocket в переключателе приложений и откройте снова, чтобы включить новый язык."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请在 App 切换器中关闭 XP Pocket，然后重新打开，新语言才会生效。"
-          }
-        }
-      }
-    },
-    "Close and Play" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Schließen und spielen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cerrar y jugar"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fermer et jouer"
-          }
-        }
-      }
-    },
     "Close and play" : {
       "localizations" : {
         "de" : {
@@ -5499,6 +5475,87 @@
         }
       }
     },
+    "Close and Play" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schließen und spielen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar y jugar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer et jouer"
+          }
+        }
+      }
+    },
+    "Close XP Pocket from the app switcher, then reopen it to use the new language." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schließ XP Pocket im App-Umschalter und öffne es wieder, um die neue Sprache zu nutzen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cierra XP Pocket desde el selector de apps y vuelve a abrirlo para usar el nuevo idioma."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ferme XP Pocket depuis le sélecteur d'apps, puis rouvre-le pour utiliser la nouvelle langue."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiudi XP Pocket dall'App Switcher, poi riaprilo per usare la nuova lingua."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しい言語にするには、AppスイッチャーでXP Pocketを閉じてから、もう一度開いてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 언어를 쓰려면 앱 전환기에서 XP Pocket를 닫고 다시 열어 주세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feche o XP Pocket no seletor de apps e abra de novo para usar o novo idioma."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закройте XP Pocket в переключателе приложений и откройте снова, чтобы включить новый язык."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请在 App 切换器中关闭 XP Pocket，然后重新打开，新语言才会生效。"
+          }
+        }
+      }
+    },
     "Cloud save" : {
       "localizations" : {
         "de" : {
@@ -5522,7 +5579,6 @@
       }
     },
     "Cloud save (Pro)" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5567,7 +5623,6 @@
       }
     },
     "Cloud save restored. Quit the game completely (not just pause) and launch it again to load the cloud copy." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5706,7 +5761,6 @@
       }
     },
     "Community layouts" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6240,7 +6294,6 @@
       }
     },
     "Could not build the layout pack." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6263,6 +6316,7 @@
       }
     },
     "Could not check for updates. Try again later." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6321,7 +6375,6 @@
       }
     },
     "Could not derive a valid profile name." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6344,7 +6397,6 @@
       }
     },
     "Could not encode the image." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6367,6 +6419,7 @@
       }
     },
     "Could not find the latest release on GitHub. Try again later." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6425,7 +6478,6 @@
       }
     },
     "Could not import" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6448,7 +6500,6 @@
       }
     },
     "Could not install" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6493,7 +6544,6 @@
       }
     },
     "Could not open subscription management. Try Settings → Apple ID → Subscriptions." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6516,7 +6566,6 @@
       }
     },
     "Could not pack save data." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6539,7 +6588,6 @@
       }
     },
     "Could not prepare a feedback report." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6562,7 +6610,6 @@
       }
     },
     "Could not publish" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6585,6 +6632,7 @@
       }
     },
     "Could not reach GitHub. Check your connection and try again." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6643,7 +6691,6 @@
       }
     },
     "Could not read the layout catalog." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6666,7 +6713,6 @@
       }
     },
     "Could not read the server response." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6689,7 +6735,6 @@
       }
     },
     "Could not save skin" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6712,7 +6757,6 @@
       }
     },
     "Could not save skin files." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6735,7 +6779,6 @@
       }
     },
     "Could not save the layout profile." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6758,7 +6801,6 @@
       }
     },
     "Could not verify the App Store transaction." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6781,6 +6823,7 @@
       }
     },
     "Couldn't check for updates. Tap to retry." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7270,7 +7313,6 @@
       }
     },
     "Credits" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7524,6 +7566,9 @@
         }
       }
     },
+    "D-pad image" : {
+
+    },
     "D-pad left" : {
       "localizations" : {
         "de" : {
@@ -7581,6 +7626,9 @@
           }
         }
       }
+    },
+    "D-pad pressed image" : {
+
     },
     "D-pad right" : {
       "localizations" : {
@@ -8977,7 +9025,6 @@
       }
     },
     "Delete account" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9000,7 +9047,6 @@
       }
     },
     "Delete account?" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9568,7 +9614,6 @@
       }
     },
     "Description" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9591,7 +9636,6 @@
       }
     },
     "Designed by Minor Adventures. Used under the Smallbits license." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9672,7 +9716,6 @@
       }
     },
     "Device frame" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9753,7 +9796,6 @@
       }
     },
     "Directional pad" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9834,6 +9876,7 @@
       }
     },
     "Dismiss update banner" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9950,7 +9993,6 @@
       }
     },
     "Display name" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10148,7 +10190,6 @@
       }
     },
     "Download save from cloud" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10622,6 +10663,64 @@
         }
       }
     },
+    "e.g. Z" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "z. B. Z"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "p. ej., Z"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ex. : Z"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "es. Z"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "例：Z"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예: Z"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ex.: Z"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "напр. Z"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "例如 Z"
+          }
+        }
+      }
+    },
     "Each core runs the games named under it. XP Pocket picks the core a game needs when you start it." : {
       "localizations" : {
         "de" : {
@@ -10680,66 +10779,7 @@
         }
       }
     },
-    "Edit D-pad" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Steuerkreuz bearbeiten"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Editar cruceta"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modifier le D-pad"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modifica croce direzionale"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "十字キーを編集"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "십자키 편집"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Editar direcional"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Настроить крестовину"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "编辑十字键"
-          }
-        }
-      }
-    },
     "Edit appearance" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10873,6 +10913,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "编辑按键布局"
+          }
+        }
+      }
+    },
+    "Edit D-pad" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Steuerkreuz bearbeiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar cruceta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier le D-pad"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica croce direzionale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "十字キーを編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "십자키 편집"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar direcional"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настроить крестовину"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑十字键"
           }
         }
       }
@@ -11052,7 +11150,6 @@
       }
     },
     "Empo" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11155,6 +11252,7 @@
       }
     },
     "Enjoy!" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11208,6 +11306,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "玩得开心！"
+          }
+        }
+      }
+    },
+    "error" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehler"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "error"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "erreur"
+          }
+        }
+      }
+    },
+    "errors" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehler"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "errores"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "erreurs"
           }
         }
       }
@@ -11271,7 +11415,6 @@
       }
     },
     "Exclusive community control packs." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11352,7 +11495,6 @@
       }
     },
     "Export pack file" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11723,7 +11865,6 @@
       }
     },
     "Fast forward (%lldx) (Pro)" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12026,7 +12167,6 @@
       }
     },
     "Feedback" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12456,6 +12596,7 @@
       }
     },
     "Find me on Twitter" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13125,7 +13266,6 @@
       }
     },
     "Game failed to start during loading." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13440,7 +13580,6 @@
       }
     },
     "Get XP Pocket Pro" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13463,6 +13602,7 @@
       }
     },
     "GitHub sent something XP Pocket could not read. Try again later." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13638,6 +13778,7 @@
       }
     },
     "Here be dragons" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14183,6 +14324,7 @@
       }
     },
     "I build XP Pocket alone in my spare time." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14241,6 +14383,7 @@
       }
     },
     "I understand" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14299,7 +14442,6 @@
       }
     },
     "Icon pack (splash pattern)" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14322,6 +14464,7 @@
       }
     },
     "If loading is stuck, close %@ from the app switcher and reopen." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14425,6 +14568,7 @@
     },
     "If this keeps happening, %@." : {
       "comment" : "The placeholder is the link \"report it on GitHub\".",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14715,7 +14859,6 @@
       }
     },
     "Import layout pack" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14738,7 +14881,6 @@
       }
     },
     "Import pack file" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14842,7 +14984,6 @@
       }
     },
     "Imported" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14946,7 +15087,6 @@
       }
     },
     "In App Store Connect the subscription must belong to that app, " : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -14969,7 +15109,6 @@
       }
     },
     "In-game cheat menu for supported games." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15166,7 +15305,6 @@
       }
     },
     "Install" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15189,7 +15327,6 @@
       }
     },
     "Installed" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15270,7 +15407,6 @@
       }
     },
     "Invalid controls.json: %@" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15293,7 +15429,6 @@
       }
     },
     "Invalid screen.json: %@" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -15316,7 +15451,6 @@
       }
     },
     "Invalid skin.json: %@" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -16434,7 +16568,6 @@
       }
     },
     "Layout ID" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17350,7 +17483,6 @@
       }
     },
     "Licenses" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17491,7 +17623,6 @@
       }
     },
     "Loading catalog…" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17572,7 +17703,6 @@
       }
     },
     "Loading library…" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17590,6 +17720,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chargement de la bibliothèque…"
+          }
+        }
+      }
+    },
+    "locked" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "festgestellt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "bloqueada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "verrouillée"
           }
         }
       }
@@ -17712,6 +17865,7 @@
       }
     },
     "Made with ☕ by [**Mateo M.**](https://github.com/mateo-m)\n© 2026 Mateo M." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17770,7 +17924,6 @@
       }
     },
     "Manage subscription" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18723,7 +18876,6 @@
       }
     },
     "No active Pro subscription was found for this Apple ID." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18746,7 +18898,6 @@
       }
     },
     "No ads" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18850,7 +19001,6 @@
       }
     },
     "No layouts yet" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -18931,7 +19081,6 @@
       }
     },
     "No save data found. Save in-game once, then try again.\n\nSearched:\n%@" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19013,7 +19162,6 @@
       }
     },
     "Normal state." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19467,25 +19615,25 @@
         }
       }
     },
-    "OK" : {
+    "off" : {
       "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OK"
+            "value" : "aus"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OK"
+            "value" : "desactivado"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OK"
+            "value" : "désactivé"
           }
         }
       }
@@ -19545,6 +19693,51 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "关"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "on" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "an"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "activado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "activé"
           }
         }
       }
@@ -19924,6 +20117,7 @@
       }
     },
     "Opens the release notes." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20097,6 +20291,65 @@
         }
       }
     },
+    "or bugs!" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "oder Bugs!"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¡o bugs!"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ou des bugs !"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "o bug!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "…いや、バグかも！"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아니면 버그가요!"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ou bugs!"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "или баги!"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "……也可能是 bug！"
+          }
+        }
+      }
+    },
     "Or tap Skip above to keep using the free version." : {
       "localizations" : {
         "de" : {
@@ -20235,67 +20488,7 @@
         }
       }
     },
-    "PSDK core for Ruby %@" : {
-      "comment" : "Game cores screen. The placeholder is a Ruby version, such as 3.0.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PSDK-Kern für Ruby %@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Núcleo PSDK para Ruby %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cœur PSDK pour Ruby %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Core PSDK per Ruby %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ruby %@用のPSDKコア"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ruby %@용 PSDK 코어"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Núcleo PSDK para Ruby %@"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ядро PSDK для Ruby %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "适用于 Ruby %@ 的 PSDK 核心"
-          }
-        }
-      }
-    },
     "Pack file is empty." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21100,28 +21293,6 @@
         }
       }
     },
-    "Pick PNG or JPEG images from Photos, Files, or the camera. They are saved inside the profile folder." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wähle PNG- oder JPEG-Bilder aus Fotos, Dateien oder der Kamera. Sie werden im Profilordner gespeichert."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elige imágenes PNG o JPEG desde Fotos, Archivos o la cámara. Se guardan dentro de la carpeta del perfil."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choisissez des images PNG ou JPEG depuis Photos, Fichiers ou l’appareil photo. Elles sont enregistrées dans le dossier du profil."
-          }
-        }
-      }
-    },
     "Pick a different name" : {
       "localizations" : {
         "de" : {
@@ -21198,6 +21369,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choisissez une disposition existante pour la mettre à jour avec le même ID."
+          }
+        }
+      }
+    },
+    "Pick PNG or JPEG images from Photos, Files, or the camera. They are saved inside the profile folder." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle PNG- oder JPEG-Bilder aus Fotos, Dateien oder der Kamera. Sie werden im Profilordner gespeichert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige imágenes PNG o JPEG desde Fotos, Archivos o la cámara. Se guardan dentro de la carpeta del perfil."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez des images PNG ou JPEG depuis Photos, Fichiers ou l’appareil photo. Elles sont enregistrées dans le dossier du profil."
           }
         }
       }
@@ -21493,7 +21686,6 @@
       }
     },
     "Player actions" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21538,7 +21730,6 @@
       }
     },
     "Playing stays free without an account. Sign in is optional — useful later for cloud save across devices." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21665,7 +21856,6 @@
       }
     },
     "Premium layouts" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21943,7 +22133,6 @@
       }
     },
     "Price" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21965,30 +22154,8 @@
         }
       }
     },
-    "Privacy Policy" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Datenschutzerklärung"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Política de privacidad"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Politique de confidentialité"
-          }
-        }
-      }
-    },
     "Privacy policy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -22046,8 +22213,29 @@
         }
       }
     },
+    "Privacy Policy" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutzerklärung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Política de privacidad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Politique de confidentialité"
+          }
+        }
+      }
+    },
     "Pro details" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -22070,7 +22258,6 @@
       }
     },
     "Profile" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -22093,7 +22280,6 @@
       }
     },
     "Profile name is invalid." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -22347,8 +22533,66 @@
         }
       }
     },
+    "PSDK core for Ruby %@" : {
+      "comment" : "Game cores screen. The placeholder is a Ruby version, such as 3.0.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PSDK-Kern für Ruby %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Núcleo PSDK para Ruby %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cœur PSDK pour Ruby %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Core PSDK per Ruby %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruby %@用のPSDKコア"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruby %@용 PSDK 코어"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Núcleo PSDK para Ruby %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ядро PSDK для Ruby %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "适用于 Ruby %@ 的 PSDK 核心"
+          }
+        }
+      }
+    },
     "Publish layout" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -22371,7 +22615,6 @@
       }
     },
     "Publish to community" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -22394,7 +22637,6 @@
       }
     },
     "Published" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -22461,7 +22703,6 @@
       }
     },
     "Purchase cancelled." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -22831,471 +23072,6 @@
         }
       }
     },
-    "RGSS version" : {
-      "comment" : "Game info row. RGSS is the RPG Maker script system.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RGSS-Version"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Versión de RGSS"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version RGSS"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Versione RGSS"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RGSSバージョン"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RGSS 버전"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Versão do RGSS"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Версия RGSS"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RGSS 版本"
-          }
-        }
-      }
-    },
-    "RPG Maker MV and MZ core" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kern für RPG Maker MV und MZ"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Núcleo de RPG Maker MV y MZ"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cœur RPG Maker MV et MZ"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Core RPG Maker MV e MZ"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker MV・MZコア"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker MV 및 MZ 코어"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Núcleo RPG Maker MV e MZ"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ядро RPG Maker MV и MZ"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker MV 和 MZ 核心"
-          }
-        }
-      }
-    },
-    "RPG Maker X button" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG-Maker-Taste X"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Botón X de RPG Maker"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bouton X de RPG Maker"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pulsante X di RPG Maker"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker Xボタン"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker X 버튼"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Botão X do RPG Maker"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Кнопка X в RPG Maker"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker X 键"
-          }
-        }
-      }
-    },
-    "RPG Maker XP and VX core" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kern für RPG Maker XP und VX"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Núcleo de RPG Maker XP y VX"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cœur RPG Maker XP et VX"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Core RPG Maker XP e VX"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker XP・VXコア"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker XP 및 VX 코어"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Núcleo RPG Maker XP e VX"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ядро RPG Maker XP и VX"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker XP 和 VX 核心"
-          }
-        }
-      }
-    },
-    "RPG Maker XP, VX and VX Ace core" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kern für RPG Maker XP, VX und VX Ace"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Núcleo de RPG Maker XP, VX y VX Ace"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cœur RPG Maker XP, VX et VX Ace"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Core RPG Maker XP, VX e VX Ace"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker XP・VX・VX Aceコア"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker XP, VX 및 VX Ace 코어"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Núcleo RPG Maker XP, VX e VX Ace"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ядро RPG Maker XP, VX и VX Ace"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker XP、VX 和 VX Ace 核心"
-          }
-        }
-      }
-    },
-    "RPG Maker XP, VX, VX Ace, and mkxp-z games" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spiele aus RPG Maker XP, VX, VX Ace und mkxp-z"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "juegos de RPG Maker XP, VX, VX Ace y mkxp-z"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "jeux RPG Maker XP, VX, VX Ace et mkxp-z"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "giochi RPG Maker XP, VX, VX Ace e mkxp-z"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker XP・VX・VX Ace・mkxp-zのゲーム"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker XP, VX, VX Ace 및 mkxp-z 게임"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jogos de RPG Maker XP, VX, VX Ace e mkxp-z"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "игры RPG Maker XP, VX, VX Ace и mkxp-z"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker XP、VX、VX Ace 和 mkxp-z 游戏"
-          }
-        }
-      }
-    },
-    "RPG Maker Y button" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG-Maker-Taste Y"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Botón Y de RPG Maker"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bouton Y de RPG Maker"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pulsante Y di RPG Maker"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker Yボタン"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker Y 버튼"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Botão Y do RPG Maker"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Кнопка Y в RPG Maker"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker Y 键"
-          }
-        }
-      }
-    },
-    "RPG Maker Z button" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG-Maker-Taste Z"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Botón Z de RPG Maker"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bouton Z de RPG Maker"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pulsante Z di RPG Maker"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker Zボタン"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker Z 버튼"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Botão Z do RPG Maker"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Кнопка Z в RPG Maker"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPG Maker Z 键"
-          }
-        }
-      }
-    },
     "Ready to play" : {
       "localizations" : {
         "de" : {
@@ -23471,7 +23247,6 @@
       }
     },
     "Refresh subscription" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -23494,7 +23269,6 @@
       }
     },
     "Remember admin key on this device" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -23517,7 +23291,6 @@
       }
     },
     "Remove banner and full-screen ads." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -23714,7 +23487,6 @@
       }
     },
     "Replace local saves" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -24187,64 +23959,6 @@
         }
       }
     },
-    "Reset to XP Pocket default?" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Auf XP Pocket-Standard zurücksetzen?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Volver al predeterminado de XP Pocket?"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Revenir à la disposition d'XP Pocket ?"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ripristinare il predefinito di XP Pocket?"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket標準に戻しますか？"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket 기본값으로 초기화할까요?"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Voltar ao padrão do XP Pocket?"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Вернуть раскладку XP Pocket по умолчанию?"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "恢复为 XP Pocket 默认布局？"
-          }
-        }
-      }
-    },
     "Reset to default" : {
       "localizations" : {
         "de" : {
@@ -24496,6 +24210,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "恢复游戏原值"
+          }
+        }
+      }
+    },
+    "Reset to XP Pocket default?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf XP Pocket-Standard zurücksetzen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Volver al predeterminado de XP Pocket?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revenir à la disposition d'XP Pocket ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristinare il predefinito di XP Pocket?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket標準に戻しますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket 기본값으로 초기화할까요?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voltar ao padrão do XP Pocket?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вернуть раскладку XP Pocket по умолчанию?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复为 XP Pocket 默认布局？"
           }
         }
       }
@@ -24778,64 +24550,6 @@
         }
       }
     },
-    "Restart XP Pocket" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket neu starten"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reinicia XP Pocket"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Redémarre XP Pocket"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Riavvia XP Pocket"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocketを再起動してください"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket를 다시 시작해 주세요"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reiniciar o XP Pocket"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Перезапустите XP Pocket"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "需要重启 XP Pocket"
-          }
-        }
-      }
-    },
     "Restart this game to apply: %@." : {
       "comment" : "The placeholder is a list of setting names, such as \"Smooth scaling and Render scale\".",
       "localizations" : {
@@ -24895,8 +24609,65 @@
         }
       }
     },
+    "Restart XP Pocket" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket neu starten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reinicia XP Pocket"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redémarre XP Pocket"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riavvia XP Pocket"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocketを再起動してください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket를 다시 시작해 주세요"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reiniciar o XP Pocket"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перезапустите XP Pocket"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要重启 XP Pocket"
+          }
+        }
+      }
+    },
     "Restore purchases" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -24994,6 +24765,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "继续"
+          }
+        }
+      }
+    },
+    "RGSS version" : {
+      "comment" : "Game info row. RGSS is the RPG Maker script system.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RGSS-Version"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versión de RGSS"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version RGSS"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versione RGSS"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RGSSバージョン"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RGSS 버전"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versão do RGSS"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Версия RGSS"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RGSS 版本"
           }
         }
       }
@@ -25346,6 +25176,412 @@
         }
       }
     },
+    "RPG Maker MV and MZ core" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kern für RPG Maker MV und MZ"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Núcleo de RPG Maker MV y MZ"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cœur RPG Maker MV et MZ"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Core RPG Maker MV e MZ"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker MV・MZコア"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker MV 및 MZ 코어"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Núcleo RPG Maker MV e MZ"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ядро RPG Maker MV и MZ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker MV 和 MZ 核心"
+          }
+        }
+      }
+    },
+    "RPG Maker X button" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG-Maker-Taste X"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Botón X de RPG Maker"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bouton X de RPG Maker"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulsante X di RPG Maker"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker Xボタン"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker X 버튼"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Botão X do RPG Maker"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кнопка X в RPG Maker"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker X 键"
+          }
+        }
+      }
+    },
+    "RPG Maker XP and VX core" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kern für RPG Maker XP und VX"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Núcleo de RPG Maker XP y VX"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cœur RPG Maker XP et VX"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Core RPG Maker XP e VX"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker XP・VXコア"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker XP 및 VX 코어"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Núcleo RPG Maker XP e VX"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ядро RPG Maker XP и VX"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker XP 和 VX 核心"
+          }
+        }
+      }
+    },
+    "RPG Maker XP, VX and VX Ace core" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kern für RPG Maker XP, VX und VX Ace"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Núcleo de RPG Maker XP, VX y VX Ace"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cœur RPG Maker XP, VX et VX Ace"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Core RPG Maker XP, VX e VX Ace"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker XP・VX・VX Aceコア"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker XP, VX 및 VX Ace 코어"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Núcleo RPG Maker XP, VX e VX Ace"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ядро RPG Maker XP, VX и VX Ace"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker XP、VX 和 VX Ace 核心"
+          }
+        }
+      }
+    },
+    "RPG Maker XP, VX, VX Ace, and mkxp-z games" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spiele aus RPG Maker XP, VX, VX Ace und mkxp-z"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "juegos de RPG Maker XP, VX, VX Ace y mkxp-z"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "jeux RPG Maker XP, VX, VX Ace et mkxp-z"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "giochi RPG Maker XP, VX, VX Ace e mkxp-z"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker XP・VX・VX Ace・mkxp-zのゲーム"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker XP, VX, VX Ace 및 mkxp-z 게임"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jogos de RPG Maker XP, VX, VX Ace e mkxp-z"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "игры RPG Maker XP, VX, VX Ace и mkxp-z"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker XP、VX、VX Ace 和 mkxp-z 游戏"
+          }
+        }
+      }
+    },
+    "RPG Maker Y button" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG-Maker-Taste Y"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Botón Y de RPG Maker"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bouton Y de RPG Maker"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulsante Y di RPG Maker"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker Yボタン"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker Y 버튼"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Botão Y do RPG Maker"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кнопка Y в RPG Maker"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker Y 键"
+          }
+        }
+      }
+    },
+    "RPG Maker Z button" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG-Maker-Taste Z"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Botón Z de RPG Maker"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bouton Z de RPG Maker"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulsante Z di RPG Maker"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker Zボタン"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker Z 버튼"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Botão Z do RPG Maker"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кнопка Z в RPG Maker"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RPG Maker Z 键"
+          }
+        }
+      }
+    },
     "Ruby (bundled)" : {
       "comment" : "Game info row: the Ruby version that ships with the game.",
       "localizations" : {
@@ -25581,7 +25817,6 @@
       }
     },
     "Run %@'s fix-up scripts after the game loads. They add the cheat menu and patch common RPG Maker and Pokemon Essentials problems." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -25604,6 +25839,7 @@
       }
     },
     "Run XP Pocket's fix-up scripts after the game loads. They add the cheat menu and patch common RPG Maker and Pokemon Essentials problems." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -26127,6 +26363,7 @@
     },
     "Save often. If you hit issues, report them on [**GitHub**](%@)." : {
       "comment" : "Launch disclaimer. Keep the Markdown link. The placeholder is the URL of the issues page.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -27023,7 +27260,6 @@
       }
     },
     "Send feedback" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -27046,7 +27282,6 @@
       }
     },
     "Send report" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -27149,7 +27384,6 @@
       }
     },
     "Server error (%lld): %@" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -27172,7 +27406,6 @@
       }
     },
     "Server responded with HTTP %lld." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -27602,7 +27835,6 @@
       }
     },
     "Show cheats (Pro)" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -27975,7 +28207,6 @@
       }
     },
     "Shown while a direction is held." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -28174,7 +28405,6 @@
       }
     },
     "Sign in was rejected. Please try again." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -28197,7 +28427,6 @@
       }
     },
     "Sign in with Apple first." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -28220,7 +28449,6 @@
       }
     },
     "Sign in with Apple to enable cloud save on all your devices. Pro features on this device stay active without an account." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -28243,7 +28471,6 @@
       }
     },
     "Sign out" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -28266,7 +28493,6 @@
       }
     },
     "Signed in" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -28581,7 +28807,6 @@
       }
     },
     "Smallbits" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -28952,6 +29177,7 @@
       }
     },
     "Some controllers send keys instead of buttons. Map those keys here to reuse your button bindings." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -29033,7 +29259,6 @@
       }
     },
     "Something went wrong talking to the server (HTTP %lld)." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -29172,7 +29397,6 @@
       }
     },
     "Source code (GPL)" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -29195,6 +29419,7 @@
       }
     },
     "Source code on GitHub" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -29311,7 +29536,6 @@
       }
     },
     "Speed up repetitive sections." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -29452,7 +29676,6 @@
       }
     },
     "Status" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -29764,31 +29987,7 @@
         }
       }
     },
-    "Subscribe to Pro" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pro abonnieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suscribirse a Pro"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "S’abonner à Pro"
-          }
-        }
-      }
-    },
     "Subscribe — %@/month" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -29810,8 +30009,29 @@
         }
       }
     },
+    "Subscribe to Pro" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro abonnieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suscribirse a Pro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S’abonner à Pro"
+          }
+        }
+      }
+    },
     "Subscription" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -30324,7 +30544,6 @@
       }
     },
     "Tags (comma separated)" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -30520,30 +30739,8 @@
         }
       }
     },
-    "Terms of Use" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nutzungsbedingungen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Términos de uso"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conditions d’utilisation"
-          }
-        }
-      }
-    },
     "Terms of use" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -30601,8 +30798,29 @@
         }
       }
     },
+    "Terms of Use" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nutzungsbedingungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Términos de uso"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions d’utilisation"
+          }
+        }
+      }
+    },
     "Thanks — we received your report." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -30728,6 +30946,7 @@
       }
     },
     "That name is taken or uses characters XP Pocket can't save. Try letters, numbers and spaces." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -30781,52 +31000,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这个名字已被占用，或包含 XP Pocket 无法保存的字符。试试只用字母、数字和空格。"
-          }
-        }
-      }
-    },
-    "The Pro subscription is not available right now. Try again later." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das Pro-Abo ist gerade nicht verfügbar. Versuche es später erneut."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La suscripción Pro no está disponible ahora mismo. Inténtalo más tarde."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’abonnement Pro n’est pas disponible pour le moment. Réessayez plus tard."
-          }
-        }
-      }
-    },
-    "The XP Pocket service is temporarily unavailable. Please try again in a few minutes." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der XP-Pocket-Dienst ist vorübergehend nicht verfügbar. Bitte versuche es in ein paar Minuten erneut."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El servicio de XP Pocket no está disponible temporalmente. Inténtalo de nuevo en unos minutos."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le service XP Pocket est temporairement indisponible. Veuillez réessayer dans quelques minutes."
           }
         }
       }
@@ -31006,7 +31179,6 @@
       }
     },
     "The cloud save pack was empty." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -31110,6 +31282,7 @@
       }
     },
     "The game has to use the mouse for this to do anything." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -31132,6 +31305,7 @@
       }
     },
     "The game stopped responding. Close %@ and reopen it." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -31270,7 +31444,6 @@
       }
     },
     "The layout profile could not be found." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -31338,7 +31511,6 @@
       }
     },
     "The pack does not include controls.json." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -31361,7 +31533,6 @@
       }
     },
     "The pack file is empty." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -31405,8 +31576,29 @@
         }
       }
     },
+    "The Pro subscription is not available right now. Try again later." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Pro-Abo ist gerade nicht verfügbar. Versuche es später erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La suscripción Pro no está disponible ahora mismo. Inténtalo más tarde."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’abonnement Pro n’est pas disponible pour le moment. Réessayez plus tard."
+          }
+        }
+      }
+    },
     "The profile has no controls.json." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -31447,6 +31639,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le reste, sauvegardes comprises, se trouve dans « Duplicate Games » dans le dossier de %@ "
+          }
+        }
+      }
+    },
+    "The XP Pocket service is temporarily unavailable. Please try again in a few minutes." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der XP-Pocket-Dienst ist vorübergehend nicht verfügbar. Bitte versuche es in ein paar Minuten erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El servicio de XP Pocket no está disponible temporalmente. Inténtalo de nuevo en unos minutos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le service XP Pocket est temporairement indisponible. Veuillez réessayer dans quelques minutes."
           }
         }
       }
@@ -31568,6 +31782,7 @@
       }
     },
     "These options are for debugging and troubleshooting." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -31590,6 +31805,7 @@
       }
     },
     "Things can crash, freeze, or refuse to load." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -31647,94 +31863,6 @@
         }
       }
     },
-    "This JoiPlay archive uses \"%@\", which XP Pocket can't run. XP Pocket imports only JoiPlay archives of %@." : {
-      "comment" : "First placeholder: the game type the archive names. Second: a list of game kinds, such as \"RPG Maker XP, VX, and VX Ace games\".",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses JoiPlay-Archiv nutzt „%@“, und das kann XP Pocket nicht ausführen. XP Pocket importiert nur JoiPlay-Archive mit %@."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "This JoiPlay archive uses \"%1$@\", which XP Pocket can't run. XP Pocket imports only JoiPlay archives of %2$@."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este archivo de JoiPlay usa “%@”, que XP Pocket no puede ejecutar. XP Pocket solo importa archivos de JoiPlay de %@."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cette archive JoiPlay utilise « %@ », qu'XP Pocket ne peut pas lancer. XP Pocket importe seulement les archives JoiPlay de %@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Questo archivio JoiPlay usa «%@», che XP Pocket non può avviare. XP Pocket importa solo archivi JoiPlay di %@."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このJoiPlayアーカイブは「%@」用で、XP Pocketでは動かせません。XP PocketがインポートできるJoiPlayアーカイブは、%@だけです。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 JoiPlay 압축 파일은 “%@” 형식이라 XP Pocket에서 실행할 수 없어요. XP Pocket는 %@의 JoiPlay 압축 파일만 가져와요."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este arquivo do JoiPlay usa “%@”, que o XP Pocket não consegue rodar. O XP Pocket só importa arquivos do JoiPlay de %@."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "В этом архиве JoiPlay указано «%@», а такое XP Pocket запустить не может. XP Pocket импортирует архивы JoiPlay только для: %@."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "这个 JoiPlay 压缩包使用的是“%@”，XP Pocket 无法运行。XP Pocket 只能导入 %@ 的 JoiPlay 压缩包。"
-          }
-        }
-      }
-    },
-    "This JoiPlay archive uses '%@', which %@ does not support. " : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses JoiPlay-Archiv verwendet „%@“, was %@ nicht unterstützt. "
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este archivo de JoiPlay usa «%@», que %@ no admite. "
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cette archive JoiPlay utilise « %@ », que %@ ne prend pas en charge. "
-          }
-        }
-      }
-    },
     "This app" : {
       "localizations" : {
         "de" : {
@@ -31758,7 +31886,6 @@
       }
     },
     "This app’s bundle ID is %@. " : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -32287,6 +32414,7 @@
       }
     },
     "This deletes the selected games from your device. %@ keeps the saves it recognizes and moves them to Rescued Saves. Any saves it doesn't recognize go with their game. You can't undo this." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -32819,7 +32947,6 @@
       }
     },
     "This game is not installed on disk." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -33236,7 +33363,11 @@
         }
       }
     },
+    "This game's controls file has %lld errors, so Empo used its own layout." : {
+
+    },
     "This game's controls file has %lld errors, so XP Pocket used its own layout." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "variations" : {
@@ -33612,6 +33743,94 @@
         }
       }
     },
+    "This JoiPlay archive uses '%@', which %@ does not support. " : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses JoiPlay-Archiv verwendet „%@“, was %@ nicht unterstützt. "
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo de JoiPlay usa «%@», que %@ no admite. "
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette archive JoiPlay utilise « %@ », que %@ ne prend pas en charge. "
+          }
+        }
+      }
+    },
+    "This JoiPlay archive uses \"%@\", which XP Pocket can't run. XP Pocket imports only JoiPlay archives of %@." : {
+      "comment" : "First placeholder: the game type the archive names. Second: a list of game kinds, such as \"RPG Maker XP, VX, and VX Ace games\".",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses JoiPlay-Archiv nutzt „%@“, und das kann XP Pocket nicht ausführen. XP Pocket importiert nur JoiPlay-Archive mit %@."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This JoiPlay archive uses \"%1$@\", which XP Pocket can't run. XP Pocket imports only JoiPlay archives of %2$@."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo de JoiPlay usa “%@”, que XP Pocket no puede ejecutar. XP Pocket solo importa archivos de JoiPlay de %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette archive JoiPlay utilise « %@ », qu'XP Pocket ne peut pas lancer. XP Pocket importe seulement les archives JoiPlay de %@."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo archivio JoiPlay usa «%@», che XP Pocket non può avviare. XP Pocket importa solo archivi JoiPlay di %@."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このJoiPlayアーカイブは「%@」用で、XP Pocketでは動かせません。XP PocketがインポートできるJoiPlayアーカイブは、%@だけです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 JoiPlay 압축 파일은 “%@” 형식이라 XP Pocket에서 실행할 수 없어요. XP Pocket는 %@의 JoiPlay 압축 파일만 가져와요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este arquivo do JoiPlay usa “%@”, que o XP Pocket não consegue rodar. O XP Pocket só importa arquivos do JoiPlay de %@."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В этом архиве JoiPlay указано «%@», а такое XP Pocket запустить не может. XP Pocket импортирует архивы JoiPlay только для: %@."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个 JoiPlay 压缩包使用的是“%@”，XP Pocket 无法运行。XP Pocket 只能导入 %@ 的 JoiPlay 压缩包。"
+          }
+        }
+      }
+    },
     "This layout has the maximum of %lld buttons. Delete one to add another." : {
       "localizations" : {
         "de" : {
@@ -33815,6 +34034,7 @@
       }
     },
     "This layout is read-only. To make your own, duplicate it and edit the copy." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -34185,64 +34405,6 @@
         }
       }
     },
-    "Title Z to A" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titel Z–A"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Título de la Z a la A"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titre de Z à A"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titolo dalla Z alla A"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "タイトル順（Z→A）"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "제목 역순"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Título de Z a A"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Название Я–А"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "标题 Z 到 A"
-          }
-        }
-      }
-    },
     "Title position" : {
       "localizations" : {
         "de" : {
@@ -34297,6 +34459,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "标题位置"
+          }
+        }
+      }
+    },
+    "Title Z to A" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titel Z–A"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título de la Z a la A"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titre de Z à A"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titolo dalla Z alla A"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトル順（Z→A）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제목 역순"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título de Z a A"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Название Я–А"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "标题 Z 到 A"
           }
         }
       }
@@ -34733,7 +34953,6 @@
       }
     },
     "Try again" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -34756,6 +34975,7 @@
       }
     },
     "Turn this on in Game settings" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35384,6 +35604,7 @@
       }
     },
     "Up to date" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35500,7 +35721,6 @@
       }
     },
     "Update available" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35523,6 +35743,7 @@
       }
     },
     "Update available: v%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35604,7 +35825,6 @@
       }
     },
     "Update layout" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35627,7 +35847,6 @@
       }
     },
     "Update on community" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35672,7 +35891,6 @@
       }
     },
     "Updated" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35695,7 +35913,6 @@
       }
     },
     "Updated profile “%@” to the latest version." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35718,7 +35935,6 @@
       }
     },
     "Updated profile “%@”." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35741,7 +35957,6 @@
       }
     },
     "Updates the existing catalog entry." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35764,7 +35979,6 @@
       }
     },
     "Upload save to cloud" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35787,7 +36001,6 @@
       }
     },
     "Uploaded revision %lld (%@)." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35832,7 +36045,6 @@
       }
     },
     "Upstream project" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -35966,6 +36178,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "游戏出问题或你想反馈 bug 时，可以用这些设置。"
+          }
+        }
+      }
+    },
+    "v%@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "v%@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "v%@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "v%@"
           }
         }
       }
@@ -36191,7 +36426,6 @@
       }
     },
     "Website" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -36445,53 +36679,8 @@
         }
       }
     },
-    "XP Pocket Pro" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket Pro"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket Pro"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket Pro"
-          }
-        }
-      }
-    },
-    "XP Pocket Pro active" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket Pro aktiv"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket Pro activo"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket Pro actif"
-          }
-        }
-      }
-    },
     "XP Pocket actions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -36545,64 +36734,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "XP Pocket 操作"
-          }
-        }
-      }
-    },
-    "XP Pocket can't read this JoiPlay archive. Download it again, then import it." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket kann dieses JoiPlay-Archiv nicht lesen. Lade es noch mal herunter und importiere es dann."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket no puede leer este archivo de JoiPlay. Descárgalo de nuevo y vuelve a importarlo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket ne peut pas lire cette archive JoiPlay. Télécharge-la de nouveau, puis importe-la."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket non riesce a leggere questo archivio JoiPlay. Scaricalo di nuovo, poi importalo."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このJoiPlayアーカイブはXP Pocketで読み込めません。もう一度ダウンロードしてから、インポートしてください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket가 이 JoiPlay 압축 파일을 읽을 수 없어요. 다시 내려받은 뒤 가져와 주세요."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O XP Pocket não consegue ler este arquivo do JoiPlay. Baixe de novo e importe."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket не может прочитать этот архив JoiPlay. Скачайте его заново и импортируйте снова."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "XP Pocket 读不了这个 JoiPlay 压缩包。请重新下载，然后再导入。"
           }
         }
       }
@@ -36781,6 +36912,64 @@
         }
       }
     },
+    "XP Pocket can't read this JoiPlay archive. Download it again, then import it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket kann dieses JoiPlay-Archiv nicht lesen. Lade es noch mal herunter und importiere es dann."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket no puede leer este archivo de JoiPlay. Descárgalo de nuevo y vuelve a importarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket ne peut pas lire cette archive JoiPlay. Télécharge-la de nouveau, puis importe-la."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket non riesce a leggere questo archivio JoiPlay. Scaricalo di nuovo, poi importalo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このJoiPlayアーカイブはXP Pocketで読み込めません。もう一度ダウンロードしてから、インポートしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket가 이 JoiPlay 압축 파일을 읽을 수 없어요. 다시 내려받은 뒤 가져와 주세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O XP Pocket não consegue ler este arquivo do JoiPlay. Baixe de novo e importe."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket не может прочитать этот архив JoiPlay. Скачайте его заново и импортируйте снова."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket 读不了这个 JoiPlay 压缩包。请重新下载，然后再导入。"
+          }
+        }
+      }
+    },
     "XP Pocket can't run games from this version of Pokémon Studio yet." : {
       "localizations" : {
         "de" : {
@@ -36840,6 +37029,7 @@
       }
     },
     "XP Pocket can't run this game" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -36898,6 +37088,7 @@
       }
     },
     "XP Pocket comes with this layout. Games use it when nothing else applies." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -37014,6 +37205,7 @@
       }
     },
     "XP Pocket couldn't move the saves for \"%@\" to Rescued Saves. Free up space and delete again, or delete now and lose those saves. You can't undo this." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -37363,6 +37555,7 @@
     },
     "XP Pocket default" : {
       "comment" : "The control layout that XP Pocket ships with.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -37480,6 +37673,7 @@
       }
     },
     "XP Pocket hit a problem while loading this game." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -37538,6 +37732,7 @@
       }
     },
     "XP Pocket hit a problem while running this game." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -37829,6 +38024,7 @@
       }
     },
     "XP Pocket moved your duplicate games" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -37882,6 +38078,50 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "XP Pocket 移走了重复的游戏"
+          }
+        }
+      }
+    },
+    "XP Pocket Pro" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket Pro"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket Pro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket Pro"
+          }
+        }
+      }
+    },
+    "XP Pocket Pro active" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket Pro aktiv"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket Pro activo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "XP Pocket Pro actif"
           }
         }
       }
@@ -37962,29 +38202,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vous ne pouvez pas modifier cette disposition. %@ la conserve inchangée comme solution de repli qui fonctionne avec tous les jeux. Pour créer votre version, dupliquez-la en tant que profil et modifiez la copie."
-          }
-        }
-      }
-    },
-    "Your Pro subscription is active." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dein Pro-Abo ist aktiv."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tu suscripción Pro está activa."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Votre abonnement Pro est actif."
           }
         }
       }
@@ -38272,8 +38489,29 @@
         }
       }
     },
+    "Your Pro subscription is active." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein Pro-Abo ist aktiv."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu suscripción Pro está activa."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre abonnement Pro est actif."
+          }
+        }
+      }
+    },
     "Your purchase is pending approval." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -38291,318 +38529,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Votre achat est en attente d’approbation."
-          }
-        }
-      }
-    },
-    "[report it on GitHub](%@)" : {
-      "comment" : "A Markdown link. Translate the words in brackets. Keep the placeholder in parentheses as it is.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[melde es auf GitHub](%@)"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[repórtalo en GitHub](%@)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[signale-le sur GitHub](%@)"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[segnalalo su GitHub](%@)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[GitHubで報告してください](%@)"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[GitHub에 알려 주세요](%@)"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[avise no GitHub](%@)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[сообщите об этом на GitHub](%@)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[到 GitHub 上反馈](%@)"
-          }
-        }
-      }
-    },
-    "e.g. Z" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "z. B. Z"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "p. ej., Z"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ex. : Z"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "es. Z"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "例：Z"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "예: Z"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ex.: Z"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "напр. Z"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "例如 Z"
-          }
-        }
-      }
-    },
-    "error" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fehler"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "error"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "erreur"
-          }
-        }
-      }
-    },
-    "errors" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fehler"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "errores"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "erreurs"
-          }
-        }
-      }
-    },
-    "locked" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "festgestellt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "bloqueada"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "verrouillée"
-          }
-        }
-      }
-    },
-    "off" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "aus"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "desactivado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "désactivé"
-          }
-        }
-      }
-    },
-    "on" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "an"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "activado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "activé"
-          }
-        }
-      }
-    },
-    "or bugs!" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "oder Bugs!"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¡o bugs!"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ou des bugs !"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "o bug!"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "…いや、バグかも！"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "아니면 버그가요!"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ou bugs!"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "или баги!"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "……也可能是 bug！"
-          }
-        }
-      }
-    },
-    "v%@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "v%@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "v%@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "v%@"
           }
         }
       }

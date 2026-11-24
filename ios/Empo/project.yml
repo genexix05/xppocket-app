@@ -5,6 +5,9 @@ packages:
   GoogleMobileAds:
     url: https://github.com/googleads/swift-package-manager-google-mobile-ads.git
     from: 11.13.0
+  UserMessagingPlatform:
+    url: https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git
+    from: 2.7.0
 options:
   bundleIdPrefix: app.xppocket
   developmentLanguage: en
@@ -344,6 +347,8 @@ targets:
       - package: GameProbe
       - package: GoogleMobileAds
         product: GoogleMobileAds
+      - package: UserMessagingPlatform
+        product: GoogleUserMessagingPlatform
       # Built first, then copied by "Embed the cores".
       - target: MvmzCore
         link: false

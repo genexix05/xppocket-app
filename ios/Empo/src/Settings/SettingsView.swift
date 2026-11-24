@@ -207,6 +207,14 @@ struct SettingsView: View {
                         systemImage: "hand.raised",
                         url: AppInfo.privacyURL)
 
+                    if AdCoordinator.shared.shouldShowAds, AdCoordinator.shared.isPrivacyOptionsRequired {
+                        Button {
+                            Task { await AdCoordinator.shared.presentPrivacyOptions() }
+                        } label: {
+                            Label("Privacy choices", systemImage: "checkmark.shield")
+                        }
+                    }
+
                     externalLink(
                         title: String(localized: "Terms of Use"),
                         systemImage: "doc.plaintext",
