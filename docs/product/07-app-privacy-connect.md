@@ -94,6 +94,6 @@ Privacy Policy: https://xppocket.app/privacy
 | Sitio | Estado |
 |-------|--------|
 | Ads | `AdsConfig.adRequest()`: UMP + ATT deciden la personalización |
-| `PrivacyInfo.xcprivacy` | `NSPrivacyTracking` = true; Device ID y Advertising Data con tracking |
+| `PrivacyInfo.xcprivacy` | `NSPrivacyTracking` = false en el manifiesto de la app: el código propio no rastrea. El seguimiento lo declara el manifiesto del SDK de AdMob (Device ID). `true` sin `NSPrivacyTrackingDomains` da el rechazo ITMS-91064. |
 | Paywall | Privacy + Terms of Use |
 | Connect App Privacy | Tracking = Sí (Device ID, Advertising Data) |
