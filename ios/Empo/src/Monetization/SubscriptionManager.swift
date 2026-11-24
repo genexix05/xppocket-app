@@ -32,7 +32,9 @@ final class SubscriptionManager {
         }
         let yearOfMonths = monthly * 12
         let saving = (yearOfMonths - annual) / yearOfMonths * 100
-        let percent = NSDecimalNumber(decimal: saving).intValue
+        // `intValue` gives 0 for a decimal with many digits (16.4158… here),
+        // so go through Double and round down.
+        let percent = Int(NSDecimalNumber(decimal: saving).doubleValue.rounded(.down))
         return percent > 0 ? percent : nil
     }
     private(set) var isLoadingProducts = false
