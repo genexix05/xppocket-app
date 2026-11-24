@@ -23,10 +23,10 @@ struct CreditsView: View {
                         "Copyright © Splendide Imaginarius, Jonas Kulla, and contributors. Licensed under GPL-2.0. Powers Ruby scripts, graphics, and audio at runtime."
                 )
                 creditRow(
-                    title: String(localized: "Empo"),
+                    title: String(localized: "XP Pocket"),
                     subtitle: String(localized: "Upstream project"),
                     detail:
-                        "\(AppInfo.name) is derived from Empo, an open-source RPG Maker player for iOS. Empo and mkxp-z contributors made this app possible."
+                        "\(AppInfo.name) is derived from XP Pocket, an open-source RPG Maker player for iOS. XP Pocket and mkxp-z contributors made this app possible."
                 )
             } header: {
                 Text("Engine & upstream")

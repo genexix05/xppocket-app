@@ -33,7 +33,7 @@ enum SplashIcons {
     /// The splash backdrop reads better as an abstract pattern than
     /// as a wall of literal UI affordances. Arrows, gears, document
     /// outlines, and the like would compete for attention with the
-    /// "Empo" wordmark and look like accidental UI. The full pack
+    /// "XP Pocket" wordmark and look like accidental UI. The full pack
     /// is still on disk under `Assets.bundle/SplashIcons/`. If a
     /// future surface (settings background, empty state, etc.)
     /// wants the broader set, expose another curated list here

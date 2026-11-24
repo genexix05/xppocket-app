@@ -34,6 +34,9 @@ struct MkxpSettings: GameSettingsGroup {
     /// `System.network_enabled?` before game scripts load.
     @Setting<Bool?, RestartFlag> var networkEnabled: Bool?
 
+    /// nil follows the sound set of the app settings.
+    @Setting<GameMidiSoundSet?, RestartFlag> var midiSoundSet: GameMidiSoundSet?
+
     static func displayLabel(forKey key: String) -> String {
         switch key {
         case "useInGameKeyboard": return String(localized: "In-game keyboard")
@@ -42,6 +45,7 @@ struct MkxpSettings: GameSettingsGroup {
         case "rubyVersionOverride": return String(localized: "Ruby version")
         case "joiplayCompat": return String(localized: "JoiPlay compatibility")
         case "networkEnabled": return String(localized: "Network access")
+        case "midiSoundSet": return String(localized: "MIDI sound set")
         default:
             assertionFailure("Missing displayLabel mapping for MkxpSettings.\(key)")
             return key
@@ -51,6 +55,88 @@ struct MkxpSettings: GameSettingsGroup {
     var postloadScriptsEnabled: Bool { postloadScripts ?? true }
     var joiplayCompatEnabled: Bool { joiplayCompat ?? false }
     var networkAccessEnabled: Bool { networkEnabled ?? true }
+
+    /// The sound font for the engine. An empty path is the engine's built-in
+    /// set, and nil leaves the sound font to the game's `mkxp.json`.
+    func midiSoundFont(for container: GameContainer, gameSoundFont: URL?) -> String? {
+        if midiSoundSet == .builtIn {
+            return ""
+        }
+        if midiSoundSet == .imported, let file = MidiSoundSet.game(container).current {
+            return file.path
+        }
+        return gameSoundFont?.path ?? MidiSoundSet.app.current?.path
+    }
+}
+
+/// The sound font that a game ships. Default plays it, not the app's set.
+enum MkxpGameSoundFont {
+    static func url(in container: GameContainer) -> URL? {
+        ManagedMkxpConfig.namedSoundFont(in: container.gameURL)
+            ?? shipped(in: container).files.first.map { container.gameURL.appendingPathComponent($0) }
+    }
+
+    /// A walk of a large game folder takes a tenth of a second or more. The Files app and Finder
+    /// can change the folder while Empo is closed. A new, removed, or renamed file changes the
+    /// date of its folder, so the stored list is good while each folder keeps its date.
+    private static func shipped(in container: GameContainer) -> ShippedSoundFonts {
+        let url = container.metadataURL.appendingPathComponent("mkxp-sound-fonts.json")
+        if let data = try? Data(contentsOf: url),
+            let stored = try? JSONDecoder().decode(ShippedSoundFonts.self, from: data),
+            stored.folders.allSatisfy({ path, date in
+                ShippedSoundFonts.modificationDate(of: container.gameURL.appendingPathComponent(path)) == date
+            })
+        {
+            return stored
+        }
+        let found = ManagedMkxpConfig.shippedSoundFonts(in: container.gameURL)
+        container.ensureMetadataDirectory()
+        if let data = try? JSONEncoder().encode(found) {
+            try? data.write(to: url, options: .atomic)
+        }
+        return found
+    }
+}
+
+enum GameMidiSoundSet: String, Codable {
+    case builtIn
+    /// The file in the game's own `EmpoState/SoundFonts/`.
+    case imported
+}
+
+struct MkxpLaunchedSettings: CoreLaunchedSettings {
+    let settings: MkxpSettings
+    let engine: MkxpEngineSettings
+    let midiSoundFont: String?
+    let midiSoundFontFile: Int?
+
+    init(container: GameContainer) {
+        settings = MkxpSettings.load(from: container.playerDataURL)
+        engine = MkxpEngineSettings.load(from: container.playerDataURL)
+        midiSoundFont = settings.midiSoundFont(
+            for: container, gameSoundFont: MkxpGameSoundFont.url(in: container))
+        midiSoundFontFile = Self.fileNumber(of: midiSoundFont)
+    }
+
+    /// An import of a file with the same name keeps the path, but the
+    /// new file has a different file number.
+    static func fileNumber(of path: String?) -> Int? {
+        path.flatMap { (try? FileManager.default.attributesOfItem(atPath: $0))?[.systemFileNumber] as? Int }
+    }
+
+    func restartRequiredChanges(to current: any CoreSettings) -> [String] {
+        guard let current = current as? MkxpSettingsState else { return [] }
+        var changed = current.settings.restartRequiredFieldsChanged(from: settings)
+        // An import replaces the file and keeps the setting the same.
+        let soundSetLabel = MkxpSettings.displayLabel(forKey: "midiSoundSet")
+        if current.midiSoundFont != midiSoundFont
+            || Self.fileNumber(of: current.midiSoundFont) != midiSoundFontFile,
+            !changed.contains(soundSetLabel)
+        {
+            changed.append(soundSetLabel)
+        }
+        return changed + current.engine.restartRequiredFieldsChanged(from: engine)
+    }
 }
 
 @MainActor @Observable
@@ -61,39 +147,50 @@ final class MkxpSettingsState: CoreSettings {
     /// What the script scan found. It labels the Auto-detect rows.
     private(set) var profile: MkxpProfile
     let isPokemonEssentials: Bool
+    /// The file in the game's own sound set folder. The picker sets it after an import.
+    var gameMidiSoundSet: URL?
+    let gameSoundFont: URL?
 
-    @ObservationIgnored private let container: GameContainer
-    @ObservationIgnored private let initial: MkxpSettings
-    @ObservationIgnored private let initialEngine: MkxpEngineSettings
+    @ObservationIgnored let container: GameContainer
 
     init(container: GameContainer) {
         self.container = container
         let settings = MkxpSettings.load(from: container.playerDataURL)
         self.settings = settings
-        self.initial = settings
-        let engine = MkxpEngineSettings.load(from: container.playerDataURL)
-        self.engine = engine
-        self.initialEngine = engine
+        self.engine = MkxpEngineSettings.load(from: container.playerDataURL)
         self.gameDefaults = MkxpEngineSettings.gameDefaults(in: container.gameURL)
         self.profile = MkxpProfile.load(for: container)
         self.isPokemonEssentials = PokemonEssentialsDetection.detect(
             in: container.gameURL, stateDirectory: container.playerDataURL)
+        self.gameMidiSoundSet = MidiSoundSet.game(container).current
+        self.gameSoundFont = MkxpGameSoundFont.url(in: container)
+    }
+
+    /// Default plays the app's set, which another window can change.
+    var midiSoundFont: String? {
+        _ = MidiSoundSetCopies.shared.revision(of: .app)
+        return settings.midiSoundFont(for: container, gameSoundFont: gameSoundFont)
     }
 
     var hasCustomizations: Bool { settings.hasCustomizations || engine.hasOverrides }
 
-    var restartRequiredChanges: [String] {
-        settings.restartRequiredFieldsChanged(from: initial)
-            + engine.restartRequiredFieldsChanged(from: initialEngine)
-    }
+    var isBusy: Bool { MidiSoundSetCopies.shared.isCopying(into: .game(container)) }
 
+    /// The sound set picker and `reset()` write `midiSoundSet` themselves.
+    /// An import can end after this state loaded, so this copy of it is old.
     func save() {
-        settings.save(to: container.playerDataURL)
+        var saved = settings
+        saved.midiSoundSet = MkxpSettings.load(from: container.playerDataURL).midiSoundSet
+        saved.save(to: container.playerDataURL)
         engine.save(to: container.playerDataURL)
     }
 
     func reset() {
+        try? MidiSoundSet.game(container).removeImported()
+        MidiSoundSetCopies.shared.removed(.game(container))
+        gameMidiSoundSet = nil
         settings = MkxpSettings()
+        settings.save(to: container.playerDataURL)
         profile = MkxpProfile.load(for: container, rescan: true)
         ManagedMkxpConfig.resetAllEngineFields(
             stateDirectory: container.playerDataURL, gameDirectory: container.gameURL)
@@ -125,7 +222,7 @@ final class MkxpSettingsState: CoreSettings {
 
     /// The Ruby version the core boots for this game: 18, 19, 30 or 31.
     var effectiveRubyVersion: Int {
-        settings.rubyVersionOverride ?? profile.rubyVersion
+        settings.rubyVersionOverride ?? profile.ruby.code
     }
 }
 
@@ -232,10 +329,12 @@ struct MkxpEngineSection: View {
                     set: { state.settings.useInGameKeyboard = $0 }
                 ),
                 description:
-                    "Use the game's own keyboard for names instead of the iOS one. Turn it on for Pokemon Essentials games with custom keys."
+                    "Pick the letters of a name on the game's own keyboard instead of typing them. Turn it on for Pokemon Essentials games with custom keys."
             )
 
+            #if os(iOS)
             TouchMouseToggle(model: model)
+            #endif
 
             SettingsToggle(
                 title: "JoiPlay compatibility",
@@ -270,13 +369,15 @@ struct MkxpEngineSection: View {
                     Text(RubyVersionPick.v19.displayLabel).tag(RubyVersionPick.v19)
                     Text(RubyVersionPick.v31.displayLabel).tag(RubyVersionPick.v31)
                 }
+                #if os(iOS)
                 .pickerStyle(.navigationLink)
+                #endif
 
-                Text(
-                    "Auto-detect reads the game's scripts and picks the correct Ruby version. Change it only if the game shows a script error or runs wrongly."
+                SettingsDescription(
+                    Text(
+                        "Auto-detect reads the game's scripts and picks the correct Ruby version. Change it only if the game shows a script error or runs wrongly."
+                    )
                 )
-                .font(.footnote)
-                .foregroundStyle(.secondary)
             }
             .padding(.vertical, Spacing.xxs)
 
@@ -295,13 +396,15 @@ struct MkxpEngineSection: View {
                         Text(CompatibilityPick.modern.displayLabel).tag(CompatibilityPick.modern)
                         Text(CompatibilityPick.legacy.displayLabel).tag(CompatibilityPick.legacy)
                     }
+                    #if os(iOS)
                     .pickerStyle(.navigationLink)
+                    #endif
 
-                    Text(
-                        String(localized: "Legacy rewrites old Ruby code so newer Ruby can run it. Switch to Legacy if a Pokemon Essentials game crashes with a \"private method\" error.")
+                    SettingsDescription(
+                        Text(
+                            "Legacy rewrites old Ruby code so newer Ruby can run it. Switch to Legacy if a Pokemon Essentials game crashes with a \"private method\" error."
+                        )
                     )
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
                 }
                 .padding(.vertical, Spacing.xxs)
             }
@@ -313,7 +416,7 @@ struct MkxpEngineSection: View {
     }
 
     private var autoDetectLabel: String {
-        let pick = RubyVersionPick.from(state.profile.rubyVersion)
+        let pick = RubyVersionPick.from(state.profile.ruby.code)
         guard pick != .auto else { return String(localized: "Auto-detect") }
         return String(
             localized: "Auto-detect (\(pick.displayLabel))",
@@ -321,7 +424,7 @@ struct MkxpEngineSection: View {
     }
 
     private var autoDetectCompatLabel: String {
-        let resolved: CompatibilityPick = state.profile.modernRubyScripts ? .modern : .legacy
+        let resolved: CompatibilityPick = state.profile.ruby.modernScripts ? .modern : .legacy
         return String(
             localized: "Auto-detect (\(resolved.displayLabel))",
             comment: "Picker option. The placeholder is the choice XP Pocket detected for this game.")

@@ -39,6 +39,8 @@ export default defineConfig({
           "/importing-games",
           "/playing",
           "/saves",
+          "/backups",
+          "/plus",
           "/troubleshooting",
           "/faq",
           "/changelog",
@@ -47,7 +49,7 @@ export default defineConfig({
       },
       {
         label: "Ship a game",
-        items: ["/controls-format", "/config-format"],
+        items: ["/controls-format", "/config-format", "/launcher-identity"],
       },
       {
         label: "Contribute",
@@ -60,7 +62,6 @@ export default defineConfig({
     ],
   },
   deployment: {
-    output: "static",
     site: "https://empo.mateo.sh",
     base: "/",
   },

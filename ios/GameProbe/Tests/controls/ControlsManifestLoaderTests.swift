@@ -9,8 +9,9 @@ final class ControlsManifestLoaderTests: XCTestCase {
 
     private func fixtureURL(_ name: String) -> URL {
         #if SWIFT_PACKAGE
-        guard let base = Bundle.module.resourceURL?
-            .appendingPathComponent("Fixtures/controls/\(name)"),
+        guard
+            let base = Bundle.module.resourceURL?
+                .appendingPathComponent("Fixtures/controls/\(name)"),
             FileManager.default.fileExists(atPath: base.path)
         else {
             XCTFail("missing fixture: \(name)")
@@ -641,7 +642,7 @@ final class ControlsManifestLoaderTests: XCTestCase {
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
         XCTAssertNotNil(outcome)
         XCTAssertEqual(outcome?.result.location, .empo)
-        XCTAssertNil(outcome?.note)
+        XCTAssertEqual(outcome?.notes, [])
         XCTAssertEqual(outcome?.result.manifest?.bindings?.entries[.element("a")], .key("Enter"))
     }
 
@@ -657,7 +658,7 @@ final class ControlsManifestLoaderTests: XCTestCase {
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
         XCTAssertNotNil(outcome)
         XCTAssertEqual(outcome?.result.location, .root)
-        XCTAssertNil(outcome?.note)
+        XCTAssertEqual(outcome?.notes, [])
         XCTAssertEqual(outcome?.result.manifest?.bindings?.entries[.element("a")], .key("Enter"))
     }
 
@@ -668,16 +669,20 @@ final class ControlsManifestLoaderTests: XCTestCase {
         let empoDir = dir.appendingPathComponent("empo")
         try FileManager.default.createDirectory(at: empoDir, withIntermediateDirectories: true)
 
-        try """
+        try Data(
+            """
             { "version": 1, "controller": { "a": "Enter" } }
-            """.data(using: .utf8)!.write(to: empoDir.appendingPathComponent("controls.json"))
-        try """
+            """.utf8
+        ).write(to: empoDir.appendingPathComponent("controls.json"))
+        try Data(
+            """
             { "version": 1, "controller": { "b": "Escape" } }
-            """.data(using: .utf8)!.write(to: dir.appendingPathComponent("controls.json"))
+            """.utf8
+        ).write(to: dir.appendingPathComponent("controls.json"))
 
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
         XCTAssertEqual(outcome?.result.location, .empo)
-        XCTAssertEqual(outcome?.note, .rootSkippedBecauseEmpoExists)
+        XCTAssertEqual(outcome?.notes, [.rootSkippedBecauseEmpoExists])
         XCTAssertEqual(outcome?.result.manifest?.bindings?.entries[.element("a")], .key("Enter"))
     }
 
@@ -690,13 +695,15 @@ final class ControlsManifestLoaderTests: XCTestCase {
 
         try Data(contentsOf: fixtureURL("v002-missing-version.json5")).write(
             to: empoDir.appendingPathComponent("controls.json"))
-        try """
+        try Data(
+            """
             { "version": 1, "controller": { "a": "Enter" } }
-            """.data(using: .utf8)!.write(to: dir.appendingPathComponent("controls.json"))
+            """.utf8
+        ).write(to: dir.appendingPathComponent("controls.json"))
 
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
         XCTAssertEqual(outcome?.result.location, .empo)
-        XCTAssertEqual(outcome?.note, .rootSkippedBecauseEmpoExists)
+        XCTAssertEqual(outcome?.notes, [.rootSkippedBecauseEmpoExists])
         XCTAssertNil(outcome?.result.manifest)
         XCTAssertNotNil(finding(outcome!.result, code: "V002", path: "/version"))
     }
@@ -705,12 +712,14 @@ final class ControlsManifestLoaderTests: XCTestCase {
         let dir = try makeTemporaryGameRoot()
         defer { try? FileManager.default.removeItem(at: dir) }
 
-        try """
+        try Data(
+            """
             { "touch": { "portrait": { "buttons": [] } } }
-            """.data(using: .utf8)!.write(to: dir.appendingPathComponent("controls.json"))
+            """.utf8
+        ).write(to: dir.appendingPathComponent("controls.json"))
 
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
-        XCTAssertEqual(outcome?.note, .rootUnclaimedNoVersion)
+        XCTAssertEqual(outcome?.notes, [.rootUnclaimedNoVersion])
         XCTAssertNil(outcome?.result.manifest)
         XCTAssertTrue(outcome?.result.findings.isEmpty == true)
         XCTAssertNil(outcome?.result.location)
@@ -725,7 +734,7 @@ final class ControlsManifestLoaderTests: XCTestCase {
 
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
         XCTAssertEqual(outcome?.result.location, .root)
-        XCTAssertNil(outcome?.note)
+        XCTAssertEqual(outcome?.notes, [])
         XCTAssertNil(outcome?.result.manifest)
         XCTAssertNotNil(
             finding(outcome!.result, code: "V010", path: "/touch/portrait/buttons/0/key"))
@@ -742,7 +751,7 @@ final class ControlsManifestLoaderTests: XCTestCase {
         try data.write(to: dir.appendingPathComponent("controls.json"))
 
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
-        XCTAssertEqual(outcome?.note, .rootUnclaimedOversized)
+        XCTAssertEqual(outcome?.notes, [.rootUnclaimedOversized])
         XCTAssertNil(outcome?.result.manifest)
         XCTAssertTrue(outcome?.result.findings.isEmpty == true)
     }
@@ -758,7 +767,7 @@ final class ControlsManifestLoaderTests: XCTestCase {
 
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
         XCTAssertEqual(outcome?.result.location, .empo)
-        XCTAssertNil(outcome?.note)
+        XCTAssertEqual(outcome?.notes, [])
         XCTAssertNotNil(finding(outcome!.result, code: "V001", path: ""))
     }
 

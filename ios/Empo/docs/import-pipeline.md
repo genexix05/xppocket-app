@@ -11,7 +11,7 @@ The library holds **one container per title** - some games derive their data loc
 their INI title, so a suffixed duplicate would read the other copy's data. Before v0.5 the
 folder was `<uuid>-<slug>`. `GameContainerMigration` renames older trees at launch and, when
 several resolve to the same title, keeps the most recently played one under the canonical name
-and moves the rest - whole, saves included - to the Files-visible `Documents/Duplicate Games/`,
+and moves the rest - whole, saves included - to `Duplicate Games/`, which the Files app shows,
 telling the user via a one-time library alert that lists the moved copies.
 An import turns the user's pick in Files into one such container per selected game. The import
 seeds metadata and updates the library. It never shows a broken card and never leaves a
@@ -132,7 +132,7 @@ These invariants match the current code. Do not break them.
    selection's relativePath. Never replace the extractor's component-level checks with a
    filesystem-path prefix check. That check false-positives on device: `/var` is a symlink to
    `/private/var`, so standardized paths compare unequal.
-2. **Cancellation contract**: `GameLibrary.cancelledImports` (`Mutex<Set<String>>`) signals a
+2. **Cancellation contract**: `GameLibrary.cancelledImports` (`OSAllocatedUnfairLock<Set<String>>`) signals a
    cancel. Every long phase checks it through `isImportCancelled(_:)`, and the `shouldCancel`
    closure reports it as `ArchiveExtractor.Error.cancelled`. During a shared extract,
    `shouldCancel` aborts only when the user cancels **all** selections. `checkCancellations()`

@@ -1,39 +1,25 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
 
+import GameProbe
 import SwiftUI
 
-/// Bottom sheet of secondary in-game actions reachable from the
-/// player toolbar's "More options" button. Houses options that
-/// don't earn a permanent toolbar slot: pause, cheats, debug
-/// overlay, fast forward. Toggles update host state directly. Tap actions
-/// dismiss the sheet via `dismiss()` so the user lands back in the
-/// game.
-///
-/// Sheet height fits content (measured via `onGeometryChange`).
-/// A SwiftUI `List` always wants to fill the sheet, so rows are
-/// styled `Button`s inside a VStack with
-/// `.fixedSize(horizontal: false, vertical: true)`.
+/// A SwiftUI `List` always fills the sheet, so the rows are buttons in
+/// a VStack, and the sheet height fits the content.
 struct PlayerMoreSheet: View {
-    /// Display title of the running game. The pause row interpolates
-    /// it ("Pause <title>") so the user sees exactly what they act
-    /// on. Nil if `selectedGame` is nil at present time.
     let gameTitle: String?
     @Binding var showDebugOverlay: Bool
     @Binding var fastForwardActive: Bool
-    /// Multiplier the user configured in Game Settings. nil means
-    /// fast-forward is off for this game, so the row stays hidden.
     let fastForwardMultiplier: Int?
     let showControllerRemap: Bool
-    /// The core running the game. Rows the core cannot answer stay
-    /// hidden. Nil before a core opens, which the sheet never sees,
-    /// because the toolbar that opens it only exists during a session.
-    let core: (any GameCore)?
     let onControllerRemap: () -> Void
     let onLayoutProfile: () -> Void
     let onPause: () -> Void
-    let onQuit: () -> Void
-    let onCheats: () -> Void
+    /// Nil hides the Quit row, for a game that can't end without
+    /// closing Empo.
+    let onQuit: (() -> Void)?
+    /// Nil hides the Show cheats row, for a game that has no cheats.
+    let onCheats: (() -> Void)?
 
     @Environment(\.appSettings) private var settings
     @Environment(\.accountSession) private var session
@@ -45,10 +31,6 @@ struct PlayerMoreSheet: View {
 
     private var cheatsAvailable: Bool { session.entitlements.cheats }
     private var fastForwardProAvailable: Bool { session.entitlements.fastForward }
-
-    private var fastForwardEnabled: Bool {
-        (fastForwardMultiplier ?? 0) >= 2
-    }
 
     private var pauseLabel: LocalizedStringResource {
         if let gameTitle { "Pause \(gameTitle)" } else { "Pause game" }
@@ -65,98 +47,79 @@ struct PlayerMoreSheet: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: Spacing.lg) {
-                // Auxiliary toggles group: cheats, fast forward,
-                // debug overlay. These are passive in-game tools. The
-                // user can flip them and stay in the game.
                 VStack(spacing: 0) {
-                    InterleavedRows(
-                        separator: { rowSeparator },
-                        content: {
-                            if core?.supportsCheats == true {
-                                if cheatsAvailable {
-                                    MenuRow(icon: "wand.and.stars", label: "Show cheats") {
-                                        onCheats()
-                                        dismiss()
-                                    }
-                                } else {
-                                    MenuRow(icon: "lock.fill", label: "Show cheats (Pro)") {
-                                        showProInfo = true
-                                    }
-                                }
-                            }
-                            if fastForwardEnabled {
-                                if fastForwardProAvailable {
-                                    MenuToggleRow(
-                                        icon: "hare.fill",
-                                        label: "Fast forward (\(fastForwardMultiplier ?? 2)x)",
-                                        isOn: $fastForwardActive
-                                    )
-                                } else {
-                                    MenuRow(
-                                        icon: "lock.fill",
-                                        label: "Fast forward (\(fastForwardMultiplier ?? 2)x) (Pro)"
-                                    ) {
-                                        showProInfo = true
-                                    }
-                                }
-                            }
-                            if settings.diagnosticsOverlay {
-                                MenuToggleRow(
-                                    icon: "ladybug.fill",
-                                    label: "Diagnostics overlay",
-                                    isOn: $showDebugOverlay
-                                )
-                            }
-                            if showControllerRemap {
-                                MenuRow(icon: "gamecontroller.fill", label: "Controller buttons") {
-                                    onControllerRemap()
+                    InterleavedRows {
+                        if let onCheats {
+                            if cheatsAvailable {
+                                SheetRow(icon: "wand.and.stars", label: "Show cheats") {
+                                    onCheats()
                                     dismiss()
                                 }
-                            }
-                            MenuRow(icon: "square.on.square", label: "Layout profile") {
-                                onLayoutProfile()
-                                dismiss()
-                            }
-                        }
-                    )
-                }
-                // No card fill: stacking material on the sheet's own
-                // material reads as a flat white panel, which fights
-                // the translucent chrome the user expects from a
-                // bottom sheet. The grouping still reads as a unit
-                // because of the inter-row dividers and the gap
-                // between this card and the pause card below.
-                .clipShape(.rect(cornerRadius: Radius.md))
-
-                // Pause takes the user back to the library and the
-                // game stays suspended. The row names the running
-                // game so it is clear which session it acts on.
-                // Pause graduated from experimental in May 2026 and
-                // is always enabled now.
-                VStack(spacing: 0) {
-                    InterleavedRows(
-                        separator: { rowSeparator },
-                        content: {
-                            MenuRow(
-                                icon: "pause.fill",
-                                label: pauseLabel
-                            ) {
-                                onPause()
-                                dismiss()
-                            }
-                            if core?.canKillSession == true {
-                                MenuRow(icon: "xmark", label: quitLabel, role: .destructive) {
-                                    confirmQuit = true
+                            } else {
+                                SheetRow(icon: "lock.fill", label: "Show cheats (Pro)") {
+                                    showProInfo = true
                                 }
                             }
                         }
-                    )
+                        if let multiplier = FastForwardArbiter.usableMultiplier(
+                            fastForwardMultiplier)
+                        {
+                            if fastForwardProAvailable {
+                                MenuToggleRow(
+                                    icon: "hare.fill",
+                                    label: "Fast forward (\(multiplier)x)",
+                                    isOn: $fastForwardActive
+                                )
+                            } else {
+                                SheetRow(
+                                    icon: "lock.fill",
+                                    label: "Fast forward (\(multiplier)x) (Pro)"
+                                ) {
+                                    showProInfo = true
+                                }
+                            }
+                        }
+                        if settings.diagnosticsOverlay {
+                            MenuToggleRow(
+                                icon: "ladybug.fill",
+                                label: "Diagnostics overlay",
+                                isOn: $showDebugOverlay
+                            )
+                        }
+                        if showControllerRemap {
+                            SheetRow(icon: "gamecontroller.fill", label: "Controller buttons") {
+                                onControllerRemap()
+                                dismiss()
+                            }
+                        }
+                        SheetRow(icon: "square.on.square", label: "Layout profile") {
+                            onLayoutProfile()
+                            dismiss()
+                        }
+                    }
+                }
+                // A card fill on the material of the sheet shows as a
+                // flat white panel.
+                .clipShape(.rect(cornerRadius: Radius.md))
+
+                VStack(spacing: 0) {
+                    InterleavedRows {
+                        SheetRow(icon: "pause.fill", label: pauseLabel) {
+                            onPause()
+                            dismiss()
+                        }
+                        if onQuit != nil {
+                            SheetRow(icon: "xmark", label: quitLabel, role: .destructive) {
+                                confirmQuit = true
+                            }
+                        }
+                    }
                 }
                 .clipShape(.rect(cornerRadius: Radius.md))
                 .alert(quitQuestion, isPresented: $confirmQuit) {
                     Button("Cancel", role: .cancel) {}
                     Button("Quit", role: .destructive) {
-                        onQuit()
+                        onQuit?()
                         dismiss()
                     }
                 } message: {
@@ -165,15 +128,13 @@ struct PlayerMoreSheet: View {
             }
             .padding(Spacing.xl)
             .intrinsicSheetContent(size: $sheetSize)
-            // No outer background: the sheet's translucent material
-            // shows through around the row-cards. Painting a solid
-            // `systemGroupedBackground` here looked like a flat white
-            // panel hovering over the game.
+            // A solid background here shows as a flat white panel
+            // over the game.
             .navigationTitle("More")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
+                    SheetBarButton.done { dismiss() }
                 }
             }
         }
@@ -182,78 +143,29 @@ struct PlayerMoreSheet: View {
             ProUpsellSheet()
         }
     }
-
-    /// Hairline separator between rows inside the action group.
-    /// Indented past the icon column so it only spans the text area,
-    /// matching the visual rhythm of UIKit grouped lists.
-    private var rowSeparator: some View {
-        Divider()
-            .padding(.leading, Spacing.lg + 24 + Spacing.lg)
-    }
 }
 
-/// Helper that interleaves `separator` between each emitted row of
-/// the trailing `content` builder. Skips separators around
-/// conditionally-omitted rows so the visual rhythm doesn't show
-/// dangling dividers when a setting gates a section off.
-///
-/// Uses `_VariadicView_Tree` to introspect the children the
-/// ViewBuilder closure produces. This is private SwiftUI but stable
-/// enough for menu-style row layouts. SwiftUI's own `Form` sections
-/// use the same trick.
-private struct InterleavedRows<Separator: View, Content: View>: View {
-    @ViewBuilder var separator: () -> Separator
-    @ViewBuilder var content: () -> Content
+/// Puts a separator between the rows that show, and none next to a
+/// row that a condition hides.
+private struct InterleavedRows<Content: View>: View {
+    @ViewBuilder var content: Content
 
     var body: some View {
-        _VariadicView.Tree(Layout(separator: separator)) {
-            content()
-        }
-    }
-
-    private struct Layout<Sep: View>: _VariadicView_MultiViewRoot {
-        @ViewBuilder var separator: () -> Sep
-
-        func body(children: _VariadicView.Children) -> some View {
-            ForEach(Array(children.enumerated()), id: \.element.id) { idx, child in
-                if idx > 0 {
-                    separator()
+        if #available(iOS 18.0, *) {
+            Group(subviews: content) { rows in
+                ForEach(rows) { row in
+                    if row.id != rows.first?.id {
+                        SheetRowSeparator(leadingColumn: 24)
+                    }
+                    row
                 }
-                child
             }
+        } else {
+            content
         }
     }
 }
 
-/// Tappable row in `PlayerMoreSheet`. The layout matches
-/// `ImageSourceSheet`'s `ImageSourceRow` (icon + label, full-row
-/// hit target) but stays private to this file so the destructive
-/// styling can diverge if needed.
-private struct MenuRow: View {
-    let icon: String
-    let label: LocalizedStringResource
-    var role: ButtonRole?
-    let action: () -> Void
-
-    var body: some View {
-        Button(role: role, action: action) {
-            HStack(spacing: Spacing.lg) {
-                Image(systemName: icon)
-                    .foregroundStyle(role == .destructive ? .red : .primary)
-                    .frame(width: 24)
-                Text(label)
-                    .foregroundStyle(role == .destructive ? .red : .primary)
-                Spacer()
-            }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.lg)
-            .contentShape(Rectangle())
-        }
-    }
-}
-
-/// Toggle row in `PlayerMoreSheet`. The icon color matches the label
-/// text rather than the system tint so it reads as one unit.
 private struct MenuToggleRow: View {
     let icon: String
     let label: LocalizedStringResource

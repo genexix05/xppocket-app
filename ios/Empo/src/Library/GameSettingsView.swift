@@ -10,30 +10,23 @@ struct GameSettingsView: View {
     /// settings do not reach a paused game, so the sheet then shows a
     /// "restart required" hint after an edit.
     @Environment(\.pauseManager) private var pauseManager
+    @Environment(\.appState) private var appState
 
     @State private var model: GameSettingsModel
-    @State private var showResetConfirm = false
     @State private var cloudSaveBusy = false
 
-    init(game: GameEntry) {
+    init(game: GameEntry, container: GameContainer) {
         self.game = game
-        _model = State(initialValue: GameSettingsModel(game: game))
+        _model = State(initialValue: GameSettingsModel(game: game, container: container))
     }
 
-    /// The hint names the settings that wait for a relaunch, such as
-    /// "Restart this game to apply: Smooth scaling and Render scale."
     private var restartHint: Hint? {
-        guard pauseManager.pausedGame?.id == game.id else { return nil }
-        let changed = model.restartRequiredChanges
-        guard !changed.isEmpty else { return nil }
-        let list = changed.formatted(.list(type: .and, width: .standard))
+        guard pauseManager.pausedGame?.id == game.id, let launched = appState.launchedSettings,
+            let excerpt = model.restartHint(since: launched)
+        else { return nil }
         return Hint(
             id: "gameSettings.restartRequired",
-            excerpt: LocalizedStringResource(
-                "Restart this game to apply: \(list).",
-                comment:
-                    "The placeholder is a list of setting names, such as \"Smooth scaling and Render scale\"."
-            ),
+            excerpt: excerpt,
             description: nil,
             dismissal: .none,
             icon: "arrow.clockwise.circle.fill"
@@ -45,16 +38,9 @@ struct GameSettingsView: View {
             Form {
                 model.core?.settingsPage(model)
                 GameCloudSaveSection(game: game, blocksSheetDismiss: $cloudSaveBusy)
+                backupSection
 
-                if model.hasAnyCustomizations {
-                    Section {
-                        Button("Reset to defaults", role: .destructive) {
-                            showResetConfirm = true
-                        }
-                    } footer: {
-                        Text("Clears every change you made and uses the game's original values.")
-                    }
-                }
+                ResetSettingsSection(model: model, gameTitle: game.title)
             }
             // Pin the restart-required pill above the form via a
             // top safe-area inset. The inset gives the pill a
@@ -95,12 +81,6 @@ struct GameSettingsView: View {
             }
             .animation(.smooth(duration: 0.25), value: restartHint != nil)
             .navigationBarTitleDisplayMode(.inline)
-            .alert("Reset all settings?", isPresented: $showResetConfirm) {
-                Button("Reset", role: .destructive) { withAnimation { model.resetToDefaults() } }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("This clears every change you made to \"\(game.title)\". You can't undo this.")
-            }
             .sheetToolbar {
                 VStack(spacing: 1) {
                     Text(game.title)
@@ -121,8 +101,40 @@ struct GameSettingsView: View {
             // that onChange delivery, and the change never reaches
             // disk. Save once more on the way out.
             .onDisappear { model.save() }
+            .task {
+                // The row shows the status line alone, so it
+                // reads no size and walks no directory.
+                let backup = BackupSheetModel(container: model.container, gameName: game.title)
+                backup.refresh()
+                backupModel = backup
+            }
+            .onChange(of: BackupRunMonitor.shared.isRunning) { _, running in
+                if !running { backupModel?.refresh() }
+            }
         }
         .tint(.brand)
+    }
+
+    @State private var showBackupSheet = false
+    @State private var backupModel: BackupSheetModel?
+
+    /// The one value row of SPEC 13.15. Its detail text is the
+    /// status line the Backup sheet shows, so the row and the sheet
+    /// always say the same thing.
+    @ViewBuilder private var backupSection: some View {
+        if let backupModel {
+            Section {
+                SettingsValueButton(title: "Backup", value: backupModel.line) {
+                    model.save()
+                    showBackupSheet = true
+                }
+                .sheet(isPresented: $showBackupSheet, onDismiss: model.reload) {
+                    BackupSheet(model: backupModel)
+                }
+            } footer: {
+                Text("Copy this game's saves to a service you already use.")
+            }
+        }
     }
 
 }

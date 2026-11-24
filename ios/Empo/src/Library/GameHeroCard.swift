@@ -4,7 +4,7 @@
 import SwiftUI
 
 /// Where a game tap originated from. Used to disambiguate
-/// `matchedTransitionSource` when the same game is shown in multiple
+/// `zoomTransitionSource` when the same game is shown in multiple
 /// places at once (e.g. "Continue playing" hero card + the usual grid
 /// tile underneath). Each location registers a distinct source id so
 /// the exit zoom animation lands on whichever one the user
@@ -34,7 +34,6 @@ struct GameHeroCard: View {
     let appState: AppState
     let onTap: () -> Void
     @Binding var gameToDelete: GameEntry?
-    @Binding var showDeleteConfirm: Bool
     @Binding var gameForSettings: GameEntry?
     @Binding var gameForInfo: GameEntry?
 
@@ -128,20 +127,16 @@ struct GameHeroCard: View {
                     }
                 }
                 .clipShape(.rect(cornerRadius: Radius.lg))
-                .matchedTransitionSource(
+                .zoomTransitionSource(
                     id: GameTapSource.hero.transitionID(for: game.id),
-                    in: heroNamespace
-                ) { config in
-                    config
-                        .background(.black)
-                        .clipShape(.rect(cornerRadius: Radius.lg))
-                }
+                    in: heroNamespace, cornerRadius: Radius.lg
+                )
                 .cardShadow()
         }
         .buttonStyle(CardPressStyle())
         .gameContextMenu(
             game: game, appState: appState, onPlay: onTap, gameToDelete: $gameToDelete,
-            showDeleteConfirm: $showDeleteConfirm, gameForSettings: $gameForSettings,
+            gameForSettings: $gameForSettings,
             gameForInfo: $gameForInfo)
     }
 }

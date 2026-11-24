@@ -40,13 +40,48 @@ public enum GameScriptProfile {
         /// The scan also reads the Pokemon Essentials plugin code in
         /// `Data/PluginScripts.rxdata`.
         case pluginScripts = "plugin-scripts"
+        /// Modern grammar outranks a bundled Ruby 1.8 or 1.9 DLL, and
+        /// only a Ruby 3.1 game has a syntax transform.
+        case oneRubyChoice = "one-ruby-choice"
+        /// The scan also reads the scripts that `mkxp.json` names, and a
+        /// block parameter default reads as Ruby 1.9 grammar.
+        case configScripts = "config-scripts"
+        /// A 1.9 call under Zeus81's `vxace?` check, or in a `case` or
+        /// `begin` block whose `end` line has a 1.9 check, does not count.
+        case vxAceGuard = "vx-ace-guard"
+        /// A keyword parameter in a `def` reads as modern grammar, and
+        /// the scan reads up to 16 MB of loose scripts.
+        case keywordParameter = "keyword-parameter"
+        /// A `prepend` call reads as a Ruby 1.9+ call.
+        case prependCall = "prepend-call"
+        /// The scan also reads the Scripts file inside an encrypted
+        /// `.rgssad`, `.rgss2a`, or `.rgss3a` archive.
+        case archivedScripts = "archived-scripts"
     }
 
-    public static let currentSchema: Schema = .pluginScripts
+    public static let currentSchema: Schema = .archivedScripts
+
+    /// The Ruby that runs the game. Only Ruby 3.1 has the syntax
+    /// transform, so only Ruby 3.1 has a legacy or modern mode.
+    public enum Ruby: Codable, Equatable, Sendable {
+        case ruby18
+        case ruby19
+        case ruby31(convertLegacy: Bool)
+
+        /// 18, 19 or 31.
+        public var code: Int {
+            switch self {
+            case .ruby18: 18
+            case .ruby19: 19
+            case .ruby31: 31
+            }
+        }
+
+        public var modernScripts: Bool { self == .ruby31(convertLegacy: false) }
+    }
 
     public struct Result {
-        public let rubyVersion: Int
-        public let modernRubyScripts: Bool
+        public let ruby: Ruby
         public let grammar: RubyScriptGrammarSniffer.Result
     }
 
@@ -54,25 +89,23 @@ public enum GameScriptProfile {
     /// syntax-transform hints.
     public static func analyze(gameDirectory: URL) -> Result {
         let fm = FileManager.default
-        let grammar = RubyScriptGrammarSniffer.sniff(gameDirectory: gameDirectory)
+        let (grammar, core) = RubyScriptGrammarSniffer.sniff(gameDirectory: gameDirectory)
         let runtime = BundledRubyRuntime.scan(gameDirectory: gameDirectory, fm: fm)
-        let rubyVersion = detectRubyVersion(
-            gameDirectory: gameDirectory,
-            grammar: grammar,
-            runtime: runtime,
-            fm: fm
-        )
-        let modern = detectModernRubyScripts(
-            grammar: grammar,
-            runtime: runtime,
-            packedScripts: RubyScriptGrammarSniffer.hasPackedScriptArchive(
-                in: gameDirectory, fm: fm)
-        )
-        return Result(
-            rubyVersion: rubyVersion,
-            modernRubyScripts: modern,
-            grammar: grammar
-        )
+        let ruby: Ruby
+        switch detectRubyVersion(
+            gameDirectory: gameDirectory, grammar: grammar, core: core, runtime: runtime, fm: fm)
+        {
+        case 18: ruby = .ruby18
+        case 19: ruby = .ruby19
+        default:
+            let modern = detectModernRubyScripts(
+                grammar: grammar,
+                runtime: runtime,
+                core: core
+            )
+            ruby = .ruby31(convertLegacy: !modern)
+        }
+        return Result(ruby: ruby, grammar: grammar)
     }
 
     /// Every file that `analyze` can read. Saves sit beside these files,
@@ -85,13 +118,18 @@ public enum GameScriptProfile {
                 at: gameDirectory.appendingPathComponent(folder),
                 includingPropertiesForKeys: nil,
                 options: [.skipsHiddenFiles])) ?? [])
-                .filter { names.contains($0.lastPathComponent) || extensions.contains($0.pathExtension.lowercased()) }
+                .filter {
+                    names.contains($0.lastPathComponent) || extensions.contains($0.pathExtension.lowercased())
+                }
         }
+        let looseScripts = RubyScriptGrammarSniffer.locateLooseScripts(in: gameDirectory, fm: fm)
         return files(
-            in: "", named: ["Game.ini"] + scripts,
-            extensions: ["dll", "dylib", "so", "rgssad", "rgss2a", "rgss3a"])
+            in: "", named: scripts,
+            extensions: ["ini", "dll", "dylib", "so", "rgssad", "rgss2a", "rgss3a"])
             + files(in: "Data", named: scripts + ["PluginScripts.rxdata"], extensions: ["fpk"])
-            + RubyScriptGrammarSniffer.locateLooseScripts(in: gameDirectory, fm: fm)
+            + looseScripts
+            + files(in: "", named: ["mkxp.json"], extensions: [])
+            + RubyScriptGrammarSniffer.locateConfigScripts(in: gameDirectory, besides: looseScripts, fm: fm)
     }
 
     // MARK: - Ruby version (formerly RubyVersionDetection)
@@ -99,46 +137,33 @@ public enum GameScriptProfile {
     private static func detectRubyVersion(
         gameDirectory: URL,
         grammar: RubyScriptGrammarSniffer.Result,
+        core: RubyScriptGrammarSniffer.CoreScripts,
         runtime: BundledRubyRuntime,
         fm: FileManager
     ) -> Int {
-        if let bundledRuby = runtime.dispatchVersion {
-            return bundledRuby
-        }
+        // Ruby 1.8 and 1.9 cannot parse modern grammar, so modern
+        // source outranks a bundled 1.8 or 1.9 DLL.
+        if grammar == .modern { return 31 }
 
-        switch grammar {
-        case .modern:
-            return 31
-        case .legacy:
-            if let scriptVer = rubyVersionFromScriptExtension(
-                at: gameDirectory, fm: fm
-            ) {
-                return scriptVer
+        let archiveRuby: Int? =
+            switch topLevelRgssArchiveExtension(at: gameDirectory, fm: fm) {
+            case "rgssad", "rgss2a": 18
+            case "rgss3a": 19
+            default: nil
             }
-        case .mixed:
-            let scriptVer = rubyVersionFromScriptExtension(at: gameDirectory, fm: fm)
-            return scriptVer == 19 ? 19 : 31
-        case .inconclusive:
-            break
-        }
-
-        if let archiveExt = topLevelRgssArchiveExtension(at: gameDirectory, fm: fm) {
-            switch archiveExt {
-            case "rgssad", "rgss2a": return 18
-            case "rgss3a": return 19
-            default: break
+        let libraryRuby: Int? =
+            switch rgssLibraryMajor(at: gameDirectory, fm: fm) {
+            case 1, 2: 18
+            case 3: 19
+            default: nil
             }
-        }
-
-        if let libraryRGSS = rgssLibraryMajor(at: gameDirectory, fm: fm) {
-            switch libraryRGSS {
-            case 1, 2: return 18
-            case 3: return 19
-            default: break
-            }
-        }
-
-        return 31
+        let ruby =
+            runtime.dispatchVersion
+            ?? (grammar == .inconclusive || core == .packed || core == .archived
+                ? nil : rubyVersionFromScriptExtension(at: gameDirectory, fm: fm))
+            ?? archiveRuby ?? libraryRuby ?? 31
+        // Ruby 1.8 has neither the methods nor the grammar of mixed source.
+        return grammar == .mixed && ruby == 18 ? 31 : ruby
     }
 
     // MARK: - Modern Ruby scripts (formerly GameSettings)
@@ -154,15 +179,19 @@ public enum GameScriptProfile {
     private static func detectModernRubyScripts(
         grammar: RubyScriptGrammarSniffer.Result,
         runtime: BundledRubyRuntime,
-        packedScripts: Bool
+        core: RubyScriptGrammarSniffer.CoreScripts
     ) -> Bool {
         switch grammar {
         case .modern:
             return true
-        case .legacy, .mixed:
+        case .legacy:
             return false
-        case .inconclusive:
-            return runtime.embedsRuby3 || packedScripts
+        case .mixed where core == .read || core == .archived:
+            return false
+        case .mixed, .inconclusive:
+            // Without the core, mixed comes from plugin or mkxp.json scripts
+            // alone. It rules out Ruby 1.8, but packaging picks the transform.
+            return runtime.embedsRuby3 || core == .packed
         }
     }
 
@@ -212,7 +241,8 @@ public enum GameScriptProfile {
                 else { continue }
                 let digits = nsName.substring(with: m.range(at: 1))
                 guard digits.count == 3,
-                    let major = Int(String(digits.first!)),
+                    let first = digits.first,
+                    let major = Int(String(first)),
                     let minor = Int(String(digits[digits.index(after: digits.startIndex)]))
                 else {
                     continue
@@ -273,27 +303,7 @@ public enum GameScriptProfile {
         at gameDirectory: URL,
         fm: FileManager
     ) -> String? {
-        let entries = gameDirectory.directoryEntries(
-            matchingExtensions: ["rgssad", "rgss2a", "rgss3a"],
-            fm: fm
-        )
-        var best: String?
-        var bestRank = 0
-        for url in entries {
-            let ext = url.pathExtension.lowercased()
-            let rank: Int
-            switch ext {
-            case "rgssad": rank = 1
-            case "rgss2a": rank = 2
-            case "rgss3a": rank = 3
-            default: continue
-            }
-            if rank > bestRank {
-                bestRank = rank
-                best = ext
-            }
-        }
-        return best
+        RGSSArchive.mountable(in: gameDirectory, fm: fm)?.pathExtension.lowercased()
     }
 
     private static func rgssLibraryMajor(

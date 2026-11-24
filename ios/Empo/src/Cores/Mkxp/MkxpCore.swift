@@ -5,10 +5,11 @@ import Foundation
 import GameProbe
 import SwiftUI
 
-/// The RPG Maker XP, VX and VX Ace core (mkxp-z).
 struct MkxpCore: GameCore {
     let framework = "MkxpCore"
     let madeWith = "RPG Maker"
+    let waitsForAlerts = true
+    let reportsSaveLoads = true
 
     /// Import refuses a game the mask does not cover, so the name and the
     /// line follow the mask. cores/mkxp/check-framework.sh allows 3, which is
@@ -18,6 +19,10 @@ struct MkxpCore: GameCore {
         rgssVersionMask == 3
             ? String(localized: "RPG Maker XP and VX core")
             : String(localized: "RPG Maker XP, VX and VX Ace core")
+    }
+
+    var gamesName: String {
+        rgssVersionMask == 7 ? "RPG Maker XP, VX and VX Ace" : "RPG Maker XP and VX"
     }
 
     var gamesLine: String {
@@ -143,9 +148,9 @@ struct MkxpCore: GameCore {
         guard !replacing else { return }
         let modern: Bool
         switch source {
-        case .folder: modern = profile.modernRubyScripts
+        case .folder: modern = profile.ruby.modernScripts
         case .archive: modern = false
-        case .joiPlay(let type): modern = type == "mkxp-z" || profile.modernRubyScripts
+        case .joiPlay(let type): modern = type == "mkxp-z" || profile.ruby.modernScripts
         }
         guard modern else { return }
         let stateDirectory = container.ensurePlayerDataDirectory()
@@ -156,24 +161,16 @@ struct MkxpCore: GameCore {
 
     // MARK: - Launch
 
-    func launch(_ container: GameContainer) {
+    func launch(_ container: GameContainer) -> [CoreSetting] {
         Self.migrateOldSettings(in: container)
         let settings = MkxpSettings.load(from: container.playerDataURL)
         let profile = MkxpProfile.load(for: container)
-        let ruby = settings.rubyVersionOverride ?? profile.rubyVersion
-        let modern = settings.useModernRuby ?? profile.modernRubyScripts
+        let ruby = settings.rubyVersionOverride ?? profile.ruby.code
+        let modern = settings.useModernRuby ?? profile.ruby.modernScripts
         let inGameKeyboard =
             settings.useInGameKeyboard
             ?? PokemonEssentialsDetection.detect(
                 in: container.gameURL, stateDirectory: container.playerDataURL)
-
-        // The core has no native Ruby 3.0 any more. It runs 3.0 games on 3.1.
-        set("rubyVersion", ruby == 30 ? "31" : String(ruby))
-        set("syntaxTransform", modern ? "modern" : "legacy")
-        set("postloadScripts", settings.postloadScriptsEnabled)
-        set("inGameKeyboard", inGameKeyboard)
-        set("joiplayCompat", settings.joiplayCompatEnabled)
-        set("networkEnabled", settings.networkAccessEnabled)
 
         let shared = GameSettings.load(from: container.playerDataURL)
         let overlay = ManagedMkxpConfig.overlayJSONString(
@@ -183,12 +180,23 @@ struct MkxpCore: GameCore {
                 smoothScaling: shared.smoothScaling,
                 fixedAspectRatio: shared.fixedAspectRatio
             ),
+            midiSoundFont: settings.midiSoundFont(
+                for: container, gameSoundFont: MkxpGameSoundFont.url(in: container)),
             onUnparseableOverlay: { NSLog($0) }
         )
-        set("configOverlay", overlay ?? "")
         if let overlay {
             logConfigOverlay(overlay, container: container)
         }
+        return [
+            // The core has no native Ruby 3.0 any more. It runs 3.0 games on 3.1.
+            CoreSetting(GAMECORE_SETTING_RUBY_VERSION, ruby == 30 ? "31" : String(ruby)),
+            CoreSetting(GAMECORE_SETTING_SYNTAX_TRANSFORM, modern ? "modern" : "legacy"),
+            CoreSetting(GAMECORE_SETTING_POSTLOAD_SCRIPTS, settings.postloadScriptsEnabled),
+            CoreSetting(GAMECORE_SETTING_IN_GAME_KEYBOARD, inGameKeyboard),
+            CoreSetting(GAMECORE_SETTING_JOIPLAY_COMPAT, settings.joiplayCompatEnabled),
+            CoreSetting(GAMECORE_SETTING_NETWORK_ENABLED, settings.networkAccessEnabled),
+            CoreSetting(GAMECORE_SETTING_CONFIG_OVERLAY, overlay ?? ""),
+        ]
     }
 
     private func logConfigOverlay(
@@ -208,14 +216,6 @@ struct MkxpCore: GameCore {
         } else {
             try? line.write(toFile: path, atomically: true, encoding: .utf8)
         }
-    }
-
-    private func set(_ key: String, _ value: String) {
-        gamecore_setSetting(key, value)
-    }
-
-    private func set(_ key: String, _ on: Bool) {
-        gamecore_setSetting(key, on ? "1" : "0")
     }
 
     func launchWarning(for container: GameContainer, gameTitle: String) -> LaunchWarning? {
@@ -243,13 +243,14 @@ struct MkxpCore: GameCore {
         return MkxpSettingsState(container: container)
     }
 
+    @MainActor func launchedSettings(for container: GameContainer) -> (any CoreLaunchedSettings)? {
+        Self.migrateOldSettings(in: container)
+        return MkxpLaunchedSettings(container: container)
+    }
+
     /// Older builds kept the engine settings in `game_settings.json`.
-    /// Moving them rebuilds `mkxp.json`, so the display settings must
-    /// leave that file first.
     private static func migrateOldSettings(in container: GameContainer) {
         let stateDirectory = container.playerDataURL
-        guard ManagedMkxpConfig.migrateDisplaySettingsIfNeeded(stateDirectory: stateDirectory)
-        else { return }
         ManagedMkxpConfig.migrateLegacyEngineSettingsIfNeeded(
             stateDirectory: stateDirectory,
             gameDirectory: container.gameURL
@@ -318,7 +319,7 @@ struct MkxpCore: GameCore {
             }
             let code =
                 MkxpSettings.load(from: container.playerDataURL).rubyVersionOverride
-                ?? MkxpProfile.load(for: container).rubyVersion
+                ?? MkxpProfile.load(for: container).ruby.code
             rows.append(
                 InfoRow(
                     label: String(

@@ -28,6 +28,9 @@ struct RootView: View {
     /// root background for the zoom transition, and a fade in over
     /// that colour reads as a white flash.
     @State private var libraryFaded = false
+    /// The report that the share sheet sends, after an alert's Share
+    /// Report button.
+    @State private var sharedReport: GameReport?
 
 
     var body: some View {
@@ -62,12 +65,19 @@ struct RootView: View {
                 PlayerView(appState: appState, engineState: engineState, layout: layout)
                     .transition(.identity)
                     .allowsHitTesting(
-                        appState.errorMessage == nil && appState.infoMessage == nil
+                        appState.shownError == nil && appState.infoMessage == nil
                     )
             }
         }
         .fontDesign(.rounded)
         .tint(.brand)
+        .task { BackupLaunchGate.shared.open() }
+        // One count of play time for each stretch of play. It restarts
+        // when the game resumes from a pause.
+        .task(id: appState.phase == .playing) {
+            guard appState.phase == .playing else { return }
+            await AdCoordinator.shared.trackPlayTime(of: appState)
+        }
         .onChange(of: appState.phase) { _, phase in
             if phase == .playing {
                 // GameLoadingView flips the phase inside a spring of
@@ -75,11 +85,7 @@ struct RootView: View {
                 // transaction, so it needs a spring of its own.
                 withAnimation(.spring(duration: 0.3, bounce: 0)) {
                     libraryFaded = true
-                }
-                // Slightly longer than GameLoadingView's handoff spring
-                // (0.15–0.30s) so the fade finishes first.
-                Task { @MainActor in
-                    try? await Task.sleep(for: .milliseconds(400))
+                } completion: {
                     guard appState.phase == .playing else { return }
                     libraryDormant = true
                 }
@@ -126,29 +132,38 @@ struct RootView: View {
             if hasPro { showLaunchProSheet = false }
         }
         .alert(
-            (engineHung || appState.phase != nil) ? Text("Restart XP Pocket") : Text("Last session ended early"),
+            errorAlertTitle,
             isPresented: showErrorAlert
         ) {
             Button("Got it") {
-                dismissErrorAlert()
-                if engineHung {
-                    return
+                closeErrorAlert()
+            }
+            if let report = GameReport.last, report.isShareable {
+                Button("Share Report") {
+                    closeErrorAlert()
+                    sharedReport = report
                 }
-                if appState.phase != nil {
-                    return
-                }
-                appState.dismissCrashRecovery()
             }
         } message: {
-            if engineHung {
-                Text("The game stopped responding. Close XP Pocket from the app switcher, then reopen it.")
+            if appState.engineHung {
+                Text(
+                    appState.canEndStuckGame
+                        ? "It stopped responding and will close. Progress you haven't saved will be lost."
+                        : "The game stopped responding. Close XP Pocket from the app switcher, then reopen it."
+                )
             } else if appState.phase != nil {
                 Text(
-                    "\(appState.errorMessage ?? String(localized: "The game stopped."))\n\nClose XP Pocket from the app switcher, then reopen it."
+                    appState.canEndStuckGame
+                        ? appState.shownError?.message
+                            ?? String(localized: "Something went wrong while it was running.")
+                        : "\(appState.shownError?.message ?? String(localized: "The game stopped."))\n\nClose XP Pocket from the app switcher, then reopen it."
                 )
             } else {
-                Text(appState.errorMessage ?? "")
+                Text(appState.shownError?.message ?? "")
             }
+        }
+        .sheet(item: $sharedReport) { report in
+            ReportShareSheet(report: report)
         }
         .alert(
             infoAlertTitle,
@@ -171,7 +186,7 @@ struct RootView: View {
                 // engineReady false, so the marker persists and the
                 // alert still fires.
                 if appState.engineReady {
-                    appState.clearCrashMarkerForBackground()
+                    appState.clearCrashMarker()
                 }
             }
             // Persist play time when the app backgrounds, so a
@@ -186,41 +201,50 @@ struct RootView: View {
                 engineState.resumeFromBackground()
                 // Re-create the crash marker, so the next launch still
                 // detects a crash after resume.
-                appState.restoreCrashMarkerForForeground()
-                appState.resumeSessionTimingAfterBackground()
+                appState.restoreCrashMarker()
             }
+            appState.resumeSessionTimingAfterBackground()
         }
-        .onChange(of: appState.errorMessage) { _, message in
-            if message != nil {
-                AppWindow.setAllowKeyWindow(true)
-            } else if appState.phase == .playing, appState.infoMessage == nil {
-                AppWindow.setAllowKeyWindow(false)
-            } else if appState.phase != .playing, appState.infoMessage == nil {
-                AppWindow.setAllowKeyWindow(false)
+        .onChange(of: appState.shownError) { _, error in
+            if error != nil {
+                AppWindow.claimKey(.alert)
+            } else {
+                AppWindow.releaseKey(.alert)
             }
         }
         .onChange(of: appState.infoMessage) { _, message in
             if message != nil {
-                AppWindow.setAllowKeyWindow(true)
-            } else if appState.phase == .playing, appState.errorMessage == nil {
-                AppWindow.setAllowKeyWindow(false)
-            } else if appState.phase != .playing, appState.errorMessage == nil {
-                AppWindow.setAllowKeyWindow(false)
+                AppWindow.claimKey(.info)
+            } else {
+                AppWindow.releaseKey(.info)
             }
         }
     }
 
+    private var errorAlertTitle: Text {
+        if appState.shownError?.gameDidNotStart == true { return Text("Can't start the game") }
+        guard appState.engineHung || appState.phase != nil else { return Text("Last session ended early") }
+        return appState.canEndStuckGame ? Text("The game stopped") : Text("Restart XP Pocket")
+    }
+
+    private func closeErrorAlert() {
+        let hung = appState.engineHung
+        dismissErrorAlert()
+        if hung { appState.endStuckGame() }
+    }
+
     private var showErrorAlert: Binding<Bool> {
         Binding(
-            get: { appState.errorMessage != nil },
+            get: { appState.shownError != nil },
             set: { if !$0 { dismissErrorAlert() } }
         )
     }
 
     /// Unblocks a core that waits for the error alert to close.
     private func dismissErrorAlert() {
+        appState.shownError = nil
+        appState.restoreCrashMarker()
         if EmpoCoreIsOpen() != 0 { gamecore_signalErrorDismissed() }
-        appState.errorMessage = nil
     }
 
     private var showInfoAlert: Binding<Bool> {
@@ -243,16 +267,46 @@ struct RootView: View {
     /// Unblocks the core that waits for the info alert to close.
     /// The game resumes right where it called `msgbox`.
     private func dismissInfoAlert() {
-        if EmpoCoreIsOpen() != 0 { gamecore_signalInfoDismissed() }
         appState.infoMessage = nil
+        appState.restoreCrashMarker()
+        if EmpoCoreIsOpen() != 0 { gamecore_signalInfoDismissed() }
+    }
+}
+
+/// The system share sheet for a game report.
+private struct ReportShareSheet: UIViewControllerRepresentable {
+    let report: GameReport
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(
+            activityItems: [ReportItemProvider(report: report, header: report.header())],
+            applicationActivities: nil)
     }
 
-    /// True when the RGSS thread did not ack a termination request in
-    /// time. Ruby is then in an unrecoverable state. The single-thread
-    /// engine architecture cannot respawn the VM in place, so the only
-    /// way out is for the user to close and reopen the app manually.
-    /// We do not call `exit()`, per App Store guideline 2.5.1.
-    private var engineHung: Bool {
-        EmpoCoreIsOpen() != 0 && gamecore_isEngineHung() != 0
+    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
+}
+
+/// The share sheet reads `item` on a background thread, after the person
+/// picks where to send the report. The log can be large.
+private final class ReportItemProvider: UIActivityItemProvider, @unchecked Sendable {
+    private let report: GameReport
+    private let header: String
+
+    init(report: GameReport, header: String) {
+        self.report = report
+        self.header = header
+        super.init(
+            placeholderItem: FileManager.default.temporaryDirectory.appendingPathComponent("report.txt"))
+    }
+
+    override var item: Any {
+        do {
+            return try report.write(header: header)
+        } catch {
+            // The placeholder is a file, so some share targets take only a file.
+            let text = "\(header)\nThe report file could not be written: \(error.localizedDescription)\n"
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent("report.txt")
+            return (try? Data(text.utf8).write(to: url)) != nil ? url : text
+        }
     }
 }

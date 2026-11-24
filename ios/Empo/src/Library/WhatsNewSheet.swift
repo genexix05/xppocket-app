@@ -7,10 +7,15 @@ import SwiftUI
 /// with the next `version` and the app version that ships it. Add its
 /// title and detail, with their translations, to
 /// Resources/WhatsNew.xcstrings: the rows look them up by their English text.
+/// Set `"plus": true` on an item about Plus. Its title gets a Plus pill.
 enum WhatsNew {
     static let releases: [WhatsNewRelease] = {
-        let url = Bundle.main.url(forResource: "WhatsNew", withExtension: "json")!
-        return try! JSONDecoder().decode([WhatsNewRelease].self, from: Data(contentsOf: url))
+        guard
+            let url = Bundle.main.url(forResource: "WhatsNew", withExtension: "json"),
+            let data = try? Data(contentsOf: url),
+            let releases = try? JSONDecoder().decode([WhatsNewRelease].self, from: data)
+        else { return [] }
+        return releases
     }()
 
     static let version = releases.map(\.version).max() ?? 0
@@ -38,27 +43,30 @@ struct WhatsNewItem: Decodable {
     let symbol: String
     let title: String
     let detail: String
+    var settingsSection: SettingsSection?
+    var plus: Bool?
 }
 
 /// Shows the news once after an update. Any dismissal marks it as
 /// read. A new install marks it as read when the user acknowledges
 /// the disclaimer, so only updated installs see it.
 struct WhatsNewPresentation: ViewModifier {
+    let prompts: LaunchPrompts
     /// False while the splash is still up.
     var active: Bool = true
+    let onOpenSettings: (SettingsSection) -> Void
 
     @Environment(\.appSettings) private var settings
-    /// True when another one-time notice waits at launch. The news
-    /// then waits for the next launch, because SwiftUI shows only
-    /// one of two presentations that start together.
-    @State private var otherNoticePending = true
     /// Read once, because the dismissal marks every item as read
     /// while the sheet still animates out.
     @State private var items: [WhatsNewItem] = []
+    /// Settings opens after the sheet is gone, because SwiftUI shows
+    /// no new sheet while another one animates out.
+    @State private var settingsToOpen: SettingsSection?
 
     private var isPresented: Binding<Bool> {
         Binding(
-            get: { active && !otherNoticePending && settings.needsWhatsNew },
+            get: { active && prompts.showing == .whatsNew && settings.needsWhatsNew },
             set: { presented in
                 if !presented { settings.acknowledgeWhatsNew() }
             }
@@ -69,18 +77,32 @@ struct WhatsNewPresentation: ViewModifier {
         content
             .task {
                 items = WhatsNew.items(after: settings.whatsNewSeenVersion)
-                otherNoticePending =
-                    !DataDirectory.pendingSaveRecoveries().isEmpty
-                    || !GameContainerMigration.pendingDuplicateNoticeNames().isEmpty
+                if settings.needsWhatsNew { prompts.wait(.whatsNew) }
             }
-            .sheet(isPresented: isPresented) {
-                WhatsNewSheet(items: items) { isPresented.wrappedValue = false }
-            }
+            .sheet(
+                isPresented: isPresented,
+                onDismiss: {
+                    prompts.done(.whatsNew)
+                    if let settingsToOpen { onOpenSettings(settingsToOpen) }
+                    settingsToOpen = nil
+                },
+                content: {
+                    WhatsNewSheet(
+                        items: items,
+                        onOpenSettings: { section in
+                            settingsToOpen = section
+                            isPresented.wrappedValue = false
+                        },
+                        onContinue: { isPresented.wrappedValue = false }
+                    )
+                }
+            )
     }
 }
 
 struct WhatsNewSheet: View {
     let items: [WhatsNewItem]
+    let onOpenSettings: (SettingsSection) -> Void
     let onContinue: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -90,22 +112,15 @@ struct WhatsNewSheet: View {
         StandardSheet(title: "What's new in \(AppInfo.name)", emblem: "sparkles") {
             VStack(alignment: .leading, spacing: Spacing._2xl) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    // Animate only the fade and the slide. An animation
-                    // on the whole row also catches the layout pass of
-                    // the opening sheet, and SwiftUI shows a moved Text
-                    // as glyphs that fade across the gap.
-                    WhatsNewRow(item: item)
-                        .animation(Motion.standard.delay(0.1 + Double(index) * 0.1)) {
-                            $0.opacity(entered ? 1 : 0)
-                                .offset(y: entered || reduceMotion ? 0 : 8)
-                        }
+                    WhatsNewRow(item: item, onOpenSettings: onOpenSettings)
+                        .entering(entered, reduceMotion: reduceMotion, index: index)
                 }
             }
             .padding(.vertical, Spacing.md)
+        } footer: {
+            SheetPrimaryButton("Continue", action: onContinue)
 
-            VStack(spacing: 0) {
-                SheetPrimaryButton("Continue", action: onContinue)
-
+            if UpdateChecker.isSideloadBuild {
                 Link(destination: WhatsNew.releasesURL) {
                     Text(
                         "See all changes on GitHub\u{00A0}\(Image(systemName: "arrow.up.forward"))",
@@ -126,8 +141,21 @@ struct WhatsNewSheet: View {
     }
 }
 
+extension View {
+    // Animate only the fade and the slide. An animation on the whole
+    // row also catches the layout pass of the opening sheet, and SwiftUI
+    // shows a moved Text as glyphs that fade across the gap.
+    fileprivate func entering(_ entered: Bool, reduceMotion: Bool, index: Int) -> some View {
+        animation(Motion.standard.delay(0.1 + Double(index) * 0.1)) {
+            $0.opacity(entered ? 1 : 0)
+                .offset(y: entered || reduceMotion ? 0 : 8)
+        }
+    }
+}
+
 private struct WhatsNewRow: View {
     let item: WhatsNewItem
+    let onOpenSettings: (SettingsSection) -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -148,16 +176,42 @@ private struct WhatsNewRow: View {
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: Spacing.xxs) {
-                Text(Bundle.main.localizedString(forKey: item.title, value: nil, table: "WhatsNew"))
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                Text(Bundle.main.localizedString(forKey: item.detail, value: nil, table: "WhatsNew"))
+                HStack(spacing: Spacing.sm) {
+                    Text(Bundle.main.localizedString(forKey: item.title, value: nil, table: "WhatsNew"))
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    if item.plus == true {
+                        plusWord
+                            .font(.caption)
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.xxs)
+                            .background(Color.brand.opacity(0.15), in: .capsule)
+                            .plusShine()
+                    }
+                }
+                detail
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                    .plusShine()
+                if let section = item.settingsSection, section.isShown {
+                    Button("Turn it on in Settings") { onOpenSettings(section) }
+                        .font(.subheadline.weight(.semibold))
+                        .frame(minHeight: AppSize.minTapTarget)
+                        .contentShape(.rect)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .accessibilityElement(children: .combine)
+    }
+
+    /// A `%@` in the detail stands for the Plus mark.
+    private var detail: Text {
+        let parts = Bundle.main.localizedString(forKey: item.detail, value: nil, table: "WhatsNew")
+            .components(separatedBy: "%@")
+        return parts.dropFirst().reduce(Text(verbatim: parts[0])) {
+            Text("\($0)\(plusWord)\(Text(verbatim: $1))")
+        }
     }
 }

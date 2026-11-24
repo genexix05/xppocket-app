@@ -20,11 +20,20 @@ protocol GameCore {
     /// The tool the games were made with. The Game cores screen groups
     /// the cores by it.
     var madeWith: String { get }
+    /// The games of this core, as a setting names them.
+    var gamesName: String { get }
     var supportsCheats: Bool { get }
     /// True when `gamecore_killSession` kills the running game and frees
     /// all of its state. Then any number of games, on any core, can run
-    /// after it in the same process, with nothing left from this one.
+    /// after it in the app, with nothing left from this one.
     var canKillSession: Bool { get }
+    /// True when the game stops while an error or a message alert shows,
+    /// until `gamecore_signalErrorDismissed` or
+    /// `gamecore_signalInfoDismissed`.
+    var waitsForAlerts: Bool { get }
+    /// True when the core calls the save event callback each time the
+    /// game reads a save.
+    var reportsSaveLoads: Bool { get }
     /// The four keys of the builtin button grid, in grid order.
     func defaultKeys(forGameAt root: URL) -> [GameKey]
 
@@ -40,7 +49,6 @@ protocol GameCore {
     /// probe it extracts the file.
     func validateGameRoot(_ root: URL, fetch: (String) throws -> Void) throws
 
-    /// The title the game gives itself.
     func title(at root: URL) -> String?
     func titlePicture(at root: URL) -> URL?
     /// True when a game of this core has no title of its own, so the
@@ -54,13 +62,13 @@ protocol GameCore {
     /// The games of `joiPlayTypes`, as the import error names them.
     var joiPlayGames: String? { get }
 
-    /// Makes the game ready to run and sends the per-game settings of
-    /// this core with `gamecore_setSetting`. The app calls it before
-    /// `gamecore_applySessionConfig`.
-    func launch(_ container: GameContainer)
+    /// Makes the game ready to run, and returns the settings of this
+    /// core for the game. `GameCoreLaunch.configure` sends them.
+    func launch(_ container: GameContainer) -> [CoreSetting]
     func launchWarning(for container: GameContainer, gameTitle: String) -> LaunchWarning?
 
     @MainActor func makeSettings(for container: GameContainer) -> (any CoreSettings)?
+    @MainActor func launchedSettings(for container: GameContainer) -> (any CoreLaunchedSettings)?
     func displayDefaults(for container: GameContainer) -> GameDisplayDefaults
     /// The folder under `Documents/Data/` that the app gives the game for
     /// its saves, as path components. Two games with the same folder
@@ -69,7 +77,7 @@ protocol GameCore {
     func sharedDataFolder(for container: GameContainer) -> [String]?
     @MainActor func settingsPage(_ model: GameSettingsModel) -> AnyView
 
-    /// Rows for the Runtime section of Game Info. Empty hides the section.
+    /// Empty hides the Runtime section of Game Info.
     func infoRows(for container: GameContainer) async -> [InfoRow]
     /// The tool and its edition for one game, such as "RPG Maker VX Ace".
     func madeWith(at root: URL) -> String
@@ -77,7 +85,10 @@ protocol GameCore {
 
 extension GameCore {
     var supportsCheats: Bool { false }
+    var gamesName: String { madeWith }
     var canKillSession: Bool { false }
+    var waitsForAlerts: Bool { false }
+    var reportsSaveLoads: Bool { false }
     func defaultKeys(forGameAt root: URL) -> [GameKey] { GameKey.standard }
     func archiveEntryUse(_ entry: ArchiveEntry) -> ArchiveEntryUse { .skip }
     func validateMarkedRoot(marker: String) throws {}
@@ -85,6 +96,12 @@ extension GameCore {
     func title(at root: URL) -> String? { nil }
     func titlePicture(at root: URL) -> URL? { nil }
     var usesFolderName: Bool { false }
+
+    /// The smooth scaling setting of the PSDK and MV/MZ cores.
+    func smoothScaling(_ settings: GameSettings) -> CoreSetting {
+        CoreSetting(
+            GAMECORE_SETTING_SMOOTH_SCALING, settings.smoothScaling ?? GameConfigDefaults.engineSmoothScaling)
+    }
 
     /// The title the library shows until the user sets one.
     func defaultTitle(of container: GameContainer) -> String? {
@@ -94,9 +111,10 @@ extension GameCore {
     func didImport(_ container: GameContainer, from source: ImportSource, replacing: Bool) {}
     var joiPlayTypes: Set<String> { [] }
     var joiPlayGames: String? { nil }
-    func launch(_ container: GameContainer) {}
+    func launch(_ container: GameContainer) -> [CoreSetting] { [] }
     func launchWarning(for container: GameContainer, gameTitle: String) -> LaunchWarning? { nil }
     @MainActor func makeSettings(for container: GameContainer) -> (any CoreSettings)? { nil }
+    @MainActor func launchedSettings(for container: GameContainer) -> (any CoreLaunchedSettings)? { nil }
     func displayDefaults(for container: GameContainer) -> GameDisplayDefaults { GameDisplayDefaults() }
     func sharedDataFolder(for container: GameContainer) -> [String]? { nil }
     func infoRows(for container: GameContainer) async -> [InfoRow] { [] }
@@ -132,10 +150,6 @@ extension GameCore {
     var version: String {
         bundle?.object(forInfoDictionaryKey: "EmpoCoreVersion") as? String ?? "unknown"
     }
-
-    func isSame(as other: any GameCore) -> Bool {
-        framework == other.framework
-    }
 }
 
 enum GameCores {
@@ -144,8 +158,29 @@ enum GameCores {
 
     static var inThisBuild: [any GameCore] { all.filter(\.isInThisBuild) }
 
+    /// The cores in this build that run in a game process when the
+    /// setting is on.
+    static var gameProcessCores: [any GameCore] { inThisBuild.filter { !$0.canKillSession } }
+
+    /// The games of `gameProcessCores`, for example "PSDK games and RPG
+    /// Maker XP, VX and VX Ace games".
+    static var gameProcessGamesName: String {
+        var names: [String] = []
+        for core in gameProcessCores {
+            let name = String(
+                localized: "\(core.gamesName) games",
+                comment: "The placeholder is the name of a game engine, for example RPG Maker XP.")
+            if !names.contains(name) { names.append(name) }
+        }
+        return ListFormatter.localizedString(byJoining: names)
+    }
+
     static func core(forGameAt url: URL, fileManager: FileManager = .default) -> (any GameCore)? {
         all.first { $0.isGameRoot(url, fileManager: fileManager) }
+    }
+
+    static func supportsCheats(in container: GameContainer?) -> Bool {
+        container.flatMap { core(forGameAt: $0.gameURL) }?.supportsCheats ?? false
     }
 
     /// The first picture in `Graphics/Titles`, where RGSS and PSDK games
@@ -171,6 +206,11 @@ struct GameKey: Equatable {
         GameKey(label: "Z", scancode: Int32(GAMECORE_SCANCODE_Z)),
         GameKey(label: "B", scancode: Int32(GAMECORE_SCANCODE_B)),
     ]
+
+    /// The keys of the core that runs the game in `root`.
+    static func keys(forGameAt root: URL) -> [GameKey] {
+        GameCores.core(forGameAt: root)?.defaultKeys(forGameAt: root) ?? standard
+    }
 }
 
 /// One file of an archive, before the probe extracts anything.

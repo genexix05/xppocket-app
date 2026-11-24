@@ -73,11 +73,14 @@ public enum LegacyDataDrain {
         return "\(filename).\(displacedMarker)-\(index).bak"
     }
 
+    /// `leaving` names entries at the top of `source` that stay
+    /// there and do not count as failures.
     @discardableResult
     public static func drain(
         from source: URL,
         into destination: URL,
         policy: MergePolicy = .preferNewerModificationDate,
+        leaving kept: Set<String> = [],
         fm: FileManager = .default
     ) -> Outcome {
         var outcome = Outcome()
@@ -88,7 +91,7 @@ public enum LegacyDataDrain {
 
         try? fm.createDirectory(at: destination, withIntermediateDirectories: true)
         drainEntries(
-            from: source, into: destination, prefix: "", policy: policy,
+            from: source, into: destination, prefix: "", policy: policy, leaving: kept,
             outcome: &outcome, fm: fm)
 
         if outcome.isComplete,
@@ -105,6 +108,7 @@ public enum LegacyDataDrain {
         into destination: URL,
         prefix: String,
         policy: MergePolicy,
+        leaving kept: Set<String> = [],
         outcome: inout Outcome,
         fm: FileManager
     ) {
@@ -113,7 +117,7 @@ public enum LegacyDataDrain {
             return
         }
 
-        for name in entryNames.sorted() {
+        for name in entryNames.sorted() where !kept.contains(name) {
             let entry = source.appendingPathComponent(name)
             let target = destination.appendingPathComponent(name)
             let relative = prefix.isEmpty ? name : "\(prefix)/\(name)"
@@ -131,8 +135,10 @@ public enum LegacyDataDrain {
                 drainEntries(
                     from: entry, into: target, prefix: relative, policy: policy,
                     outcome: &outcome, fm: fm)
-                if (try? fm.contentsOfDirectory(atPath: entry.path))?.isEmpty == true {
-                    try? fm.removeItem(at: entry)
+                if (try? fm.contentsOfDirectory(atPath: entry.path))?.isEmpty == true,
+                    (try? fm.removeItem(at: entry)) == nil
+                {
+                    outcome.failures.append(relative)
                 }
                 continue
             }
@@ -167,8 +173,7 @@ public enum LegacyDataDrain {
                     fm: fm
                 )
                 do {
-                    try fm.moveItem(at: target, to: archived)
-                    try fm.moveItem(at: entry, to: target)
+                    try fm.archive(target, to: archived, replacingWith: entry)
                     outcome.movedCount += 1
                 } catch {
                     outcome.failures.append(relative)

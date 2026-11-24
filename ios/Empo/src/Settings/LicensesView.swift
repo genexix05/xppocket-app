@@ -18,7 +18,9 @@ struct LicensesView: View {
                         .textSelection(.enabled)
                 }
                 .navigationTitle(license.name)
+                #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
+                #endif
             } label: {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(license.name)
@@ -28,8 +30,12 @@ struct LicensesView: View {
                 }
             }
         }
+        #if os(iOS)
         .navigationTitle("Licenses")
         .navigationBarTitleDisplayMode(.inline)
+        #else
+        .navigationTitle("Open-Source Licenses")
+        #endif
     }
 
     private func linkingURLs(in text: String) -> AttributedString {
@@ -76,7 +82,7 @@ struct LicenseEntry: Identifiable, Decodable, Equatable {
             let entries = (try? JSONDecoder().decode([LicenseEntry].self, from: data)) ?? []
             return entries.map { LicenseEntry($0.name, license: $0.license, text: unwrapped($0.text)) }
         }
-        return merged(appLicenses + fromCores)
+        return merged(appLicenses + macLicenses + fromCores)
     }
 
     /// Two cores can ship the same library at two versions, so a name
@@ -155,7 +161,7 @@ private let appLicenses: [LicenseEntry] = [
             """),
 
     LicenseEntry(
-        "Empo", license: "GPL-3.0 with additional terms",
+        "XP Pocket", license: "GPL-3.0 with additional terms",
         text: """
             Empo, Copyright (C) 2026 Mateo M., https://github.com/mateo-m/empo-app
 
@@ -165,7 +171,24 @@ private let appLicenses: [LicenseEntry] = [
 
             The full license is at https://www.gnu.org/licenses/gpl-3.0.html and in the LICENSE file of the source code. The additional terms are in the ADDITIONAL-TERMS.md file of the source code. In short: keep this notice, do not present this program as the work of another person, and give a modified version its own name and icon.
 
-            The name "Empo", the Empo logo, and the Empo icon are not under the GPL.
+            The name "XP Pocket", the XP Pocket logo, and the XP Pocket icon are not under the GPL.
+            """),
+
+    LicenseEntry(
+        "fishhook", license: "BSD 3-Clause",
+        text: """
+            Copyright (c) 2013, Facebook, Inc.
+            All rights reserved.
+
+            Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+            * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+            * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+            * Neither the name Facebook nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+            THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             """),
 
     LicenseEntry(
@@ -209,6 +232,20 @@ private let appLicenses: [LicenseEntry] = [
             """),
 
     LicenseEntry(
+        "mimalloc", license: "MIT",
+        text: """
+            MIT License
+
+            Copyright (c) 2018-2025 Microsoft Corporation, Daan Leijen
+
+            Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+            The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+            THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+            """),
+
+    LicenseEntry(
         "Smallbits icon pack", license: "Smallbits License (free for commercial use)",
         text: """
             Smallbits - 200+ pixelated icons on an 8x8 grid.
@@ -228,13 +265,7 @@ private let appLicenses: [LicenseEntry] = [
         text: """
             (C) 1995-2022 Jean-loup Gailly and Mark Adler
 
-            This software is provided 'as-is', without any express or implied warranty.  In no event will the authors be held liable for any damages arising from the use of this software.
-
-            Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
-
-            1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
-            2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
-            3. This notice may not be removed or altered from any source distribution.
+            \(zlibTerms)
 
             Jean-loup Gailly  Mark Adler
             jloup@gzip.org  madler@alumni.caltech.edu
@@ -257,3 +288,26 @@ private var xpPocketLicenses: [LicenseEntry] {
                 """),
     ]
 }
+#if os(macOS)
+private let macLicenses: [LicenseEntry] = [
+    LicenseEntry(
+        "SDL", license: "zlib License",
+        text: """
+            Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
+
+            \(zlibTerms)
+            """)
+]
+#else
+private let macLicenses: [LicenseEntry] = []
+#endif
+
+private let zlibTerms = """
+    This software is provided 'as-is', without any express or implied warranty.  In no event will the authors be held liable for any damages arising from the use of this software.
+
+    Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
+
+    1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+    2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+    3. This notice may not be removed or altered from any source distribution.
+    """

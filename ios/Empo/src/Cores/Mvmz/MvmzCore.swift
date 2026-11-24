@@ -47,10 +47,8 @@ struct MvmzCore: GameCore {
         MvmzGame.isMZ(at: root) ? "RPG Maker MZ" : "RPG Maker MV"
     }
 
-    func launch(_ container: GameContainer) {
-        let settings = GameSettings.load(from: container.playerDataURL)
-        let smooth = settings.smoothScaling ?? GameConfigDefaults.engineSmoothScaling
-        gamecore_setSetting("smoothScaling", smooth ? "1" : "0")
+    func launch(_ container: GameContainer) -> [CoreSetting] {
+        [smoothScaling(GameSettings.load(from: container.playerDataURL))]
     }
 
     /// The game reads touches itself, so it needs no "Touch acts as
@@ -60,7 +58,9 @@ struct MvmzCore: GameCore {
             Group {
                 GameplaySettingsSection(model: model)
                 DisplaySettingsSection(model: model, fields: [.smoothScaling])
+                #if os(iOS)
                 LayoutSettingsSection(model: model)
+                #endif
             })
     }
 }

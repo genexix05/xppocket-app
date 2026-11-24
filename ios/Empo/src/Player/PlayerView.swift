@@ -10,27 +10,15 @@ struct PlayerView: View {
     var layout: ControlsLayout
     @Environment(\.pauseManager) private var pauseManager
     @Environment(\.appSettings) private var settings
-    @State private var editMode = false
-    /// Mirrored here so entering edit mode with the preference on
-    /// can round the layout immediately (the toggle itself lives in
-    /// PlayerEditToolbar).
-    @AppStorage(DefaultsKey.controlsEditSnapToGrid) private var snapToGrid = false
+    private var editMode: Bool { layout.editSessionActive }
     @State private var controlsHidden = false
     @State private var keyboardMode = false
     @State private var showDebugOverlay = false
-    /// Long-lived state for the debug overlay. It lives on `PlayerView`
-    /// so the overlay can transition in/out via `if visible`
-    /// and keep its FPS graph, cached game title, and RGSS
-    /// version across show/hide cycles.
+    /// Lives here so the overlay keeps its FPS graph, game title, and
+    /// RGSS version when it hides and shows again.
     @State private var debugOverlayState = DebugOverlayState()
-    /// Toolbar starts dimmed so it doesn't dominate attention when the
-    /// player first loads. Any tap (on the toolbar, on the game area,
-    /// etc.) restores it to full opacity via `resetToolbarIdleTimer()`.
     @State private var toolbarOpacity: Double = Alpha.toolbarDim
     @State private var toolbarIdleTask: Task<Void, Never>?
-    /// Action dispatch + the runtime state actions act on (fast
-    /// forward, cheats). Both input paths (touch function buttons,
-    /// controller action bindings) route through this registry.
     @State private var actions = PlayerActionRegistry()
 
     @State private var resumeSnapshot: UIImage?
@@ -38,58 +26,39 @@ struct PlayerView: View {
     @State private var input = SessionInput()
     @State private var controlsVisible: Bool = true
 
-    @State private var showAddSheet = false
-    @State private var showResetConfirm = false
-    @State private var editingButton: ButtonModel?
-    @State private var editingActionButton: ActionButtonModel?
-    @State private var editingDPad = false
-    @State private var draggingDPad = false
-    @State private var draggingButtonID: UUID?
+    @State private var editDialog: ControlsEditDialog?
 
-    /// More-menu sheet (toolbar -> ellipsis button). Houses pause /
-    /// cheats / fast-forward / debug-overlay so the toolbar itself
-    /// stays trimmed to keyboard / edit / hide / more.
     @State private var showMoreSheet = false
+    @State private var sheetAction: SheetAction?
     @State private var showControllerRemap = false
     @State private var showLayoutProfilePicker = false
+    @State private var showLayoutSaveFailure = false
 
     var body: some View {
         GeometryReader { geo in
-            let isPortrait = geo.size.height > geo.size.width
-            let gameRect = engineState.gameRect
             let safeArea = AppWindow.currentSafeArea
-            // Toolbar sits at the top-right of the device in every
-            // layout, so the portrait-specific size reduction (used when
-            // the toolbar was cramped in the zone below the game) no
-            // longer applies.
+            let canvas = ScreenCanvas(size: geo.size, safeArea: safeArea)
+            let isPortrait = canvas.isPortrait
+            let gameRect = engineState.gameRect
             let toolbarBtnSize = IconButtonSize.sm.points
-            // An active screen region carries the profile's own
-            // overlay choice. A nil choice keeps the geometry heuristic.
             let activeScreenPlacement = layout.effectiveScreenPlacement(
-                stored: ScreenRegionApplier.resolvedPlacement(isPortrait: isPortrait))
+                stored: layout.screenRegion.resolvedPlacement(isPortrait: isPortrait))
             let forcedOverlay = activeScreenPlacement?.overlay
-            // The chrome follows the engine's republished gameRect
-            // LIVE during a screen drag, so the controls zone tracks
-            // the moving screen. The edit toolbar fades during the
-            // drag instead of holding still.
             let controlsMinY = ControlsZone.toolbarBottomY(
                 isPortrait: isPortrait, gameRect: gameRect, safeArea: safeArea,
                 btnSize: toolbarBtnSize,
                 geoHeight: geo.size.height, forcedOverlay: forcedOverlay)
-            let toolbarPlacement = PlayerToolbar.placement(
+            let toolbarCenter = PlayerToolbar.center(
                 isPortrait: isPortrait, safeArea: safeArea, geoSize: geo.size)
-            let controlsSafeArea = ControlsZone.controlsSafeArea(safeArea, toolbar: toolbarPlacement)
-            let toolbarKeepout = ControlsZone.toolbarKeepout(toolbarPlacement, geoSize: geo.size)
+            let controlsSafeArea = safeArea.gameArea
+            let sensorStripKeepout = ControlsZone.sensorStripKeepout(
+                safeArea: safeArea, geoSize: geo.size, occluded: AppWindow.occludedRects)
+            let screenContext = editMode ? screenGizmoContext(canvas: canvas, gameRect: gameRect) : nil
 
             ZStack {
-                // Debug visualization of the touch-mouse zone: the
-                // exact rect AppWindow routes to the game view. Same
-                // source (engine-published gameRect), so what you see
-                // is literally what hitTest checks.
                 if settings.showTouchZone, !gameRect.isEmpty {
-                    // gameRect is in window points. The wrapping
-                    // GeometryReader ignores the safe area so its
-                    // local space matches window space exactly.
+                    // gameRect is in window points. The GeometryReader
+                    // ignores the safe area, so its space is the window space.
                     GeometryReader { _ in
                         Rectangle()
                             .fill(Color.brand.opacity(0.08))
@@ -108,29 +77,28 @@ struct PlayerView: View {
                     Color.clear
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .ignoresSafeArea()
-                        .chromeHitRegion("editMode")
+                        .chromeHitRegion()
                         .allowsHitTesting(false)
 
                     editZoneBackground(
                         controlsMinY: controlsMinY, safeArea: controlsSafeArea, geoSize: geo.size)
                     if let caption = editZoneCaptionText {
-                        editZoneCaption(caption, safeArea: safeArea)
+                        editZoneCaption(
+                            caption, controlsMinY: controlsMinY, safeArea: controlsSafeArea,
+                            geoSize: geo.size)
                     }
 
-                    screenRegionGizmo(
-                        geoSize: geo.size, isPortrait: isPortrait, gameRect: gameRect)
                 }
-                // Invisible tap layer that dismisses the keyboard when
-                // it's open. Placed below controls + toolbar so those
-                // stay tappable, but above the SDL game view so any
-                // tap on the game area folds the keyboard away.
-                // Matches the standard iOS "tap outside to dismiss"
-                // behavior for text fields.
+                if let screenContext {
+                    screenRegionGizmo(context: screenContext)
+                }
+                // Sits above the SDL game view, so a tap on the game
+                // area closes the keyboard.
                 if keyboardMode {
                     Color.clear
                         .contentShape(Rectangle())
                         .ignoresSafeArea()
-                        .chromeHitRegion("keyboardMode")
+                        .chromeHitRegion()
                         .onTapGesture {
                             toggleKeyboard()
                         }
@@ -144,24 +112,19 @@ struct PlayerView: View {
                         controlsMinY: controlsMinY,
                         editMode: editMode,
                         safeArea: controlsSafeArea,
-                        editingButton: $editingButton,
-                        editingActionButton: $editingActionButton,
-                        editingDPad: $editingDPad,
-                        draggingDPad: $draggingDPad,
-                        draggingButtonID: $draggingButtonID
+                        editDialog: $editDialog,
+                        keys: EngineSessionCoordinator.shared.heldKeys
                     )
                 }
 
-                if editMode {
-                    screenRegionChips(
-                        geoSize: geo.size, isPortrait: isPortrait, gameRect: gameRect)
+                if let screenContext {
+                    screenRegionChips(context: screenContext)
                 }
 
                 if controlsVisible {
                     PlayerToolbar(
                         isPortrait: isPortrait,
-                        safeArea: safeArea,
-                        geoSize: geo.size,
+                        center: toolbarCenter,
                         controlsHidden: controlsHidden,
                         keyboardShown: keyboardMode,
                         toolbarOpacity: toolbarOpacity,
@@ -179,16 +142,12 @@ struct PlayerView: View {
                         safeArea: controlsSafeArea,
                         geoSize: geo.size,
                         layout: layout,
-                        showAddSheet: $showAddSheet,
-                        showResetConfirm: $showResetConfirm,
+                        editDialog: $editDialog,
                         onDone: { toggleEditMode() }
                     )
-                    // Fade while the screen gizmo drags, so the
-                    // toolbar never hides the region or its handle
-                    // mid-drag. VISUAL only: hit-testing stays on,
-                    // because any state that left the drag flag
-                    // set (a system-cancelled gesture) would
-                    // otherwise silence the header's buttons.
+                    // Fade only. Hit testing stays on: a gesture that
+                    // the system cancels can leave the drag flag set,
+                    // and the buttons would then stop working.
                     .opacity(editMode ? (layout.screenDragActive ? 0.15 : 1) : 0)
                     .animation(.easeInOut(duration: 0.15), value: layout.screenDragActive)
                     .allowsHitTesting(editMode)
@@ -226,14 +185,10 @@ struct PlayerView: View {
                 // the way down. A mounted field resigns cleanly.
                 KeyboardFieldRepresentable(
                     isActive: keyboardMode,
-                    excludedScancodes: { accessoryExcludedScancodes },
-                    onActivate: {
-                        AppWindow.setAllowKeyWindow(true)
-                    }
+                    excludedScancodes: { accessoryExcludedScancodes }
                 )
                 .frame(width: 0, height: 0)
 
-                // Fades out when the engine swaps its first post-resume frame
                 if let snapshot = resumeSnapshot {
                     PauseSnapshotOverlay(
                         snapshot: snapshot,
@@ -242,10 +197,8 @@ struct PlayerView: View {
                     )
                 }
 
-                // Tell the player once that the game's own layout
-                // replaced their default profile.
                 if layout.gameLayoutNoticePending && !editMode && !layout.importOfferPending {
-                    noticeCapsule(hitRegionKey: "gameLayoutNotice", safeArea: safeArea) {
+                    noticeCapsule(safeArea: safeArea) {
                         Text("This game's own control layout is now active.")
                             .font(.footnote)
                             .foregroundStyle(.white)
@@ -257,10 +210,8 @@ struct PlayerView: View {
                     }
                 }
 
-                // A migrated-then-changed controls file in the game
-                // folder waits for the user's import decision.
                 if layout.importOfferPending && !editMode {
-                    noticeCapsule(hitRegionKey: "importOffer", safeArea: safeArea) {
+                    noticeCapsule(safeArea: safeArea) {
                         Text("This game includes its own control layout.")
                             .font(.footnote)
                             .foregroundStyle(.white)
@@ -277,59 +228,30 @@ struct PlayerView: View {
                     }
                 }
             }
-            // Push device orientation into ControlsLayout so it can
-            // swap active/inactive per-orientation snapshots.
-            // `initial: true` ensures the layout knows the orientation
-            // as soon as PlayerView appears, not only on rotation.
             .onChange(of: isPortrait, initial: true) { _, nowPortrait in
                 layout.setOrientation(nowPortrait ? .portrait : .landscape)
-                // Rotation re-sends the region for the new
-                // orientation. The engine draws automatic placement
-                // until this call lands (orientation-tag guard).
-                // Mid-edit-session, the new orientation's pending
-                // edit outranks the resolved state. With nothing
-                // pending, leaving preview mode re-applies from disk
-                // in both the preview and the normal case.
-                if let pending = layout.pendingScreenEdit {
-                    ScreenRegionApplier.preview(
-                        pending.placement.flatMap {
-                            ScreenRegionApplier.region(for: $0, isPortrait: nowPortrait)
-                        },
-                        isPortrait: nowPortrait)
-                } else {
-                    ScreenRegionApplier.endPreview()
-                }
+                // Rotation must send the region again. Until it
+                // arrives, the engine draws automatic placement.
+                layout.screenRegion.show(pending: layout.pendingScreenEdit, isPortrait: nowPortrait)
             }
             // `initial: true`: the engine usually publishes gameRect
-            // during the loading transition, BEFORE PlayerView mounts.
-            // Without an initial firing we miss the one real publish,
-            // and translated layouts keep their estimate-based bands.
+            // before PlayerView appears. Without it, the one real value
+            // is lost, and translated layouts keep their estimated bands.
             .onChange(of: engineState.gameRect, initial: true) { _, rect in
                 layout.refreshForGameGeometryChange()
-                // Presets compute their rect from the game's aspect.
-                // The published picture rect carries it.
-                ScreenRegionApplier.gameRectChanged(rect)
+                layout.screenRegion.gameRectChanged(rect)
             }
-            .onChange(of: toolbarKeepout, initial: true) { _, keepout in
-                layout.toolbarKeepout = keepout
+            .onChange(of: sensorStripKeepout, initial: true) { _, keepout in
+                layout.sensorStripKeepout = keepout
             }
             .onChange(of: editMode) { _, editing in
-                // Entering with the preference already on applies the
-                // same rounding the toolbar toggle would. Exiting
-                // keeps what is on screen: endEditSession drops the
-                // restore record, so Done commits the snap.
-                guard editing, snapToGrid else { return }
-                layout.applyGridSnap(
-                    geoSize: geo.size,
-                    safeArea: controlsSafeArea,
-                    controlsMinY: controlsMinY)
+                layout.editModeChanged(
+                    editing,
+                    in: ControlsLayout.EditGeometry(
+                        geoSize: geo.size, safeArea: controlsSafeArea, controlsMinY: controlsMinY))
             }
         }
         .ignoresSafeArea()
-        // Opt out of SwiftUI keyboard avoidance: the soft keyboard
-        // must overlay the game/controls, never compress or shift
-        // them. Distinct from `.ignoresSafeArea()` above, which only
-        // covers the container regions.
         .ignoresSafeArea(.keyboard)
         .background(Color.clear)
         .onAppear {
@@ -342,12 +264,7 @@ struct PlayerView: View {
                 // keyboard: no binding stands between the player and
                 // the letters they type.
                 input.textInputActive = active
-                if active != keyboardMode {
-                    keyboardMode = active
-                    if active {
-                        AppWindow.setAllowKeyWindow(true)
-                    }
-                }
+                keyboardMode = active
             }
 
             // The registry must be wired BEFORE controller input
@@ -356,7 +273,7 @@ struct PlayerView: View {
             actions.pauseMenu = { appState.togglePauseMenu() }
             actions.toggleTouchControls = { toggleHideControls() }
             actions.log = { line in
-                layout.currentContainer?.appendLogLine(line, fileName: "controls.json.log")
+                layout.currentContainer?.appendLogLine(line, fileName: UserControlsFile.logFileName)
             }
             input.actionHandler = { id, pressed in
                 actions.handle(id, pressed: pressed)
@@ -372,8 +289,8 @@ struct PlayerView: View {
             // Fires on first launch AND on resume from pause ->
             // library -> resume (engine state is process-static).
             actions.runtime.bind(container: layout.currentContainer)
-            input.applyBindings(container: layout.currentContainer)
-            input.start(overlayHidden: $controlsHidden, editMode: $editMode)
+            applyBindings()
+            input.start(overlayHidden: $controlsHidden, editMode: { layout.editSessionActive })
 
             // Pick up the pause snapshot and hold it until the engine
             // signals its first frame. Hide controls during transition.
@@ -394,16 +311,23 @@ struct PlayerView: View {
             }
         }
         .onDisappear {
+            // A pause from edit mode removes this view. The next
+            // player view starts outside edit mode, so the session
+            // ends here, the same as Done.
+            if editMode {
+                try? layout.save()
+                layout.endEditSession()
+            }
             ChromeHitRegions.removeAll()
             input.stop()
             EngineSessionCoordinator.shared.clearTextInputModeHandler()
         }
         .onChange(of: layout.currentContainer) { _, container in
-            input.applyBindings(container: container)
+            applyBindings()
             actions.runtime.bind(container: container)
         }
         .onReceive(NotificationCenter.default.publisher(for: .bindingsDidChange)) { _ in
-            input.applyBindings(container: layout.currentContainer)
+            applyBindings()
         }
         .onReceive(NotificationCenter.default.publisher(for: .gameAreaTouchBegan)) { _ in
             resetToolbarIdleTimer()
@@ -413,7 +337,7 @@ struct PlayerView: View {
                 startSnapshotFade()
             }
         }
-        .sheet(isPresented: $showMoreSheet) {
+        .sheet(isPresented: $showMoreSheet, onDismiss: runSheetAction) {
             PlayerMoreSheet(
                 gameTitle: appState.selectedGame?.title,
                 showDebugOverlay: $showDebugOverlay,
@@ -423,14 +347,15 @@ struct PlayerView: View {
                 ),
                 fastForwardMultiplier: actions.runtime.fastForwardMultiplier,
                 showControllerRemap: input.hasSeenPhysicalInput,
-                core: EngineSessionCoordinator.shared.openedCore,
-                onControllerRemap: { showControllerRemap = true },
-                onLayoutProfile: { showLayoutProfilePicker = true },
-                onPause: { appState.requestPause() },
-                onQuit: { appState.quitGame() },
-                onCheats: { actions.handle(EmpoActionCatalog.toggleCheats, pressed: true) }
+                onControllerRemap: { sheetAction = .controllerRemap },
+                onLayoutProfile: { sheetAction = .layoutProfile },
+                onPause: { sheetAction = .pause },
+                onQuit: appState.canQuitGame ? { sheetAction = .quit } : nil,
+                onCheats: actions.isAvailable(EmpoActionCatalog.toggleCheats)
+                    ? { actions.handle(EmpoActionCatalog.toggleCheats, pressed: true) } : nil
             )
         }
+        .layoutSaveFailureAlert(isPresented: $showLayoutSaveFailure)
         .sheet(isPresented: $showLayoutProfilePicker) {
             if let container = layout.currentContainer {
                 LayoutProfilePickerSheet(container: container)
@@ -446,126 +371,75 @@ struct PlayerView: View {
             )
         }
         .onChange(of: showMoreSheet) { _, opened in
-            // The user can pause -> library -> Game Settings ->
-            // resume mid-session, so refresh the per-game multiplier
-            // every time the Menu sheet opens. If they bumped fast
-            // forward from 2x to 4x while paused, the toggle should
-            // pick that up. If they turned it off entirely, the row
-            // should disappear.
+            // The user can change the multiplier in Game Settings
+            // during a pause. Read it again each time the sheet opens.
             guard opened else { return }
-            actions.runtime.reconcile()
+            actions.runtime.reconcile(container: layout.currentContainer)
         }
         .tint(nil)
         .controlsEditDialogs(
             layout: layout,
             actions: actions,
-            showAddSheet: $showAddSheet,
-            showResetConfirm: $showResetConfirm,
-            editingButton: $editingButton,
-            editingActionButton: $editingActionButton,
-            editingDPad: $editingDPad
+            dialog: $editDialog
         )
     }
 
-    /// Shared inputs for the gizmo surfaces and the chips: both
-    /// render from the same effective rect, so the chips follow the
-    /// outline mid-drag.
     private struct ScreenGizmoContext {
-        /// The placement in force (preset or custom). A nil value
-        /// means the engine picks the placement.
+        var canvas: ScreenCanvas
+        var gameRect: CGRect
+        /// nil: the engine picks the placement.
         var effectivePlacement: ScreenPlacement?
-        /// The placement as this device's rect (a preset computes
-        /// per device).
         var effectiveRegion: ScreenRegion?
         var baseRect: CGRect
         var allowedRect: CGRect
         var autoRegion: ScreenRegion
-        var overlayOn: Bool
+        var overlayOn: Bool { effectivePlacement?.overlay ?? false }
     }
 
-    private func screenGizmoContext(
-        geoSize: CGSize, isPortrait: Bool, gameRect: CGRect
-    ) -> ScreenGizmoContext {
-        let resolved = ScreenRegionApplier.resolvedPlacement(isPortrait: isPortrait)
-        let effectivePlacement = layout.effectiveScreenPlacement(stored: resolved)
-        let effectiveRegion = effectivePlacement.flatMap {
-            ScreenRegionApplier.region(for: $0, isPortrait: isPortrait)
-        }
-        // The outline draws the CLAMPED region, the same rect the
-        // applier sends, so it can never disagree with the picture
-        // when stored fractions fall outside this device's safe
-        // area.
-        let baseRect: CGRect = {
-            if let region = effectiveRegion {
-                let clamped = ScreenRegionApplier.clampToSafeArea(region)
-                return CGRect(
-                    x: clamped.x * geoSize.width,
-                    y: clamped.y * geoSize.height,
-                    width: clamped.w * geoSize.width,
-                    height: clamped.h * geoSize.height)
-            }
-            return gameRect.isEmpty
-                ? CGRect(origin: .zero, size: geoSize)
-                : gameRect
-        }()
+    private func screenGizmoContext(canvas: ScreenCanvas, gameRect: CGRect) -> ScreenGizmoContext {
+        let effectivePlacement = layout.effectiveScreenPlacement(
+            stored: layout.screenRegion.resolvedPlacement(isPortrait: canvas.isPortrait))
+        let effectiveRegion = effectivePlacement.flatMap { layout.screenRegion.region(for: $0) }
+        // Stored fractions can be outside the safe area of this device,
+        // and the applier clamps them before it sends them.
+        let baseRect =
+            effectiveRegion.map { canvas.rect(for: canvas.clampedToSafeArea($0)) }
+            ?? (gameRect.isEmpty ? CGRect(origin: .zero, size: canvas.size) : gameRect)
         return ScreenGizmoContext(
+            canvas: canvas,
+            gameRect: gameRect,
             effectivePlacement: effectivePlacement,
             effectiveRegion: effectiveRegion,
             baseRect: baseRect,
             allowedRect: layout.screenDragAllowedRect(
-                isPortrait: isPortrait, overlayOn: effectivePlacement?.overlay ?? false,
-                canvasSize: geoSize, safeArea: AppWindow.currentSafeArea),
-            autoRegion: ScreenRegion(
-                x: gameRect.minX / max(geoSize.width, 1),
-                y: gameRect.minY / max(geoSize.height, 1),
-                w: gameRect.width / max(geoSize.width, 1),
-                h: gameRect.height / max(geoSize.height, 1)),
-            overlayOn: effectivePlacement?.overlay ?? false)
+                in: canvas, overlayOn: effectivePlacement?.overlay ?? false),
+            autoRegion: canvas.region(for: gameRect))
     }
 
-    /// Edit-mode screen gizmo surfaces, below the controls overlay
-    /// so control drags win over the region surface. Base rect
-    /// precedence: this session's pending edit, then the resolved
-    /// region, then the engine's automatic placement (the live
-    /// gameRect).
     @ViewBuilder
-    private func screenRegionGizmo(
-        geoSize: CGSize, isPortrait: Bool, gameRect: CGRect
-    ) -> some View {
-        let context = screenGizmoContext(
-            geoSize: geoSize, isPortrait: isPortrait, gameRect: gameRect)
+    private func screenRegionGizmo(context: ScreenGizmoContext) -> some View {
+        let isPortrait = context.canvas.isPortrait
         GeometryReader { _ in
             ScreenRegionGizmo(
-                canvasSize: geoSize,
+                canvas: context.canvas,
                 allowedRect: context.allowedRect,
                 baseRect: context.baseRect,
                 onDragBegan: {
-                    // Snap-to-auto only when the orientation had no
-                    // entry: with an entry active, the engine
-                    // publishes region-derived rects and there is no
-                    // live auto rect to compare against.
+                    // Snap-to-auto needs a live automatic rect. With a
+                    // region active, the engine publishes the region rect.
                     layout.beginScreenDrag(
-                        autoReference: context.effectivePlacement == nil && !gameRect.isEmpty
+                        autoReference: context.effectivePlacement == nil && !context.gameRect.isEmpty
                             ? context.autoRegion : nil)
                 },
                 onDragChanged: { region in
                     layout.screenDragChanged(region)
-                    ScreenRegionApplier.preview(region, isPortrait: isPortrait)
+                    layout.screenRegion.preview(region, isPortrait: isPortrait)
                 },
                 onDragEnded: { region in
                     layout.endScreenDrag(region: region)
-                    if let pending = layout.pendingScreenEdit {
-                        ScreenRegionApplier.preview(
-                            pending.placement.flatMap {
-                                ScreenRegionApplier.region(for: $0, isPortrait: isPortrait)
-                            },
-                            isPortrait: isPortrait)
-                    } else {
-                        // Snapped back with no prior edit: nothing is
-                        // pending, so leave preview mode. A stuck
-                        // preview would freeze the applier.
-                        ScreenRegionApplier.endPreview()
-                    }
+                    // With no pending edit, this ends the preview. A
+                    // preview that does not end freezes the applier.
+                    layout.screenRegion.show(pending: layout.pendingScreenEdit, isPortrait: isPortrait)
                 },
                 overlayOn: context.overlayOn
             )
@@ -573,34 +447,22 @@ struct PlayerView: View {
         .ignoresSafeArea()
     }
 
-    /// The chips copy ABOVE the controls: in overlay mode the
-    /// controls sit on the game area and would otherwise bury the
-    /// Screen / Reset / overlay chips.
+    /// Drawn above the controls. In overlay mode, the controls cover
+    /// the game area and would hide the chips.
     @ViewBuilder
-    private func screenRegionChips(
-        geoSize: CGSize, isPortrait: Bool, gameRect: CGRect
-    ) -> some View {
-        let context = screenGizmoContext(
-            geoSize: geoSize, isPortrait: isPortrait, gameRect: gameRect)
+    private func screenRegionChips(context: ScreenGizmoContext) -> some View {
+        let isPortrait = context.canvas.isPortrait
+        let gameRect = context.gameRect
         GeometryReader { _ in
             ScreenRegionChips(
                 rect: context.baseRect,
                 showsReset: context.effectivePlacement != nil,
                 onReset: {
-                    withAnimation(.easeInOut(duration: 0.25)) {
+                    withAnimation(ScreenRegionGizmo.moveAnimation) {
                         layout.resetScreenEdit()
                     }
-                    if let current = context.effectiveRegion,
-                        let target = estimatedAutoRegion(
-                            geoSize: geoSize, isPortrait: isPortrait,
-                            aspect: gameRect.height > 0
-                                ? gameRect.width / gameRect.height : 4.0 / 3.0)
-                    {
-                        ScreenRegionApplier.animateResetToAuto(
-                            from: current, toEstimate: target, isPortrait: isPortrait)
-                    } else {
-                        ScreenRegionApplier.preview(nil, isPortrait: isPortrait)
-                    }
+                    layout.screenRegion.resetToAuto(
+                        from: context.effectiveRegion, in: context.canvas, isPortrait: isPortrait)
                 },
                 overlayOn: context.overlayOn,
                 onToggleOverlay: {
@@ -608,82 +470,74 @@ struct PlayerView: View {
                         let region = context.effectiveRegion
                             ?? (gameRect.isEmpty ? nil : context.autoRegion)
                     else { return }
-                    let toggled = layout.overlayToggledRegion(
-                        from: region, isPortrait: isPortrait, canvasSize: geoSize,
-                        safeArea: AppWindow.currentSafeArea)
-                    withAnimation(.easeInOut(duration: 0.25)) {
+                    let toggled = layout.overlayToggledRegion(from: region, in: context.canvas)
+                    withAnimation(ScreenRegionGizmo.moveAnimation) {
                         layout.recordScreenEdit(.region(toggled))
                     }
-                    ScreenRegionApplier.preview(toggled, isPortrait: isPortrait)
+                    layout.screenRegion.preview(toggled, isPortrait: isPortrait)
                 }
             )
         }
         .ignoresSafeArea()
     }
 
-    /// Where the engine's automatic placement will land, in window
-    /// fractions. The reset animation's target. Mirrors the fit in
-    /// `recalculateScreenSize`: aspect-fit inside the safe-area
-    /// container, vertical alignment in portrait, centered in
-    /// landscape (top/bottom insets ignored there).
-    private func estimatedAutoRegion(
-        geoSize: CGSize, isPortrait: Bool, aspect: CGFloat
-    ) -> ScreenRegion? {
-        // Automatic placement follows the game's engine alignment.
-        // The shared preset calculator holds the ONE copy of the
-        // fit-and-align math.
-        let preset: ScreenPreset
-        switch gamecore_getVerticalAlignment() {
-        case GAMECORE_VALIGN_TOP: preset = .top
-        case GAMECORE_VALIGN_CENTER: preset = .center
-        default: preset = .topCenter
-        }
-        let safeArea = AppWindow.currentSafeArea
-        return ScreenPresetPlacement.region(
-            preset: preset,
-            canvasWidth: Double(geoSize.width),
-            canvasHeight: Double(geoSize.height),
-            safeTop: Double(safeArea.top),
-            safeBottom: Double(safeArea.bottom),
-            safeLeading: Double(safeArea.leading),
-            safeTrailing: Double(safeArea.trailing),
-            isPortrait: isPortrait,
-            aspect: Double(aspect))
+    private var editZoneCaptionText: LocalizedStringResource? {
+        Self.editZoneCaption(
+            manifest: layout.manifestRejection, profile: layout.profileRejection,
+            pinFellThrough: layout.pinFellThrough)
     }
 
-    /// The first edit-mode notice worth showing, most severe first.
-    private var editZoneCaptionText: LocalizedStringResource? {
-        if layout.manifestRejectionErrorCount > 0 {
-            return
-                "This game's controls file has \(layout.manifestRejectionErrorCount) errors, so Empo used its own layout."
+    static func editZoneCaption(
+        manifest: ControlsRejection?, profile: ControlsRejection?, pinFellThrough: Bool
+    ) -> LocalizedStringResource? {
+        switch manifest {
+        case .newerVersion:
+            return "This game's controls need a newer version of XP Pocket. Update XP Pocket to use them."
+        case .errors(let count):
+            return "This game's controls file has \(count) errors, so XP Pocket used its own layout."
+        case nil:
+            break
         }
-        if layout.profileRejectionErrorCount > 0 {
-            return
-                "Your layout profile has \(layout.profileRejectionErrorCount) errors, so XP Pocket used its own layout."
+        switch profile {
+        case .newerVersion:
+            return "This layout profile needs a newer version of XP Pocket. Update XP Pocket to use it."
+        case .errors(let count):
+            return "Your layout profile has \(count) errors, so XP Pocket used its own layout."
+        case nil:
+            break
         }
-        if layout.pinFellThrough {
+        if pinFellThrough {
             return "That layout profile is gone, so this game is using the XP Pocket default."
         }
         return nil
     }
 
-    /// The bottom caption chrome every edit-mode notice shares.
-    private func editZoneCaption(_ text: LocalizedStringResource, safeArea: EdgeInsets) -> some View {
-        Text(text)
+    private func editZoneCaption(
+        _ text: LocalizedStringResource, controlsMinY: CGFloat, safeArea: EdgeInsets,
+        geoSize: CGSize
+    ) -> some View {
+        let bounds = ControlsZone.bounds(
+            controlsMinY: controlsMinY, safeArea: safeArea, geoSize: geoSize)
+        let cornerInset = ControlsZone.cornerRadii(safeArea: safeArea).bottom
+        return Text(text)
             .font(.caption)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.white.opacity(0.85))
             .multilineTextAlignment(.center)
-            .padding(.horizontal, Spacing.lg)
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.xs)
+            .glass(.regular, in: .capsule)
+            .darkGlass()
+            .frame(width: max(bounds.width - 2 * cornerInset, 0))
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-            .padding(.bottom, safeArea.bottom + Spacing.md)
+            .padding(.bottom, geoSize.height - bounds.maxY + Spacing.md)
+            .offset(x: bounds.midX - geoSize.width / 2)
             .allowsHitTesting(false)
     }
 
-    /// The bottom notice pill both play-time banners share. Without
-    /// a hit region, taps inside gameRect route to the engine
-    /// instead of the buttons.
+    /// Without a hit region, taps inside gameRect go to the engine,
+    /// not to the buttons.
     private func noticeCapsule(
-        hitRegionKey: String, safeArea: EdgeInsets,
+        safeArea: EdgeInsets,
         @ViewBuilder content: () -> some View
     ) -> some View {
         VStack {
@@ -695,7 +549,7 @@ struct PlayerView: View {
             .padding(.vertical, Spacing.md)
             .background(Color.black.opacity(Scrim.heavy))
             .clipShape(Capsule())
-            .chromeHitRegion(hitRegionKey)
+            .chromeHitRegion()
             .padding(.bottom, safeArea.bottom + Spacing.md)
         }
     }
@@ -732,26 +586,55 @@ struct PlayerView: View {
         .transition(.opacity)
     }
 
+    private enum SheetAction {
+        case pause, quit, controllerRemap, layoutProfile
+    }
+
+    private func applyBindings() {
+        input.applyBindings(container: layout.currentContainer, manifest: layout.activeManifest?.bindings)
+    }
+
+    /// The pause and the quit remove this view. When they run while
+    /// the More sheet is still on screen, SwiftUI can keep the view
+    /// after the game ended. SwiftUI shows one sheet at a time, so the
+    /// next sheet also waits until the More sheet is gone.
+    private func runSheetAction() {
+        let action = sheetAction
+        sheetAction = nil
+        switch action {
+        case .pause: appState.requestPause()
+        case .quit: appState.quitGame()
+        case .controllerRemap: showControllerRemap = true
+        case .layoutProfile: showLayoutProfilePicker = true
+        case nil: break
+        }
+    }
+
     private func toggleEditMode() {
         let entering = !editMode
         if entering && controlsHidden {
             controlsHidden = false
             input.noteManualOverlayToggle()
         }
-        withAnimation(Motion.snappy) {
-            editMode.toggle()
-        }
         if keyboardMode {
             toggleKeyboard()
         }
-        if editMode {
-            layout.beginEditSession()
+        if entering {
+            withAnimation(Motion.snappy) {
+                layout.beginEditSession()
+            }
         } else {
-            // Save BEFORE ending the session: the ambient auto-create
-            // branch only fires inside an edit session, and sheet-only
-            // edits commit exactly here.
-            layout.save()
-            layout.endEditSession()
+            // Save before `endEditSession()`. The ambient auto-create
+            // in `save()` runs only during an edit session.
+            do {
+                try layout.save()
+            } catch {
+                showLayoutSaveFailure = true
+                return
+            }
+            withAnimation(Motion.snappy) {
+                layout.endEditSession()
+            }
             resetToolbarIdleTimer()
         }
     }
@@ -764,16 +647,10 @@ struct PlayerView: View {
         resetToolbarIdleTimer()
     }
 
-    /// Keys the accessory bar must not repeat: everything the
-    /// visible on-screen controls cover, plus everything a connected
-    /// controller can press through its merged bindings.
     private var accessoryExcludedScancodes: Set<Int32> {
         var covered = Set<Int32>()
         if !controlsHidden {
-            covered.formUnion([
-                Int32(GAMECORE_SCANCODE_UP), Int32(GAMECORE_SCANCODE_DOWN),
-                Int32(GAMECORE_SCANCODE_LEFT), Int32(GAMECORE_SCANCODE_RIGHT),
-            ])
+            covered.formUnion(ControlDirection.allCases.map(\.scancode))
             for button in layout.buttons {
                 covered.insert(button.scancode)
             }
@@ -786,10 +663,8 @@ struct PlayerView: View {
 
     private func toggleKeyboard() {
         keyboardMode.toggle()
-        // The key-window handoff to SDL happens inside
-        // `KeyboardFieldRepresentable.updateUIView`, after the field
-        // resigns. A handoff before the resign leaves the input
-        // session open with no key window behind it.
+        // `KeyboardFieldRepresentable.updateUIView` gives the key
+        // window back to SDL after the field resigns.
     }
 
     private func resetToolbarIdleTimer() {
@@ -811,20 +686,15 @@ struct PlayerView: View {
     }
 
     private func startSnapshotFade() {
-        // Deliberately do NOT reset the toolbar idle timer here. The
-        // toolbar should stay dimmed when the game first becomes
-        // playable - users don't need the buttons screaming for
-        // attention the moment the snapshot lifts. They'll brighten
-        // in as soon as the user taps anywhere.
+        let fading = resumeSnapshot
         withAnimation(Motion.standard) {
             snapshotOpacity = 0
             controlsVisible = true
         } completion: {
-            // We tie this to the fade completion instead of a
-            // wall-clock asyncAfter so the snapshot unmounts exactly
-            // when the user no longer sees it, even if the spring
-            // duration changes.
             resumeSnapshot = nil
+            // A pause during the fade gives a new snapshot, which
+            // the next player view shows.
+            guard let fading, pauseManager.pauseSnapshot === fading else { return }
             pauseManager.pauseSnapshot = nil
             pauseManager.snapshotCanFade = false
         }

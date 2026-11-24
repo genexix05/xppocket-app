@@ -48,6 +48,25 @@ extension Color {
     }
 }
 
+extension Color {
+    fileprivate init(light: (CGFloat, CGFloat, CGFloat), dark: (CGFloat, CGFloat, CGFloat)) {
+        #if os(iOS)
+        self.init(
+            uiColor: UIColor { traits in
+                let rgb = traits.userInterfaceStyle == .dark ? dark : light
+                return UIColor(red: rgb.0, green: rgb.1, blue: rgb.2, alpha: 1.0)
+            })
+        #else
+        self.init(
+            nsColor: NSColor(name: nil) { appearance in
+                let isDark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+                let rgb = isDark ? dark : light
+                return NSColor(srgbRed: rgb.0, green: rgb.1, blue: rgb.2, alpha: 1.0)
+            })
+        #endif
+    }
+}
+
 extension ShapeStyle where Self == Color {
     static var brand: Color { .brand }
     static var surface: Color { .surface }
@@ -59,25 +78,16 @@ extension ShapeStyle where Self == Color {
 
 extension Color {
     static let destructive = Color(
-        uiColor: UIColor { traits in
-            traits.userInterfaceStyle == .dark
-                ? UIColor(red: 1.00, green: 0.38, blue: 0.35, alpha: 1.0)
-                : UIColor(red: 0.90, green: 0.24, blue: 0.20, alpha: 1.0)
-        })
+        light: (0.90, 0.24, 0.20),
+        dark: (1.00, 0.38, 0.35))
 
     static let success = Color(
-        uiColor: UIColor { traits in
-            traits.userInterfaceStyle == .dark
-                ? UIColor(red: 0.35, green: 0.90, blue: 0.50, alpha: 1.0)
-                : UIColor(red: 0.20, green: 0.72, blue: 0.35, alpha: 1.0)
-        })
+        light: (0.20, 0.72, 0.35),
+        dark: (0.35, 0.90, 0.50))
 
     static let warning = Color(
-        uiColor: UIColor { traits in
-            traits.userInterfaceStyle == .dark
-                ? UIColor(red: 1.00, green: 0.82, blue: 0.35, alpha: 1.0)
-                : UIColor(red: 0.90, green: 0.70, blue: 0.10, alpha: 1.0)
-        })
+        light: (0.90, 0.70, 0.10),
+        dark: (1.00, 0.82, 0.35))
 }
 
 //
@@ -114,7 +124,7 @@ extension View {
     /// Two-layer shadow for library artwork tiles and hero
     /// cards. The tight first layer defines the edge against the
     /// surface. The diffuse second layer gives ambient elevation.
-    /// Apply it after `matchedTransitionSource` in the modifier
+    /// Apply it after `zoomTransitionSource` in the modifier
     /// chain. The transition source clips its subtree to the
     /// configured snapshot bounds, and that clip would crop a
     /// shadow drawn earlier in the chain.
@@ -148,10 +158,10 @@ extension View {
         shadow(color: .black.opacity(0.7), radius: 3, x: 0, y: 1)
     }
 
-    /// Pin the Liquid Glass material to its dark variant. The player
-    /// controls (toolbar, D-pad, action buttons, debug overlay) use
-    /// it so the glass tone stays consistent regardless of the
-    /// system color scheme or the backdrop brightness.
+    /// Pin the glass, or the material before iOS 26, to its dark
+    /// variant. The player controls (toolbar, D-pad, action buttons,
+    /// debug overlay) use it so the tone stays consistent regardless
+    /// of the system color scheme or the backdrop brightness.
     func darkGlass() -> some View {
         environment(\.colorScheme, .dark)
     }

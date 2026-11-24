@@ -1,0 +1,53 @@
+import Foundation
+
+/// The capability flags of SPEC 8.3.
+public struct TargetCapabilities: Equatable, Sendable {
+
+    /// Whether this target answers a space query. The add-time
+    /// permission check of 8.7 sets it per target, not per provider,
+    /// because WebDAV answers only on some servers, per 9.7.
+    public var canQueryQuota: Bool
+
+    /// Whether the target can hand a transfer to the system. 8.9
+    /// covers what a target that cannot does.
+    public var supportsBackgroundTransfer: Bool
+
+    /// The largest single file the target takes, or `nil` where the
+    /// server sets the limit and states no number.
+    public var maxFileSize: Int64?
+
+    /// Whether `list` gives each object's real size. False for iCloud
+    /// Drive: a file that is not on the device has the size of its
+    /// placeholder until the metadata query reports the real one.
+    public var listReportsSize: Bool
+
+    public init(
+        canQueryQuota: Bool = false,
+        supportsBackgroundTransfer: Bool = true,
+        maxFileSize: Int64? = nil,
+        listReportsSize: Bool = true
+    ) {
+        self.canQueryQuota = canQueryQuota
+        self.supportsBackgroundTransfer = supportsBackgroundTransfer
+        self.maxFileSize = maxFileSize
+        self.listReportsSize = listReportsSize
+    }
+
+    /// What the target screen shows in place of a usage bar, per
+    /// 13.6. A row that cannot be filled is absent, and a missing
+    /// usage bar would read as a loading failure, so a target that
+    /// answers no space query says why.
+    public static let noSpaceQueryLine = screenText("This service doesn't show how much free space is left.")
+
+    /// The error a file of this size earns, or `nil` when it fits.
+    ///
+    /// Every provider calls this before it moves a byte. A file over
+    /// the limit is a permanent refusal, so it is `rejected` and not
+    /// `outOfSpace`. The prune ladder of 5.14 frees space, and no
+    /// amount of space makes a too-large file fit.
+    public func rejection(forFileOfSize size: Int64) -> BackupProviderError? {
+        guard let maxFileSize, size > maxFileSize else { return nil }
+        return .rejected(
+            message: "the file is \(size) bytes and this location takes at most \(maxFileSize)")
+    }
+}

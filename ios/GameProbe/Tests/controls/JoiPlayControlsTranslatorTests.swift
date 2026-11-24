@@ -34,7 +34,8 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
 
     func testDefaultsProduceEightButtonsInTableOrder() throws {
         let json = #"{"btnScale": 100}"#
-        let translation = JoiPlayControlsTranslator.translate(data: json.data(using: .utf8)!, metrics: metrics)
+        let translation = JoiPlayControlsTranslator.translate(
+            data: json.data(using: .utf8)!, metrics: metrics)
 
         XCTAssertNotNil(translation.manifest)
         XCTAssertNil(translation.manifest?.bindings)
@@ -69,7 +70,8 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
     func testNonOverlapAtScaleExtremes() {
         for scale in [100, 10, 300] {
             let json = #"{"btnScale": \#(scale)}"#
-            let translation = JoiPlayControlsTranslator.translate(data: json.data(using: .utf8)!, metrics: metrics)
+            let translation = JoiPlayControlsTranslator.translate(
+                data: json.data(using: .utf8)!, metrics: metrics)
             guard let touch = translation.manifest?.touch else {
                 XCTFail("expected manifest for scale \(scale)")
                 continue
@@ -99,23 +101,26 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
         )
         XCTAssertEqual(buttons[0].opacity, 0.8)
         assertNonOverlap(buttons: buttons, isLandscape: false, scale: 100)
-        assertNonOverlap(buttons: translation.manifest!.touch!.landscape!.buttons!, isLandscape: true, scale: 100)
+        assertNonOverlap(
+            buttons: translation.manifest!.touch!.landscape!.buttons!, isLandscape: true, scale: 100)
     }
 
     // MARK: - Keycode mapping
 
     func testMappedCKeyCodeEmitsEnter() {
         let json = #"{"cKeyCode": 66}"#
-        let translation = JoiPlayControlsTranslator.translate(data: json.data(using: .utf8)!)
+        let translation = JoiPlayControlsTranslator.translate(
+            data: json.data(using: .utf8)!, metrics: .reference)
         XCTAssertEqual(translation.manifest?.touch?.portrait?.buttons?.first?.key, "Enter")
         XCTAssertTrue(translation.notes.isEmpty)
     }
 
     func testUnmappedCKeyCodeFallsBackWithNote() {
         let json = #"{"cKeyCode": 999}"#
-        let translation = JoiPlayControlsTranslator.translate(data: json.data(using: .utf8)!)
+        let translation = JoiPlayControlsTranslator.translate(
+            data: json.data(using: .utf8)!, metrics: .reference)
         XCTAssertEqual(translation.manifest?.touch?.portrait?.buttons?.first?.key, "Enter")
-        XCTAssertTrue(translation.notes.contains { $0.contains("cKeyCode") && $0.contains("999") })
+        XCTAssertEqual(translation.notes.filter { $0.contains("cKeyCode") && $0.contains("999") }.count, 1)
     }
 
     // MARK: - Clamps
@@ -133,16 +138,21 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
         XCTAssertNotNil(cSize)
         XCTAssertGreaterThanOrEqual(cSize ?? 0, 40)
         XCTAssertLessThanOrEqual(cSize ?? 0, 100)
-        let lowScaleButtons = JoiPlayControlsTranslator.translate(data: lowScale.data(using: .utf8)!).manifest?
-            .touch?.portrait?.buttons
+        let lowScaleButtons = JoiPlayControlsTranslator.translate(
+            data: lowScale.data(using: .utf8)!, metrics: .reference
+        )
+        .manifest?
+        .touch?.portrait?.buttons
         XCTAssertTrue(lowScaleButtons?.allSatisfy { $0.size == 40 } == true)
         XCTAssertEqual(
-            JoiPlayControlsTranslator.translate(data: lowOpacity.data(using: .utf8)!).manifest?
+            JoiPlayControlsTranslator.translate(data: lowOpacity.data(using: .utf8)!, metrics: .reference)
+                .manifest?
                 .touch?.portrait?.buttons?.first?.opacity,
             0.2
         )
         XCTAssertEqual(
-            JoiPlayControlsTranslator.translate(data: highOpacity.data(using: .utf8)!).manifest?
+            JoiPlayControlsTranslator.translate(data: highOpacity.data(using: .utf8)!, metrics: .reference)
+                .manifest?
                 .touch?.portrait?.buttons?.first?.opacity,
             1.0
         )
@@ -151,19 +161,22 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
     // MARK: - Claim rule
 
     func testEmptyObjectIgnored() {
-        let translation = JoiPlayControlsTranslator.translate(data: "{}".data(using: .utf8)!)
+        let translation = JoiPlayControlsTranslator.translate(
+            data: Data("{}".utf8), metrics: .reference)
         XCTAssertNil(translation.manifest)
         XCTAssertTrue(translation.notes.contains { $0.contains("no JoiPlay keys") })
     }
 
     func testUnknownKeysIgnored() {
-        let translation = JoiPlayControlsTranslator.translate(data: #"{"foo": 1}"#.data(using: .utf8)!)
+        let translation = JoiPlayControlsTranslator.translate(
+            data: Data(#"{"foo": 1}"#.utf8), metrics: .reference)
         XCTAssertNil(translation.manifest)
         XCTAssertTrue(translation.notes.contains { $0.contains("no JoiPlay keys") })
     }
 
     func testNonObjectJSONIgnored() {
-        let translation = JoiPlayControlsTranslator.translate(data: "[1,2]".data(using: .utf8)!)
+        let translation = JoiPlayControlsTranslator.translate(
+            data: Data("[1,2]".utf8), metrics: .reference)
         XCTAssertNil(translation.manifest)
         XCTAssertFalse(translation.notes.isEmpty)
     }
@@ -228,7 +241,7 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
         XCTAssertEqual(outcome?.result.location, .joiplay)
         XCTAssertEqual(outcome?.result.manifest?.touch?.portrait?.buttons?.count, 8)
-        XCTAssertNil(outcome?.note)
+        XCTAssertEqual(outcome?.notes, [])
     }
 
     func testLoadKirinWinsOverJoiplay() throws {
@@ -242,7 +255,7 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
 
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
         XCTAssertEqual(outcome?.result.location, .kirin)
-        XCTAssertEqual(outcome?.note, .joiplaySkippedBecauseOtherSourceExists)
+        XCTAssertEqual(outcome?.notes, [.joiplaySkippedBecauseOtherSourceExists])
     }
 
     func testLoadEmpoWinsOverJoiplay() throws {
@@ -251,45 +264,51 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
 
         let empoDir = dir.appendingPathComponent("empo")
         try FileManager.default.createDirectory(at: empoDir, withIntermediateDirectories: true)
-        try """
+        try Data(
+            """
             { "version": 1, "controller": { "a": "Enter" } }
-            """.data(using: .utf8)!.write(to: empoDir.appendingPathComponent("controls.json"))
+            """.utf8
+        ).write(to: empoDir.appendingPathComponent("controls.json"))
         try joiplayJSON().data(using: .utf8)!.write(
             to: dir.appendingPathComponent(JoiPlayControlsTranslator.fileName))
 
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
         XCTAssertEqual(outcome?.result.location, .empo)
-        XCTAssertEqual(outcome?.note, .joiplaySkippedBecauseOtherSourceExists)
+        XCTAssertEqual(outcome?.notes, [.joiplaySkippedBecauseOtherSourceExists])
     }
 
     func testLoadClaimedRootWinsOverJoiplay() throws {
         let dir = try makeTemporaryGameRoot()
         defer { try? FileManager.default.removeItem(at: dir) }
 
-        try """
+        try Data(
+            """
             { "version": 1, "controller": { "b": "Escape" } }
-            """.data(using: .utf8)!.write(to: dir.appendingPathComponent("controls.json"))
+            """.utf8
+        ).write(to: dir.appendingPathComponent("controls.json"))
         try joiplayJSON().data(using: .utf8)!.write(
             to: dir.appendingPathComponent(JoiPlayControlsTranslator.fileName))
 
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
         XCTAssertEqual(outcome?.result.location, .root)
-        XCTAssertEqual(outcome?.note, .joiplaySkippedBecauseOtherSourceExists)
+        XCTAssertEqual(outcome?.notes, [.joiplaySkippedBecauseOtherSourceExists])
     }
 
     func testLoadUnclaimedRootFallsThroughToJoiplay() throws {
         let dir = try makeTemporaryGameRoot()
         defer { try? FileManager.default.removeItem(at: dir) }
 
-        try """
+        try Data(
+            """
             { "touch": { "portrait": { "buttons": [] } } }
-            """.data(using: .utf8)!.write(to: dir.appendingPathComponent("controls.json"))
+            """.utf8
+        ).write(to: dir.appendingPathComponent("controls.json"))
         try joiplayJSON().data(using: .utf8)!.write(
             to: dir.appendingPathComponent(JoiPlayControlsTranslator.fileName))
 
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
         XCTAssertEqual(outcome?.result.location, .joiplay)
-        XCTAssertNil(outcome?.note)
+        XCTAssertEqual(outcome?.notes, [.rootUnclaimedNoVersion])
     }
 
     func testLoadRejectedEmpoDoesNotFallThroughToJoiplay() throws {
@@ -298,9 +317,11 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
 
         let empoDir = dir.appendingPathComponent("empo")
         try FileManager.default.createDirectory(at: empoDir, withIntermediateDirectories: true)
-        try """
+        try Data(
+            """
             { "version": true, "touch": { "portrait": { "buttons": [] } } }
-            """.data(using: .utf8)!.write(to: empoDir.appendingPathComponent("controls.json"))
+            """.utf8
+        ).write(to: empoDir.appendingPathComponent("controls.json"))
         try joiplayJSON().data(using: .utf8)!.write(
             to: dir.appendingPathComponent(JoiPlayControlsTranslator.fileName))
 
@@ -314,10 +335,12 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
         let dir = try makeTemporaryGameRoot()
         defer { try? FileManager.default.removeItem(at: dir) }
 
-        try """
+        try Data(
+            """
             { "version": 2, "rightGrid": { "slots": [29] } }
-            """.data(using: .utf8)!.write(
-                to: dir.appendingPathComponent(KirinControlsTranslator.fileName))
+            """.utf8
+        ).write(
+            to: dir.appendingPathComponent(KirinControlsTranslator.fileName))
         try joiplayJSON().data(using: .utf8)!.write(
             to: dir.appendingPathComponent(JoiPlayControlsTranslator.fileName))
 
@@ -332,9 +355,11 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
 
         let empoDir = dir.appendingPathComponent("empo")
         try FileManager.default.createDirectory(at: empoDir, withIntermediateDirectories: true)
-        try """
+        try Data(
+            """
             { "version": 1, "controller": { "a": "Enter" } }
-            """.data(using: .utf8)!.write(to: empoDir.appendingPathComponent("controls.json"))
+            """.utf8
+        ).write(to: empoDir.appendingPathComponent("controls.json"))
         try kirinJSON().data(using: .utf8)!.write(
             to: dir.appendingPathComponent(KirinControlsTranslator.fileName))
         try joiplayJSON().data(using: .utf8)!.write(
@@ -342,14 +367,14 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
 
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
         XCTAssertEqual(outcome?.result.location, .empo)
-        XCTAssertEqual(outcome?.note, .kirinSkippedBecauseManifestExists)
+        XCTAssertEqual(outcome?.notes, [.kirinSkippedBecauseManifestExists])
     }
 
     func testJoiplayFindingsAreWarningsOnly() throws {
         let dir = try makeTemporaryGameRoot()
         defer { try? FileManager.default.removeItem(at: dir) }
 
-        try #"{"cKeyCode": 999}"#.data(using: .utf8)!.write(
+        try Data(#"{"cKeyCode": 999}"#.utf8).write(
             to: dir.appendingPathComponent(JoiPlayControlsTranslator.fileName))
 
         let outcome = ControlsManifestLoader.load(gameRoot: dir)
@@ -371,8 +396,8 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
                 size: button.size ?? 56
             )
         }
-        for i in 0 ..< points.count {
-            for j in (i + 1) ..< points.count {
+        for i in 0..<points.count {
+            for j in (i + 1)..<points.count {
                 let required = (points[i].size + points[j].size) * 0.5
                 let dist = hypot(points[i].x - points[j].x, points[i].y - points[j].y)
                 XCTAssertGreaterThanOrEqual(
@@ -382,10 +407,10 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
             }
         }
         for button in buttons {
-            XCTAssertGreaterThanOrEqual(button.x, JoiPlayControlsTranslator.coordMin)
-            XCTAssertLessThanOrEqual(button.x, JoiPlayControlsTranslator.coordMax)
-            XCTAssertGreaterThanOrEqual(button.y, JoiPlayControlsTranslator.coordMin)
-            XCTAssertLessThanOrEqual(button.y, JoiPlayControlsTranslator.coordMax)
+            XCTAssertGreaterThanOrEqual(button.x, ControlLimits.placedCoordinate.lowerBound)
+            XCTAssertLessThanOrEqual(button.x, ControlLimits.placedCoordinate.upperBound)
+            XCTAssertGreaterThanOrEqual(button.y, ControlLimits.placedCoordinate.lowerBound)
+            XCTAssertLessThanOrEqual(button.y, ControlLimits.placedCoordinate.upperBound)
         }
         assertWithinUsableZone(buttons: buttons, isLandscape: isLandscape)
     }
@@ -417,9 +442,10 @@ final class JoiPlayControlsTranslatorTests: XCTestCase {
         XCTAssertGreaterThan(
             c.y * height, height - metrics.bottomInset(isLandscape: isLandscape) - 80,
             "C should sit in the bottom band")
-        let expectedCornerY = topInset + JoiPlayControlsTranslator.edgeMargin + lSize * 0.5
+        let expectedCornerY = topInset + TranslatorLayout.edgeMargin + lSize * 0.5
         XCTAssertEqual(l.y * height, expectedCornerY, accuracy: 2, "L should anchor below top inset")
-        XCTAssertEqual(r.y * height, topInset + JoiPlayControlsTranslator.edgeMargin + rSize * 0.5, accuracy: 2)
+        XCTAssertEqual(
+            r.y * height, topInset + TranslatorLayout.edgeMargin + rSize * 0.5, accuracy: 2)
         XCTAssertLessThan(l.x * width, width * 0.2, "L should anchor top-left")
         XCTAssertGreaterThan(r.x * width, width * 0.8, "R should anchor top-right")
     }

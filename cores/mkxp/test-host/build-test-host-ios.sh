@@ -22,7 +22,7 @@ DEPS="$ROOT/ios/Dependencies"
 
 SDK=iphonesimulator
 ARCH=arm64
-MIN_OS=26.0
+MIN_OS=17.0
 OUT="$ROOT/build/mkxp-core"
 
 while [ "$#" -gt 0 ]; do
@@ -57,8 +57,12 @@ mkdir -p "$OBJ" "$APP"
 echo "[mkxp-host] Compiling the host..."
 "$CC" -isysroot "$SYSROOT" -target "$TARGET" -arch "$ARCH" \
     -mios-simulator-version-min="$MIN_OS" \
-    -fobjc-arc -O2 \
+    -fobjc-arc -O2 -I"$ROOT/cores" -I"$ROOT/ios/Empo/GameProcess" \
     -c "$HERE/host.m" -o "$OBJ/host.o"
+"$CC" -isysroot "$SYSROOT" -target "$TARGET" -arch "$ARCH" \
+    -mios-simulator-version-min="$MIN_OS" \
+    -O2 -I"$ROOT/cores" -I"$ROOT/ios/Empo/GameProcess" \
+    -c "$ROOT/ios/Empo/GameProcess/GameCoreForwarders.c" -o "$OBJ/forwarders.o"
 
 echo "[mkxp-host] Linking..."
 # The host does not link the core. It opens the framework with dlopen at
@@ -66,7 +70,7 @@ echo "[mkxp-host] Linking..."
 "$CC" -isysroot "$SYSROOT" -target "$TARGET" -arch "$ARCH" \
     -mios-simulator-version-min="$MIN_OS" \
     -o "$APP/MkxpTests" \
-    "$OBJ/host.o" \
+    "$OBJ/host.o" "$OBJ/forwarders.o" \
     -framework Foundation -framework UIKit
 
 echo "[mkxp-host] Assembling the bundle..."

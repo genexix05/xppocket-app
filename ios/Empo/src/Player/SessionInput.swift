@@ -4,14 +4,19 @@
 import GameProbe
 import SwiftUI
 
-/// The session's physical input: a controller path, a keyboard path,
-/// and the overlay rule they both feed.
-///
-/// The player screen talks to this, not to the managers. Anything a
-/// session does to input (start, stop, rebind, suppress) is one
-/// call here instead of one call per device kind.
+/// The controller and keyboard input of a session, and the overlay rule
+/// that both feed. A change to both managers, such as start, stop,
+/// bindings, or a remap listener, is one call here.
 @MainActor
 final class SessionInput {
+    /// Gets the presses while a remap screen shows. No press goes to
+    /// the game while a listener is set.
+    struct RemapListener {
+        var elementPressed: (String) -> Void
+        var controllersChanged: () -> Void
+        var keyPressed: (String) -> Void
+    }
+
     let controller = ControllerInputManager()
     let keyboard = KeyboardInputManager()
     private let overlay = OverlayVisibilityController()
@@ -21,15 +26,13 @@ final class SessionInput {
         keyboard.overlay = overlay
     }
 
-    /// Dispatches action targets from either path: (action id, pressed).
-    var actionHandler: ((String, Bool) -> Void)? {
+    var actionHandler: ((String, Bool) -> Bool)? {
         didSet {
             controller.actionHandler = actionHandler
             keyboard.actionHandler = actionHandler
         }
     }
 
-    /// Device connects, for `controls.json.log`.
     var deviceLogHandler: ((String) -> Void)? {
         didSet {
             controller.deviceLogHandler = deviceLogHandler
@@ -39,24 +42,26 @@ final class SessionInput {
 
     /// True while the game asks for text. The keyboard passes keys
     /// through unmapped, so the player types what they typed.
-    var textInputActive = false {
-        didSet { keyboard.textInputActive = textInputActive }
+    var textInputActive: Bool {
+        get { keyboard.textInputActive }
+        set { keyboard.textInputActive = newValue }
     }
 
-    /// The remap screen is frontmost: read edges, inject nothing.
-    var suppressInjection = false {
+    var remapListener: RemapListener? {
         didSet {
-            controller.suppressInjection = suppressInjection
-            keyboard.suppressInjection = suppressInjection
+            controller.suppressInjection = remapListener != nil
+            keyboard.suppressInjection = remapListener != nil
+            controller.elementActivityHandler = remapListener?.elementPressed
+            controller.connectionHandler = remapListener?.controllersChanged
+            keyboard.keyActivityHandler = remapListener?.keyPressed
         }
     }
 
-    /// Whether this session has seen anything worth remapping.
     var hasSeenPhysicalInput: Bool {
         controller.hasHadControllerThisSession || keyboard.hasHadKeyboardThisSession
     }
 
-    func start(overlayHidden: Binding<Bool>, editMode: Binding<Bool>) {
+    func start(overlayHidden: Binding<Bool>, editMode: @escaping () -> Bool) {
         overlay.bind(hidden: overlayHidden, editMode: editMode)
         controller.start()
         keyboard.start()
@@ -68,15 +73,13 @@ final class SessionInput {
         overlay.unbind()
     }
 
-    /// Rebuilds both runtime maps from one merge of the layers.
-    func applyBindings(container: GameContainer?) {
+    func applyBindings(container: GameContainer?, manifest: BindingMap?) {
         let runtime = BindingResolver.resolveRuntime(
-            layers: BindingLayers.overrideLayers(for: container))
+            layers: BindingLayers.overrideLayers(for: container, manifest: manifest))
         controller.updateResolvedMap(runtime.elements)
         keyboard.updateResolvedMap(runtime.keys)
     }
 
-    /// The player toggled overlay visibility by hand.
     func noteManualOverlayToggle() {
         overlay.update { $0.noteManualToggle() }
     }

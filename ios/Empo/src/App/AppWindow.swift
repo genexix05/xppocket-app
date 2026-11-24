@@ -4,6 +4,11 @@
 import SwiftUI
 import UIKit
 
+extension Notification.Name {
+    /// A touch began anywhere in the window during play.
+    static let gameAreaTouchBegan = Notification.Name("gameAreaTouchBegan")
+}
+
 private class AppRootViewController: UIViewController {
 
     private let hostingController: UIHostingController<RootView>
@@ -31,7 +36,7 @@ private class AppRootViewController: UIViewController {
         // Set clear + isOpaque=false so the SDL/ANGLE window under
         // AppWindow can show through during gameplay (PlayerView is
         // mostly clear).
-        let hosted = hostingController.view!
+        let hosted: UIView = hostingController.view
         hosted.backgroundColor = .clear
         hosted.isOpaque = false
         hosted.layer.isOpaque = false
@@ -45,7 +50,7 @@ private class AppRootViewController: UIViewController {
         super.viewDidLayoutSubviews()
         // SwiftUI can reintroduce an opaque hosting background after
         // hierarchy updates. Keep the pass-through contract intact.
-        let hosted = hostingController.view!
+        let hosted: UIView = hostingController.view
         if hosted.backgroundColor != .clear || hosted.isOpaque {
             hosted.backgroundColor = .clear
             hosted.isOpaque = false
@@ -61,7 +66,7 @@ private class AppRootViewController: UIViewController {
         let phase = AppState.shared.phase
         guard phase == .playing else { return false }
         let size = view.bounds.size
-        return size.width > size.height  // hide only in landscape gameplay
+        return size.width > size.height || AppWindow.currentSafeArea.sensorStripEdge(minWidth: 1) != nil
     }
 
     override func viewWillTransition(
@@ -80,7 +85,14 @@ private class AppRootViewController: UIViewController {
 class AppWindow: UIWindow {
 
     private static var instance: AppWindow?
-    private var allowKeyWindow = false
+
+    /// The reasons that the overlay stays key while a game in the app
+    /// plays.
+    enum KeyClaim {
+        case alert, info, keyboard, buttonEditor
+    }
+
+    private var keyClaims: Set<KeyClaim> = []
 
     override init(windowScene: UIWindowScene) {
         super.init(windowScene: windowScene)
@@ -103,10 +115,11 @@ class AppWindow: UIWindow {
     /// reads the live window and `EngineSessionCoordinator.openCore`
     /// calls it once the core is in.
     static func pushSafeAreaInsets() {
-        guard EmpoCoreIsOpen() != 0, let insets = instance?.safeAreaInsets else { return }
+        guard EmpoCoreIsOpen() != 0, instance != nil else { return }
+        let insets = currentSafeArea.gameArea
         gamecore_setSafeAreaInsets(
             Float(insets.top), Float(insets.bottom),
-            Float(insets.left), Float(insets.right)
+            Float(insets.leading), Float(insets.trailing)
         )
     }
 
@@ -167,13 +180,12 @@ class AppWindow: UIWindow {
     /// touch sent straight to it is lost. SDL's top view reads the touch
     /// itself and answers with itself here.
     private func gameTouchTarget(at point: CGPoint, with event: UIEvent?) -> UIView? {
-        guard let gameView = GameViewEmbedder.embeddedView else { return nil }
+        guard let gameView = GameProcessHost.gameView ?? GameViewEmbedder.embeddedView else { return nil }
         return gameView.hitTest(convert(point, to: gameView), with: event) ?? gameView
     }
 
-    /// Any tap during play wakes the toolbar via
-    /// `Notification.Name.gameAreaTouchBegan`. This includes taps
-    /// outside the game surface that die on the hosting view.
+    /// This includes the taps outside the game surface that the hosting
+    /// view drops.
     override func sendEvent(_ event: UIEvent) {
         if AppState.shared.phase == .playing,
             event.type == .touches,
@@ -184,18 +196,22 @@ class AppWindow: UIWindow {
         super.sendEvent(event)
     }
 
-    // Controls handle their own key injection via the bridge.
-
-    /// In library/loading: this window must be key for SwiftUI.
-    /// In player: SDL needs key, unless keyboard mode is active or
-    /// an error alert presents (SDL would steal OK taps).
+    /// In the library and while a game loads, SwiftUI needs this window
+    /// as the key window. During play, a game in the app needs the key
+    /// window for its keys, so this window is key only while a claim
+    /// holds it, and SDL would otherwise take the OK tap of an alert. A
+    /// game in its own process shows in this window, and its scene gets
+    /// the keys only while this window is key.
     override var canBecomeKey: Bool {
         let state = AppState.shared
-        if state.errorMessage != nil { return true }
+        if state.shownError != nil { return true }
         if state.infoMessage != nil { return true }
         if state.phase != .playing { return true }
-        return allowKeyWindow
+        if EngineSessionCoordinator.shared.runner != .app { return true }
+        return !keyClaims.isEmpty
     }
+
+    static var rootViewController: UIViewController? { instance?.rootViewController }
 
     static var hostView: UIView? { instance?.rootViewController?.view }
 
@@ -223,26 +239,42 @@ class AppWindow: UIWindow {
             top: insets.top, leading: insets.left, bottom: insets.bottom, trailing: insets.right)
     }
 
-    @objc static func setAllowKeyWindow(_ allow: Bool) {
+    static var canvas: ScreenCanvas? {
+        guard let window = instance else { return nil }
+        return ScreenCanvas(size: window.bounds.size, safeArea: currentSafeArea)
+    }
+
+    static func claimKey(_ claim: KeyClaim) {
         guard let window = instance else { return }
-        window.allowKeyWindow = allow
-        if allow {
-            window.makeKey()
-        } else {
-            resignKeyToSDL()
+        window.keyClaims.insert(claim)
+        window.makeKey()
+    }
+
+    /// The game gets the key window back when the last claim goes.
+    static func releaseKey(_ claim: KeyClaim) {
+        guard let window = instance, window.keyClaims.remove(claim) != nil else { return }
+        if window.keyClaims.isEmpty {
+            resignKeyToGame()
         }
     }
 
-    /// Returns UIKit key-window status to SDL after the overlay
+    /// Gives key-window status back to the game after the overlay
     /// gives up `canBecomeKey` (e.g. loading -> playing).
+    ///
+    /// A game in its own process shows in this window, so the overlay
+    /// stays key and only ends editing.
     ///
     /// Never hand key status to a keyboard window. Once the system
     /// keyboard has shown, its `UITextEffectsWindow` joins
     /// `scene.windows`, and making it key while the keyboard
     /// dismisses briefly wakes the keyboard's own UI (the Memoji
     /// stickers splash with its "Continue" button).
-    @objc static func resignKeyToSDL() {
+    static func resignKeyToGame() {
         guard let overlay = instance, let scene = overlay.windowScene else { return }
+        guard EngineSessionCoordinator.shared.runner == .app else {
+            overlay.endEditing(true)
+            return
+        }
         let candidates = scene.windows.filter { window in
             guard window !== overlay else { return false }
             let className = String(describing: type(of: window))
@@ -328,16 +360,20 @@ class AppWindow: UIWindow {
                 if let window {
                     applyOverlayPresentationMode(window: window)
                     window.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+                    window.rootViewController?.setNeedsStatusBarAppearanceUpdate()
                     observePhase(window: window)
                 }
             }
         }
     }
 
-    /// Keep AppWindow visible. Reparent SDL's game view here while
-    /// the game plays, so one UIWindow owns the compositing stack.
+    /// Keep AppWindow visible. Reparent the game view of a game in the
+    /// app here while the game plays, so one UIWindow owns the
+    /// compositing stack. GameProcessHost puts the view of a game
+    /// process here itself.
     private static func applyOverlayPresentationMode(window: AppWindow) {
         let playing = AppState.shared.phase == .playing
+        let inApp = EngineSessionCoordinator.shared.runner == .app
 
         if playing {
             window.isHidden = false
@@ -347,7 +383,9 @@ class AppWindow: UIWindow {
             if let root = window.rootViewController?.view {
                 clearPassThroughBackdrop(in: root)
             }
-            GameViewEmbedder.embedWithRetry()
+            if inApp {
+                GameViewEmbedder.embedWithRetry()
+            }
         } else {
             GameViewEmbedder.detach()
             window.isHidden = false
@@ -407,14 +445,24 @@ class AppWindow: UIWindow {
 }
 
 extension EdgeInsets {
-    /// The iPhone Duo keeps its camera and status bar in a strip on
-    /// one side edge, closed or open, and insets only that edge
-    /// (closed: trailing 84; open: trailing 84, bottom 34). An
-    /// iPhone on its side insets both side edges the same.
+    /// The closed iPhone Duo keeps its camera and status bar in a
+    /// strip on one side edge (trailing 84, bottom 34). The open Duo
+    /// has its camera at the top when upright, and on its side it
+    /// insets both side edges the same, like any iPhone.
     func sensorStripEdge(minWidth: CGFloat) -> HorizontalEdge? {
         if leading == 0 && trailing >= minWidth { return .trailing }
         if trailing == 0 && leading >= minWidth { return .leading }
         return nil
+    }
+
+    /// The game draws under the sensor strip. The status bar hides
+    /// during play there, so only the camera stays over the strip.
+    var gameArea: EdgeInsets {
+        switch sensorStripEdge(minWidth: 1) {
+        case .leading: EdgeInsets(top: top, leading: 0, bottom: bottom, trailing: trailing)
+        case .trailing: EdgeInsets(top: top, leading: leading, bottom: bottom, trailing: 0)
+        case nil: self
+        }
     }
 }
 

@@ -5,8 +5,13 @@ import Foundation
 import GameProbe
 import Observation
 import SwiftUI
-import Synchronization
+import os
+
+#if os(iOS)
 import UIKit
+#else
+import AppKit
+#endif
 
 /// In-flight import that's still in its pre-flight validation phase.
 /// Once the pre-flight passes, the matching `GameEntry` is appended
@@ -85,6 +90,12 @@ class GameLibrary {
 
     var games: [GameEntry] = []
 
+    /// Changes when an import or a delete ends. `games.count` changes
+    /// when an import starts, before the game has its size.
+    var readyGameIDs: [String] {
+        games.filter { $0.status == .ready }.map(\.id)
+    }
+
     /// False until the first catalog pass of this launch has been
     /// merged into `games`. Distinguishes "not scanned yet" from
     /// "scanned and truly empty": before this flips, `games.isEmpty`
@@ -105,7 +116,7 @@ class GameLibrary {
     var localMutationDates: [String: Date] = [:]
 
     private let fm = FileManager.default
-    nonisolated let cancelledImports = Mutex(Set<String>())
+    nonisolated let cancelledImports = OSAllocatedUnfairLock(initialState: Set<String>())
 
     /// IDs of imports currently extracting / moving on a detached
     /// task. The library scan skips these so a concurrent reload
@@ -115,7 +126,7 @@ class GameLibrary {
     /// surface it as an `.invalid` "Unknown Game" entry, which
     /// would clobber the in-memory progress card via the
     /// scan/merge replace step in `reload()`.
-    nonisolated let inFlightImports = Mutex(Set<String>())
+    nonisolated let inFlightImports = OSAllocatedUnfairLock(initialState: Set<String>())
 
     /// IDs of containers a detached user-initiated delete is still
     /// removing (a multi-GB rm -rf takes seconds). `planImports`
@@ -123,7 +134,7 @@ class GameLibrary {
     /// installed list so a fast re-import cannot race the running
     /// delete. Registered in `deleteGame` before the task starts.
     /// Released by the task when it finishes, aborts, or fails.
-    nonisolated let deletionsInFlight = Mutex(Set<String>())
+    nonisolated let deletionsInFlight = OSAllocatedUnfairLock(initialState: Set<String>())
 
     /// IDs of in-flight imports that update an installed game in
     /// place (user-confirmed replacement). `abandonImport` consults
@@ -132,7 +143,7 @@ class GameLibrary {
     /// and (the update swaps in atomically or not at all) the
     /// intact installed game - so the existing entry is re-surfaced
     /// instead.
-    nonisolated let replacingImports = Mutex(Set<String>())
+    nonisolated let replacingImports = OSAllocatedUnfairLock(initialState: Set<String>())
 
     nonisolated static var gamesDirectory: URL { GameContainer.rootURL }
 
@@ -147,7 +158,13 @@ class GameLibrary {
         reload(initialLoad: true)
     }
 
+    /// Counts the reloads. Only the newest reload may apply its scan: an
+    /// older scan can finish last, and it holds older data.
+    private var reloadGeneration = 0
+
     func reload(initialLoad: Bool = false) {
+        reloadGeneration += 1
+        let generation = reloadGeneration
         let cleanupInvalid =
             initialLoad
             ? UserDefaults.standard.bool(forKey: DefaultsKey.cleanupInvalidGames)
@@ -156,8 +173,7 @@ class GameLibrary {
         // seconds, and an import (in particular an in-place update
         // of an existing container) registered after this reload
         // started must still be skipped by the loop when it reaches
-        // that container. The closure reads the mutex through self
-        // because Mutex is noncopyable and cannot bind to a local.
+        // that container.
         let isImportInFlight: @Sendable (String) -> Bool = { id in
             self.inFlightImports.withLock { $0.contains(id) }
         }
@@ -184,7 +200,8 @@ class GameLibrary {
                     )
                 }
                 await MainActor.run {
-                    GameLibrary.shared.applyScanResults(quick, scanStartedAt: scanStartedAt)
+                    GameLibrary.shared.applyScanResults(
+                        quick, scanStartedAt: scanStartedAt, generation: generation)
                 }
             }
 
@@ -196,7 +213,8 @@ class GameLibrary {
                 )
             }
             await MainActor.run {
-                GameLibrary.shared.applyScanResults(scanned, scanStartedAt: scanStartedAt)
+                GameLibrary.shared.applyScanResults(
+                    scanned, scanStartedAt: scanStartedAt, generation: generation)
             }
         }
     }
@@ -207,7 +225,8 @@ class GameLibrary {
     /// scan no longer sees, append newcomers. Marks the initial scan
     /// complete since any applied pass answers the emptiness
     /// question.
-    private func applyScanResults(_ scanned: [GameSnapshot], scanStartedAt: Date) {
+    private func applyScanResults(_ scanned: [GameSnapshot], scanStartedAt: Date, generation: Int) {
+        guard generation == reloadGeneration else { return }
         // A scan that raced an import registration can still carry
         // an entry for a container whose import task now owns it
         // (an in-place update's container exists on disk for the
@@ -263,29 +282,27 @@ class GameLibrary {
     /// Merge a single just-imported container into `games` without
     /// rescanning the whole library. Falls back to a full reload if
     /// the snapshot can't be built (metadata missing, etc.).
-    func mergeImportedGame(container: GameContainer) {
+    func mergeImportedGame(container: GameContainer) async {
         let importID = container.id
-        Task.detached {
-            let snapshot = GameCatalog.buildSnapshot(from: container)
-            await MainActor.run {
-                let lib = GameLibrary.shared
-                guard let snapshot else {
-                    lib.reload()
-                    return
-                }
-                lib.localMutationDates[importID] = Date()
-                if let model = lib.games.first(where: { $0.id == importID }) {
-                    // No animation here. The card keeps its cell and
-                    // only its status changes, from importing to
-                    // ready. An animated flip makes LazyVGrid lay the
-                    // departing importing card out in the first free
-                    // cell after the live ones, which slides the grey
-                    // card down the screen before it fades.
-                    model.apply(snapshot)
-                } else {
-                    withAnimation { lib.games.append(GameEntry(snapshot)) }
-                }
-            }
+        let startedAt = Date()
+        let snapshot = await Task.detached { GameCatalog.buildSnapshot(from: container) }.value
+        // A delete that landed while the snapshot was built wins.
+        if let mutated = localMutationDates[importID], mutated > startedAt { return }
+        guard let snapshot else {
+            reload()
+            return
+        }
+        localMutationDates[importID] = Date()
+        if let model = games.first(where: { $0.id == importID }) {
+            // No animation here. The card keeps its cell and
+            // only its status changes, from importing to
+            // ready. An animated flip makes LazyVGrid lay the
+            // departing importing card out in the first free
+            // cell after the live ones, which slides the grey
+            // card down the screen before it fades.
+            model.apply(snapshot)
+        } else {
+            withAnimation { games.append(GameEntry(snapshot)) }
         }
     }
 
@@ -332,13 +349,60 @@ class GameLibrary {
         return sort.sort(base, sizes: sizes)
     }
 
-    /// Pre-flight import placeholders shown above the catalog when
-    /// the library already has games.
+    /// Pre-flight import placeholders shown above the catalog.
     func pendingValidationCatalog() -> [GameEntry] {
-        guard !games.isEmpty else { return [] }
-        return pendingImports.values
+        pendingImports.values
             .sorted { $0.order < $1.order }
             .map(\.entry)
+    }
+
+    func launchWarning(for game: GameEntry) -> LaunchWarning? {
+        guard let container = game.container else { return nil }
+        return GameCores.core(forGameAt: container.gameURL)?.launchWarning(
+            for: container, gameTitle: game.title)
+    }
+
+    /// A core that refuses a game gives its own reason. A new import
+    /// meets the same refusal, so the usual advice to import again
+    /// would be wrong there.
+    static func whyInvalid(_ game: GameEntry) -> String {
+        do {
+            if let container = game.container { try GameImportValidator.validate(container.gameURL) }
+        } catch GameImportValidator.ImportError.unsupportedRuntime(let reason) {
+            return reason
+        } catch {}
+        return String(localized: "XP Pocket can't read this game's files. Delete it, then import it again.")
+    }
+
+    /// True when the game runs, or waits paused, so its folder must stay.
+    static func isInUse(_ game: GameEntry) -> Bool {
+        #if os(macOS)
+        GameLauncher.shared.isPlaying(game)
+        #else
+        AppState.shared.selectedGame?.id == game.id || PauseManager.shared.pausedGame?.id == game.id
+        #endif
+    }
+
+    /// Deletes a game, or stops its import. `onFailure` gets an alert
+    /// title and message.
+    func delete(
+        _ game: GameEntry,
+        discardingSaves: Bool = false,
+        onFailure: @escaping @MainActor @Sendable (_ title: String, _ message: String) -> Void,
+        onSaveRescueFailure: (@MainActor @Sendable (GameEntry) -> Void)? = nil
+    ) {
+        guard !Self.isInUse(game) else { return }
+        let title = game.title
+        deleteGame(
+            game, skipSaveRescue: discardingSaves,
+            onError: { error in
+                onFailure(
+                    String(
+                        localized: "Couldn't delete \"\(title)\"",
+                        comment: "Alert title. The placeholder is the game's name."),
+                    error)
+            },
+            onSaveRescueFailure: onSaveRescueFailure)
     }
 
     /// Hero card candidate for "Continue playing", or nil.

@@ -1,259 +1,341 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
 
+import GameProbe
 import SwiftUI
+
+enum SettingsSection: String, Decodable {
+    case experimental
+
+    var isShown: Bool {
+        switch self {
+        case .experimental: AppSettings.gameProcessIsInBuild
+        }
+    }
+}
 
 struct SettingsView: View {
     @Environment(\.appSettings) private var settings
     @Environment(\.dismiss) private var dismiss
     @State private var showBuildInfo = false
     @State private var showWhatsNew = false
-
-    // We deleted the ExperimentalFeature toggles and the
-    // ConfirmSheet/InfoSheet when gamePause/cheats graduated. See
-    // the ExperimentalFeature comment block in AppSettings.swift
-    // for how to bring opt-in toggles back.
+    @State var scrollTarget: SettingsSection?
 
     var body: some View {
         @Bindable var settings = settings
         return NavigationStack {
-            Form {
-                settingsHeader
+            ScrollViewReader { proxy in
+                Form {
+                    settingsHeader
 
-                AccountSettingsSection()
+                    AccountSettingsSection()
 
-                Section {
-                    LanguagePicker()
+                    Section {
+                        LanguagePicker()
 
-                    SettingsPicker(
-                        title: "Theme",
-                        selection: $settings.theme,
-                        description: "System follows your device's appearance setting."
-                    ) {
-                        ForEach(AppTheme.allCases, id: \.self) { theme in
-                            Text(theme.label).tag(theme)
-                        }
-                    }
-
-                    SettingsPicker(
-                        title: "Layout",
-                        selection: $settings.libraryDisplayMode,
-                        description: "Show games as a grid of cards or a compact list."
-                    ) {
-                        ForEach(LibraryDisplayMode.allCases, id: \.self) { mode in
-                            Text(mode.label).tag(mode)
-                        }
-                    }
-
-                    // Title position only affects grid cards. The
-                    // list layout always puts the title next to the
-                    // artwork. Hide the row when it would be a no-op.
-                    if settings.libraryDisplayMode == .grid {
                         SettingsPicker(
-                            title: "Title position",
-                            selection: $settings.titlePosition,
-                            description: "Where game titles show up on your library cards."
+                            title: "Theme",
+                            selection: $settings.theme,
+                            description: Text("System follows your device's appearance setting.")
                         ) {
-                            ForEach(TitlePosition.allCases, id: \.self) { position in
-                                Text(position.label).tag(position)
+                            ForEach(AppTheme.allCases, id: \.self) { theme in
+                                Text(theme.label).tag(theme)
                             }
                         }
-                    }
 
-                    SettingsToggle(
-                        title: "Interface haptics",
-                        isOn: $settings.interfaceHaptics,
-                        description:
-                            "Feel a gentle tap when you press buttons and switches."
-                    )
-
-                    SettingsToggle(
-                        title: "Continue playing",
-                        isOn: $settings.showContinuePlaying,
-                        description:
-                            "Shows a card at the top of your library for your last game."
-                    )
-                } header: {
-                    Text("Appearance")
-                }
-
-                Section {
-                    SettingsNavigationRow(
-                        title: "Layout profiles",
-                        description:
-                            "Create and edit saved layouts for the on-screen controls and the game screen."
-                    ) {
-                        LayoutProfilesSettingsView()
-                    }
-
-                    SettingsNavigationRow(
-                        title: "Community layouts",
-                        description:
-                            "Browse and install touch-control layouts shared by the XP Pocket community."
-                    ) {
-                        CommunityLayoutsView()
-                    }
-
-                    SettingsToggle(
-                        title: "On-screen control haptics",
-                        isOn: $settings.controllerHaptics,
-                        description: "Feel a gentle tap when you press the on-screen controls while you play."
-                    )
-                } header: {
-                    Text("Gameplay")
-                }
-
-                Section {
-                    SettingsToggle(
-                        title: "Diagnostics overlay",
-                        isOn: $settings.diagnosticsOverlay,
-                        description:
-                            "Adds a toolbar button that shows frame rate, memory use, and details about the game engine while you play."
-                    )
-
-                    SettingsToggle(
-                        title: "Fill unused screen area",
-                        isOn: $settings.showViewportBounds,
-                        description:
-                            "Fill the screen area outside the game picture with a color you choose."
-                    )
-
-                    if settings.showViewportBounds {
-                        NavigationLink {
-                            ViewportBoundsColorPicker(color: $settings.viewportBoundsColor)
-                        } label: {
-                            HStack {
-                                Text("Fill color")
-                                Spacer()
-                                RoundedRectangle(cornerRadius: Radius.xs)
-                                    .fill(settings.viewportBoundsColor)
-                                    .frame(width: 24, height: 24)
+                        SettingsPicker(
+                            title: "Layout",
+                            selection: $settings.libraryDisplayMode,
+                            description: Text("Show games as a grid of cards or a compact list.")
+                        ) {
+                            ForEach(LibraryDisplayMode.allCases, id: \.self) { mode in
+                                Text(mode.label).tag(mode)
                             }
                         }
-                    }
 
-                    SettingsToggle(
-                        title: "Show touch area",
-                        isOn: $settings.showTouchZone,
-                        description:
-                            "Outlines where your taps and drags control the game's cursor."
-                    )
-
-                    SettingsToggle(
-                        title: "Delete broken imports",
-                        isOn: $settings.cleanupInvalidGames,
-                        description:
-                            "Deletes games that failed to import the next time you open \(AppInfo.name). You can't undo this."
-                    )
-
-                    SettingsToggle(
-                        title: "Debug logs",
-                        isOn: $settings.debugLogs,
-                        description:
-                            "Saves a log for each play session. Find them in Files, under \(AppInfo.name) › Games › the game's name › Logs."
-                    )
-
-                    if settings.debugLogs {
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Stepper(
-                                String(localized: "Keep last \(settings.maxLogFiles) logs per game"),
-                                value: $settings.maxLogFiles, in: 5...100, step: 5)
-                            Text("\(AppInfo.name) deletes older logs each time you start a game.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
+                        if settings.libraryDisplayMode == .grid {
+                            SettingsPicker(
+                                title: "Title position",
+                                selection: $settings.titlePosition,
+                                description: Text("Where game titles show up on your library cards.")
+                            ) {
+                                ForEach(TitlePosition.allCases, id: \.self) { position in
+                                    Text(position.label).tag(position)
+                                }
+                            }
                         }
-                        .padding(.vertical, Spacing.xxs)
-                    }
-                } header: {
-                    Text("Advanced")
-                } footer: {
-                    Text("Use these if a game misbehaves or you want to report a bug.")
-                }
 
-                Section {
-                    Button {
-                        showWhatsNew = true
-                    } label: {
-                        Label("What's new", systemImage: "sparkles")
-                    }
-                    .tint(.primary)
+                        SettingsToggle(
+                            title: "Interface haptics",
+                            isOn: $settings.interfaceHaptics,
+                            description:
+                                "Feel a gentle tap when you press buttons and switches."
+                        )
 
-                    NavigationLink {
-                        GameCoresView()
-                    } label: {
-                        Label("Game cores", systemImage: "cpu")
+                        SettingsToggle(
+                            title: "Continue playing",
+                            isOn: $settings.showContinuePlaying,
+                            description:
+                                "Shows a card at the top of your library for your last game."
+                        )
+                    } header: {
+                        Text("Appearance")
                     }
 
-                    NavigationLink {
-                        ChangelogView()
-                    } label: {
-                        Label("Changelog", systemImage: "list.bullet.rectangle")
+                    Section {
+                        SettingsNavigationRow(
+                            title: Text("Layout profiles"),
+                            description:
+                                "Create and edit saved layouts for the on-screen controls and the game screen."
+                        ) {
+                            LayoutProfilesSettingsView()
+                        }
+
+                        SettingsNavigationRow(
+                            title: Text("Community layouts"),
+                            description:
+                                "Browse and install touch-control layouts shared by the XP Pocket community."
+                        ) {
+                            CommunityLayoutsView()
+                        }
+
+                        SettingsToggle(
+                            title: "On-screen control haptics",
+                            isOn: $settings.controllerHaptics,
+                            description:
+                                "Feel a gentle tap when you press the on-screen controls while you play."
+                        )
+
+                        SettingsToggle(
+                            title: "Respect silent mode",
+                            isOn: $settings.respectsSilentMode,
+                            description:
+                                "Mutes games when your device is in silent mode."
+                        )
+                    } header: {
+                        Text("Gameplay")
                     }
 
-                    NavigationLink {
-                        CreditsView()
-                    } label: {
-                        Label("Credits", systemImage: "person.2")
+                    Section {
+                        MidiSoundSetRow()
+                    } header: {
+                        Text("Music")
                     }
 
-                    NavigationLink {
-                        LicensesView()
-                    } label: {
-                        Label("Open-source licenses", systemImage: "doc.text")
+                    Section {
+                        SettingsNavigationRow(
+                            title: Text("Backups"),
+                            description:
+                                "Keep copies of your saves in iCloud Drive, Dropbox, Google Drive, or on your own server."
+                        ) {
+                            BackupsScreen()
+                        }
                     }
 
-                    externalLink(
-                        title: String(localized: "Privacy Policy"),
-                        systemImage: "hand.raised",
-                        url: AppInfo.privacyURL)
-
-                    if AdCoordinator.shared.shouldShowAds, AdCoordinator.shared.isPrivacyOptionsRequired {
+                    Section {
                         Button {
-                            Task { await AdCoordinator.shared.presentPrivacyOptions() }
+                            if let url = DataDirectory.filesAppURL(for: DataDirectory.documentsRootURL.path) {
+                                UIApplication.shared.open(url)
+                            }
                         } label: {
-                            Label("Privacy choices", systemImage: "checkmark.shield")
+                            Label {
+                                HStack {
+                                    Text("Show in Files")
+                                    Spacer()
+                                    Image(systemName: "arrow.up.forward")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: "folder")
+                            }
+                        }
+                        .tint(.primary)
+                    } header: {
+                        Text("Files")
+                    } footer: {
+                        if DataDirectory.isInAppGroup {
+                            Text(
+                                "Your games, saves, and logs are in the Files app. If Files doesn't show XP Pocket, tap Browse › ⋯ › Edit and turn on XP Pocket."
+                            )
+                        } else {
+                            Text("Your games, saves, and logs are in the Files app.")
                         }
                     }
 
-                    externalLink(
-                        title: String(localized: "Terms of Use"),
-                        systemImage: "doc.plaintext",
-                        url: AppInfo.termsURL)
+                    Section {
+                        SettingsToggle(
+                            title: "Diagnostics overlay",
+                            isOn: $settings.diagnosticsOverlay,
+                            description:
+                                "Adds a toolbar button that shows frame rate, memory use, and details about the game engine while you play."
+                        )
 
-                    externalLink(
-                        title: String(localized: "Source code (GPL)"),
-                        systemImage: "chevron.left.forwardslash.chevron.right",
-                        url: AppInfo.sourceCodeURL)
+                        SettingsToggle(
+                            title: "Fill unused screen area",
+                            isOn: $settings.showViewportBounds,
+                            description:
+                                "Fill the screen area outside the game picture with a color you choose."
+                        )
 
-                    FeedbackShareButton(
-                        label: String(localized: "Send feedback"),
-                        systemImage: "exclamationmark.bubble",
-                        formRowStyle: true
-                    )
+                        if settings.showViewportBounds {
+                            NavigationLink {
+                                ViewportBoundsColorPicker(color: $settings.viewportBoundsColor)
+                            } label: {
+                                HStack {
+                                    Text("Fill color")
+                                    Spacer()
+                                    RoundedRectangle(cornerRadius: Radius.xs)
+                                        .fill(settings.viewportBoundsColor)
+                                        .frame(width: 24, height: 24)
+                                }
+                            }
+                        }
 
-                    externalLink(
-                        title: String(localized: "Website"),
-                        systemImage: "globe",
-                        url: AppInfo.websiteURL)
-                } header: {
-                    Text("About")
-                } footer: {
-                    Text("\(AppInfo.name) is free software. You can redistribute and modify it under the terms of the GNU General Public License.")
+                        SettingsToggle(
+                            title: "Show touch area",
+                            isOn: $settings.showTouchZone,
+                            description:
+                                "Outlines where your taps and drags control the game's cursor."
+                        )
+
+                        SettingsToggle(
+                            title: "Delete broken imports",
+                            isOn: $settings.cleanupInvalidGames,
+                            description:
+                                "Deletes games that failed to import the next time you open \(AppInfo.name). You can't undo this."
+                        )
+
+                        SettingsToggle(
+                            title: "Send error reports",
+                            isOn: $settings.errorReports,
+                            description:
+                                "When a game shows an error or crashes, \(AppInfo.name) sends the error and the game's log to me, so I can fix it."
+                        )
+
+                        SettingsToggle(
+                            title: "Debug logs",
+                            isOn: $settings.debugLogs,
+                            description:
+                                "Saves a log for each play session. Find them in Files, under \(AppInfo.name) › Games › the game's name › Logs."
+                        )
+
+                        if settings.debugLogs {
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                Stepper(
+                                    "Keep last \(settings.maxLogFiles) logs per game",
+                                    value: $settings.maxLogFiles, in: 5...100, step: 5)
+                                SettingsDescription(
+                                    Text("\(AppInfo.name) deletes older logs each time you start a game."))
+                            }
+                            .padding(.vertical, Spacing.xxs)
+                        }
+                    } header: {
+                        Text("Advanced")
+                    } footer: {
+                        Text("Use these if a game misbehaves or you want to report a bug.")
+                    }
+
+                    if SettingsSection.experimental.isShown {
+                        ExperimentalSection()
+                            .id(SettingsSection.experimental)
+                    }
+
+                    Section {
+                        Button {
+                            showWhatsNew = true
+                        } label: {
+                            Label("What's new", systemImage: "sparkles")
+                        }
+                        .tint(.primary)
+
+                        NavigationLink {
+                            GameCoresView()
+                        } label: {
+                            Label("Game cores", systemImage: "cpu")
+                        }
+
+                        NavigationLink {
+                            ChangelogView()
+                        } label: {
+                            Label("Changelog", systemImage: "list.bullet.rectangle")
+                        }
+
+                        NavigationLink {
+                            CreditsView()
+                        } label: {
+                            Label("Credits", systemImage: "person.2")
+                        }
+
+                        NavigationLink {
+                            LicensesView()
+                        } label: {
+                            Label("Open-source licenses", systemImage: "doc.text")
+                        }
+
+                        externalLink(
+                            title: String(localized: "Privacy Policy"),
+                            systemImage: "hand.raised",
+                            url: AppInfo.privacyURL)
+
+                        if AdCoordinator.shared.shouldShowAds, AdCoordinator.shared.isPrivacyOptionsRequired {
+                            Button {
+                                Task { await AdCoordinator.shared.presentPrivacyOptions() }
+                            } label: {
+                                Label("Privacy choices", systemImage: "checkmark.shield")
+                            }
+                        }
+
+                        externalLink(
+                            title: String(localized: "Terms of Use"),
+                            systemImage: "doc.plaintext",
+                            url: AppInfo.termsURL)
+
+                        externalLink(
+                            title: String(localized: "Source code (GPL)"),
+                            systemImage: "chevron.left.forwardslash.chevron.right",
+                            url: AppInfo.sourceCodeURL)
+
+                        FeedbackShareButton(
+                            label: String(localized: "Send feedback"),
+                            systemImage: "exclamationmark.bubble",
+                            formRowStyle: true
+                        )
+
+                        externalLink(
+                            title: String(localized: "Website"),
+                            systemImage: "globe",
+                            url: AppInfo.websiteURL)
+                    } header: {
+                        Text("About")
+                    } footer: {
+                        Text("\(AppInfo.name) is free software. You can redistribute and modify it under the terms of the GNU General Public License.")
+                    }
+                }
+                .onChange(of: scrollTarget, initial: true) {
+                    guard let scrollTarget else { return }
+                    withAnimation { proxy.scrollTo(scrollTarget, anchor: .center) }
+                    self.scrollTarget = nil
                 }
             }
             .sheet(isPresented: $showBuildInfo) {
                 BuildInfoSheet()
             }
             .sheet(isPresented: $showWhatsNew) {
-                WhatsNewSheet(items: WhatsNew.items(after: WhatsNew.version - 1)) {
-                    showWhatsNew = false
-                }
+                WhatsNewSheet(
+                    items: WhatsNew.items(after: WhatsNew.version - 1),
+                    onOpenSettings: { section in
+                        showWhatsNew = false
+                        scrollTarget = section
+                    },
+                    onContinue: { showWhatsNew = false }
+                )
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
+                    SheetBarButton.done { dismiss() }
                 }
             }
         }
@@ -283,7 +365,7 @@ struct SettingsView: View {
             showBuildInfo = true
         } label: {
             Text(verbatim: "v\(AppInfo.version)")
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(.secondary)
         }
         .buttonStyle(.plain)
@@ -315,24 +397,11 @@ struct SettingsView: View {
     }
 }
 
-
-/// A sheet that appears when the user taps the version label in the
-/// settings header. Shows build details as a grouped list styled to
-/// match GameInfoView. The sheet includes the branch row only when
-/// the current branch differs from the default, so release builds on
-/// `main` stay minimal.
-///
-/// Uses the same navigation-stack-with-inline-title pattern as
-/// SettingsView / GameInfoView / GameSettingsView so the toolbar reads
-/// as native chrome (centered inline title, trailing Done button).
 private struct BuildInfoSheet: View {
     @Environment(\.dismiss) private var dismiss
 
-    /// A detail row shown in the list. `value` is the copyable string.
-    /// The optional `annotation` renders next to it but stays out of
-    /// the text-selection range. Users can then long-press to copy only
-    /// the canonical value (e.g. the commit hash without the
-    /// "(uncommitted changes)" suffix).
+    /// `annotation` stays outside the text selection, so a long press
+    /// copies only `value`.
     private struct Row {
         let label: LocalizedStringResource
         let value: String
@@ -361,8 +430,7 @@ private struct BuildInfoSheet: View {
     var body: some View {
         StandardSheet(
             title: "Build info",
-            chromeAllowance: AppSize.libraryHeader,
-            trailingButton: SheetBarAction("Done") { dismiss() }
+            barAction: SheetBarAction("Close") { dismiss() }
         ) {
             SheetCard {
                 ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
@@ -372,12 +440,9 @@ private struct BuildInfoSheet: View {
                     HStack(alignment: .firstTextBaseline, spacing: Spacing.sm) {
                         Text(row.label)
                         Spacer(minLength: Spacing.md)
-                        // RootView applies `.fontDesign(.rounded)`
-                        // to the whole app tree. Environment
-                        // resolution lets it override any
-                        // `.font(design: .monospaced)` set here.
-                        // Set `.monospaced` again explicitly so the
-                        // value's font reads as fixed-width.
+                        // RootView's `.fontDesign(.rounded)` overrides
+                        // `.font(design: .monospaced)`. Only
+                        // `.fontDesign(.monospaced)` keeps a fixed width.
                         Text(row.value)
                             .font(.system(size: 15))
                             .fontDesign(.monospaced)
@@ -426,12 +491,10 @@ private struct ViewportBoundsColorPicker: View {
     }
 }
 
-/// Miniature device mockup showing the game viewport and fill color.
 private struct DevicePreview: View {
     let color: Color
     let isLandscape: Bool
 
-    // Device proportions (roughly iPhone-like)
     private let portraitW: CGFloat = 70
     private let portraitH: CGFloat = 150
     private let cornerRadius: CGFloat = Radius.md
@@ -443,7 +506,6 @@ private struct DevicePreview: View {
 
     var body: some View {
         ZStack {
-            // Device bezel
             RoundedRectangle(cornerRadius: cornerRadius)
                 .fill(.secondary.opacity(0.15))
                 .overlay(
@@ -451,7 +513,6 @@ private struct DevicePreview: View {
                         .stroke(.secondary.opacity(Alpha.indicatorStroke), lineWidth: 1)
                 )
 
-            // Screen area
             let screenInset = bezelWidth + 2
             let screenW = deviceW - screenInset * 2
             let screenH = deviceH - screenInset * 2
@@ -460,14 +521,12 @@ private struct DevicePreview: View {
                 .fill(color)
                 .padding(screenInset)
 
-            // Game viewport
             let gameRect = gameViewportRect(screenW: screenW, screenH: screenH)
             RoundedRectangle(cornerRadius: 3)
                 .fill(Color.black)
                 .frame(width: gameRect.width, height: gameRect.height)
                 .offset(x: gameRect.offsetX, y: gameRect.offsetY)
 
-            // Notch indicator
             notchView
         }
         .frame(width: deviceW, height: deviceH)
@@ -476,7 +535,6 @@ private struct DevicePreview: View {
     private var notchView: some View {
         Group {
             if isLandscape {
-                // Notch on the left
                 UnevenRoundedRectangle(
                     topLeadingRadius: 0,
                     bottomLeadingRadius: 0,
@@ -487,7 +545,6 @@ private struct DevicePreview: View {
                 .frame(width: notchHeight, height: 20)
                 .offset(x: -(deviceW / 2 - notchHeight / 2))
             } else {
-                // Notch on top
                 UnevenRoundedRectangle(
                     topLeadingRadius: 0,
                     bottomLeadingRadius: 4,
@@ -509,38 +566,20 @@ private struct DevicePreview: View {
     }
 
     private func gameViewportRect(screenW: CGFloat, screenH: CGFloat) -> GameRect {
-        // Simulate a 4:3 game aspect ratio
-        let gameAspect: CGFloat = 4.0 / 3.0
         let safeTopInset: CGFloat = notchHeight + 2
 
         if isLandscape {
-            // Landscape: game centered, safe insets on left
             let safeLeftInset: CGFloat = notchHeight + 2
             let availW = screenW - safeLeftInset
-            let availH = screenH
-            var gameW = availW
-            var gameH = gameW / gameAspect
-            if gameH > availH {
-                gameH = availH
-                gameW = gameH * gameAspect
-            }
+            let game = GameAspect.fit(width: availW, height: screenH)
             let offsetX = (safeLeftInset - 0) / 2
-            return GameRect(width: gameW, height: gameH, offsetX: offsetX, offsetY: 0)
+            return GameRect(width: game.width, height: game.height, offsetX: offsetX, offsetY: 0)
         } else {
-            // Portrait: game top-center aligned within safe area
-            let availW = screenW
-            let availH = screenH - safeTopInset
-            var gameW = availW
-            var gameH = gameW / gameAspect
-            if gameH > availH * 0.6 {
-                gameH = availH * 0.6
-                gameW = gameH * gameAspect
-            }
-            // Top-center: between top and center
-            let topY = -(screenH / 2 - safeTopInset - gameH / 2 - 2)
+            let game = GameAspect.fit(width: screenW, height: (screenH - safeTopInset) * 0.6)
+            let topY = -(screenH / 2 - safeTopInset - game.height / 2 - 2)
             let centerY: CGFloat = 0
             let offsetY = (topY + centerY) / 2
-            return GameRect(width: gameW, height: gameH, offsetX: 0, offsetY: offsetY)
+            return GameRect(width: game.width, height: game.height, offsetX: 0, offsetY: offsetY)
         }
     }
 }

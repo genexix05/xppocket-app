@@ -11,7 +11,6 @@
   "sortPackageJson": false,
   "ignorePatterns": [
     "*.md",
-    ".engine-history/",
     "ios/Empo/build/",
     "ios/Empo/XPPocket.xcodeproj/",
     "ios/Dependencies/build-*/",

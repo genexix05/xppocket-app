@@ -14,6 +14,7 @@ import SwiftUI
 struct SaveRecoveryPresentation: ViewModifier {
     /// Loaded library entries, for artwork matching.
     let games: [GameEntry]
+    let prompts: LaunchPrompts
     /// False while the splash is still up. One-time surfaces wait
     /// for the splash: a sheet sliding over the splash animation
     /// is noise, and the user must see the library the sheet
@@ -27,10 +28,10 @@ struct SaveRecoveryPresentation: ViewModifier {
     /// is one-time, like the duplicate-games notice.
     private var isPresented: Binding<Bool> {
         Binding(
-            get: { active && !records.isEmpty },
+            get: { active && prompts.showing == .saveRecovery && !records.isEmpty },
             set: { presented in
                 if !presented {
-                    DataDirectory.clearPendingSaveRecoveries()
+                    DataDirectory.clearSaveRecoveries(shown: records)
                     records = []
                 }
             }
@@ -58,14 +59,21 @@ struct SaveRecoveryPresentation: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .task { records = DataDirectory.pendingSaveRecoveries() }
-            .sheet(isPresented: isPresented) {
-                SaveRecoverySheet(
-                    isPresented: isPresented,
-                    records: records,
-                    artworkPaths: artworkPaths
-                )
+            .task {
+                records = DataDirectory.pendingSaveRecoveries()
+                if !records.isEmpty { prompts.wait(.saveRecovery) }
             }
+            .sheet(
+                isPresented: isPresented,
+                onDismiss: { prompts.done(.saveRecovery) },
+                content: {
+                    SaveRecoverySheet(
+                        isPresented: isPresented,
+                        records: records,
+                        artworkPaths: artworkPaths
+                    )
+                }
+            )
     }
 }
 
@@ -81,10 +89,17 @@ private struct SaveRecoverySheet: View {
     let records: [SaveRecoveryLedger.Record]
     let artworkPaths: [String: String]
 
+    private static let emblem =
+        if #available(iOS 18.0, macOS 15.0, *) {
+            "checkmark.arrow.trianglehead.counterclockwise"
+        } else {
+            "checkmark.gobackward"
+        }
+
     var body: some View {
         StandardSheet(
             title: "Saves recovered",
-            emblem: "checkmark.arrow.trianglehead.counterclockwise"
+            emblem: Self.emblem
         ) {
             SheetBodyText(
                 LocalizedStringResource(
@@ -111,7 +126,7 @@ private struct SaveRecoverySheet: View {
             SheetFootnote(
                 "XP Pocket kept the renamed copies as backups. If a restored save isn't the one you wanted, tap Files on that game to find them."
             )
-
+        } footer: {
             SheetPrimaryButton("Done") { isPresented = false }
         }
         // This sheet announces a rare, good outcome (recovered
@@ -191,9 +206,7 @@ private struct SaveRecoveryRow: View {
         // and fallback heals live inside the game container.
         let path = DataDirectory.documentsRootURL
             .appendingPathComponent(record.directory, isDirectory: true).path
-        let encoded =
-            path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? path
-        if let url = URL(string: "shareddocuments://\(encoded)") {
+        if let url = DataDirectory.filesAppURL(for: path) {
             UIApplication.shared.open(url)
         }
     }

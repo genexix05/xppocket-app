@@ -65,26 +65,18 @@ struct LanguagePicker: View {
     @State private var selection = AppLanguage.current
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            Picker(selection: $selection) {
-                ForEach(AppLanguage.allCases) { language in
-                    language.label.tag(language)
-                }
-            } label: {
-                Text("Language")
+        SettingsPicker(
+            title: "Language",
+            selection: $selection,
+            description: selection == AppLanguage.atLaunch
+                ? Text("System uses your device's language when XP Pocket has it, and English when it doesn't.")
+                : Text("Close XP Pocket from the app switcher, then reopen it to use the new language.")
+                    .foregroundStyle(Color.brand)
+        ) {
+            ForEach(AppLanguage.allCases) { language in
+                language.label.tag(language)
             }
-            Group {
-                if selection == AppLanguage.atLaunch {
-                    Text("System uses your device's language when XP Pocket has it, and English when it doesn't.")
-                } else {
-                    Text("Close XP Pocket from the app switcher, then reopen it to use the new language.")
-                        .foregroundStyle(Color.brand)
-                }
-            }
-            .font(.footnote)
-            .foregroundStyle(.secondary)
         }
-        .padding(.vertical, Spacing.xxs)
         .onChange(of: selection) {
             selection.apply()
         }

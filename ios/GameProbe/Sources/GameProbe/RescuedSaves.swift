@@ -40,8 +40,25 @@ public enum RescuedSaves {
     public struct Identity: Codable, Equatable, Sendable {
         public let folderName: String
 
-        public init(folderName: String) {
+        /// The user deleted the game with its backups, per SPEC
+        /// 5.13, so this bucket stays out of the backup set. The
+        /// saves it holds would otherwise return to the remote on
+        /// the next run, because 3.1 puts the Rescued Saves tree in.
+        /// The bucket stays on disk, so a re-import on this device
+        /// still restores its saves.
+        public let backupExcluded: Bool
+
+        public init(folderName: String, backupExcluded: Bool = false) {
             self.folderName = folderName
+            self.backupExcluded = backupExcluded
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            folderName = try container.decode(String.self, forKey: .folderName)
+            // A marker from before this flag has no key.
+            backupExcluded =
+                try container.decodeIfPresent(Bool.self, forKey: .backupExcluded) ?? false
         }
     }
 
@@ -54,6 +71,26 @@ public enum RescuedSaves {
         return fm.createFile(
             atPath: bucket.appendingPathComponent(markerName).path,
             contents: data)
+    }
+
+    /// Marks the bucket out of the backup set, per SPEC 5.13.
+    ///
+    /// A bucket with no readable marker gets one, so the exclusion
+    /// holds whether or not the rescue wrote an identity.
+    @discardableResult
+    public static func excludeFromBackup(bucket: URL, fm: FileManager = .default) -> Bool {
+        let found = readMarker(inBucket: bucket, fm: fm)
+        return writeMarker(
+            Identity(
+                folderName: found?.folderName ?? bucket.lastPathComponent,
+                backupExcluded: true),
+            inBucket: bucket, fm: fm)
+    }
+
+    /// Whether the delete of 5.13 took this bucket out of the backup
+    /// set.
+    public static func isExcludedFromBackup(bucket: URL, fm: FileManager = .default) -> Bool {
+        readMarker(inBucket: bucket, fm: fm)?.backupExcluded ?? false
     }
 
     public static func readMarker(
@@ -88,22 +125,46 @@ public enum RescuedSaves {
         }
     }
 
+    /// The names come from the backup. A game's restore writes only its
+    /// own buckets and new ones. `folderName` is nil for the stream that
+    /// belongs to no game.
+    public static func restorableBuckets(
+        named names: [String], in root: URL, folderName: String?, fm: FileManager = .default
+    ) -> [String: URL] {
+        let mine = folderName.map {
+            Set(matchingBuckets(in: root, folderName: $0, fm: fm).map(\.lastPathComponent))
+        }
+        let existing = fm.subdirectoryNames(at: root)
+        var buckets: [String: URL] = [:]
+        for name in names where !name.contains("/") && name != "." && name != ".." && !name.isEmpty {
+            // A case-insensitive volume opens the bucket of another spelling.
+            let onDisk = DirectoryNameMatch.preferringExisting(name, among: existing)
+            let bucket = root.appendingPathComponent(onDisk, isDirectory: true)
+            if let mine, !mine.contains(onDisk), fm.fileExists(atPath: bucket.path) { continue }
+            buckets[name] = bucket
+        }
+        return buckets
+    }
+
     /// Drains a bucket back into a freshly imported `Game/` tree
     /// with the `LegacyDataDrain` rules (recursive merge, the newer
     /// file wins, the loser stays beside it, nothing deleted). The
-    /// marker never travels: it is removed first and written back
-    /// if anything failed to move, so a partial restore stays
+    /// marker never travels, and it stays in the bucket until every
+    /// save moved, so a partial or killed restore stays
     /// identifiable for the next attempt. A complete restore
     /// removes the emptied bucket.
     @discardableResult
     public static func restore(
         from bucket: URL, into gameRoot: URL, fm: FileManager = .default
     ) -> LegacyDataDrain.Outcome {
-        let identity = readMarker(inBucket: bucket, fm: fm)
+        var outcome = LegacyDataDrain.drain(
+            from: bucket, into: gameRoot, leaving: [markerName], fm: fm)
+        guard outcome.isComplete, !outcome.removedSource else { return outcome }
         try? fm.removeItem(at: bucket.appendingPathComponent(markerName))
-        let outcome = LegacyDataDrain.drain(from: bucket, into: gameRoot, fm: fm)
-        if !outcome.isComplete, let identity {
-            writeMarker(identity, inBucket: bucket, fm: fm)
+        if (try? fm.contentsOfDirectory(atPath: bucket.path))?.isEmpty == true,
+            (try? fm.removeItem(at: bucket)) != nil
+        {
+            outcome.removedSource = true
         }
         return outcome
     }

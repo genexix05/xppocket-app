@@ -1,0 +1,199 @@
+import Foundation
+import GameProbe
+
+@MainActor
+enum SyncLocalValues {
+
+    static func current(identities: inout SyncProfileIdentities) -> SyncDocumentModel {
+        var model = SyncDocumentModel()
+        model.preferences = preferences()
+        if let global = BindingStore.loadGlobal() {
+            model.controllerBindings = BindingMapSyncCoder.entries(of: global)
+        }
+        model.layoutProfiles = profiles(identities: &identities)
+        for descriptor in BackupTargets.load() {
+            model.targetDescriptors[descriptor.id] = descriptor.forSyncDocument()
+        }
+        return model
+    }
+
+    /// `controllerBindings` already carries `controllerMap.global`. A
+    /// second copy here gives one binding two homes with no precedence.
+    static func preferences() -> [String: JSONValue] {
+        var values = DevicePreferences.currentDefaults()
+        values.removeValue(forKey: PreferenceKeys.controllerMapGlobal.name)
+        return values
+    }
+
+    private static func profiles(
+        identities: inout SyncProfileIdentities
+    ) -> [String: SyncProfile] {
+        let store = LayoutProfilesManager.store
+        var out: [String: SyncProfile] = [:]
+        for name in store.listProfiles() {
+            let id = identities.id(ofProfile: name)
+            out[id] = SyncProfile(
+                name: name,
+                controls: TouchSectionSyncCoder.controls(
+                    of: store.readProfile(name)?.touch ?? TouchSection()),
+                screen: screenValue(name: name, store: store))
+        }
+        // The record has no name. The merged document supplies it.
+        for (id, date) in identities.deleted {
+            out[id] = SyncProfile(name: "", deletedAt: date)
+        }
+        return out
+    }
+
+    private static func screenValue(name: String, store: LayoutProfileStore) -> JSONValue? {
+        guard let data = try? Data(contentsOf: store.screenURL(name)) else { return nil }
+        return try? JSONDecoder().decode(JSONValue.self, from: data)
+    }
+
+    // MARK: - Applying the merged document
+
+    static func apply(_ model: SyncDocumentModel, identities: inout SyncProfileIdentities) {
+        DevicePreferences.apply(model.preferences)
+        if !model.controllerBindings.isEmpty {
+            BindingStore.saveGlobal(BindingMapSyncCoder.map(of: model.controllerBindings))
+        }
+        applyProfiles(model, identities: &identities)
+        applyDescriptors(model.targetDescriptors)
+    }
+
+    static func applyProfiles(
+        _ model: SyncDocumentModel, identities: inout SyncProfileIdentities
+    ) {
+        let store = LayoutProfilesManager.store
+
+        for (id, profile) in model.layoutProfiles where profile.isDeleted {
+            guard let local = identities.name(ofId: id) else { continue }
+            do {
+                try LayoutProfilesManager.deleteProfile(local)
+                identities.forget(profile: local)
+            } catch {
+                NSLog("sync: delete of profile \(local) failed: \(error)")
+            }
+        }
+
+        for (id, profile) in model.liveProfiles
+        where LayoutProfileStore.validatedName(profile.name) == profile.name {
+            // A failed step skips the profile, so that the incoming
+            // profile never writes over a local one.
+            do {
+                var local = identities.name(ofId: id)
+                if let missing = local, !store.profileExists(missing) {
+                    // The Files app can delete or rename the folder.
+                    identities.forget(profile: missing)
+                    local = nil
+                }
+                if let local, local != profile.name {
+                    if store.profileExists(profile.name),
+                        store.storedName(profile.name) != store.storedName(local)
+                    {
+                        try displace(profile.name, store: store, identities: &identities)
+                    }
+                    try store.renameProfile(from: local, to: profile.name)
+                    identities.rename(from: local, to: profile.name)
+                }
+                if local == nil, store.profileExists(profile.name) {
+                    try displace(profile.name, store: store, identities: &identities)
+                }
+                let touch = TouchSectionSyncCoder.section(of: profile.controls)
+                if store.profileExists(profile.name) {
+                    try store.writeProfile(profile.name, touch: touch)
+                } else {
+                    try store.createProfile(profile.name, touch: touch)
+                }
+                identities.ids[profile.name] = id
+                try applyScreen(profile.screen, name: profile.name, store: store)
+            } catch {
+                NSLog("sync: profile \(profile.name) not applied: \(error)")
+            }
+            LayoutProfilesManager.postProfileChange(name: profile.name, from: nil)
+        }
+    }
+
+    private static func displace(
+        _ name: String, store: LayoutProfileStore, identities: inout SyncProfileIdentities
+    ) throws {
+        let local = store.storedName(name) ?? name
+        let taken = Set(store.listProfiles().map(LayoutProfileStore.nameKey))
+        var number = 1
+        while taken.contains(LayoutProfileStore.nameKey(copyName(of: local, number: number))) {
+            number += 1
+        }
+        let moved = copyName(of: local, number: number)
+        try store.renameProfile(from: local, to: moved)
+        identities.rename(from: local, to: moved)
+    }
+
+    /// The Mac and iPhone disks refuse a folder name over 255 UTF-16
+    /// units in decomposed form, and an emoji counts as one character
+    /// but many units.
+    static func copyName(of name: String, number: Int) -> String {
+        let mark = DisplacedCopy.treeName(for: "", number: number)
+        var stem = Substring(name.prefix(max(0, LayoutProfileStore.maxNameLength - mark.count)))
+        while !stem.isEmpty,
+            stem.last?.isWhitespace == true
+                || (stem + mark).decomposedStringWithCanonicalMapping.utf16.count > 255
+        {
+            stem = stem.dropLast()
+        }
+        return DisplacedCopy.treeName(for: String(stem), number: number)
+    }
+
+    private static func applyScreen(
+        _ value: JSONValue?, name: String, store: LayoutProfileStore
+    ) throws {
+        guard let value, let data = try? JSONEncoder().encode(value) else { return }
+        let parsed = ScreenRegionFile.parse(data)
+        guard parsed.findings.isEmpty else { return }
+        try store.writeScreen(name, portrait: parsed.portrait, landscape: parsed.landscape)
+    }
+
+    /// A new descriptor arrives without its secret. Target removal stays
+    /// on this device, so this function never deletes a target.
+    ///
+    /// The Keychain keeps the namespace id when the app is deleted, so a
+    /// location that sync brings back can hold snapshots of this device.
+    static func applyDescriptors(_ descriptors: [String: TargetDescriptor]) {
+        let removed: Set<String>
+        do {
+            removed = Set(try SyncStore.state().removedTargetIds)
+        } catch {
+            BackupLog.line(
+                "SyncLocalValues", "The synced locations wait, the sync settings did not read: \(error)")
+            return
+        }
+        do {
+            let known = Set(try BackupTargets.read().map(\.id))
+            try BackupLedgerRebuild.mark(Set(descriptors.keys).subtracting(known).subtracting(removed))
+            try BackupTargets.update { local in
+                for (id, incoming) in descriptors {
+                    guard let index = local.firstIndex(where: { $0.id == id }) else {
+                        if !removed.contains(id) { local.append(incoming) }
+                        continue
+                    }
+                    local[index] = local[index].withSyncedFields(from: incoming)
+                }
+            }
+        } catch {
+            BackupLog.line("SyncLocalValues", "The synced locations were not saved: \(error)")
+        }
+    }
+}
+
+@MainActor
+final class DeviceSyncValues: SyncLocalValuesStore {
+
+    func read(identities: inout SyncProfileIdentities) -> SyncDocumentModel {
+        SyncLocalValues.current(identities: &identities)
+    }
+
+    func apply(_ model: SyncDocumentModel, identities: inout SyncProfileIdentities) {
+        SyncPass.shared.isApplying = true
+        defer { SyncPass.shared.isApplying = false }
+        SyncLocalValues.apply(model, identities: &identities)
+    }
+}

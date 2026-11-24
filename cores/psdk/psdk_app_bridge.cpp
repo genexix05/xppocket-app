@@ -7,24 +7,23 @@
 // GameCore.h declares. This file answers them with the calls of
 // psdk_core.h, the interface of one libpsdk<NN>.a from
 // mateo-m/psdk-apple-mobile.
-//
-// Four things here do real work: the game thread, the frame callback,
-// the picture placement and the pause. The rest stores what the
-// launcher pushes or gives a fixed answer. Every function that gives
-// less than a full answer says so where it is.
 
 #include "GameCore.h"
 #include "psdk_core.h"
 
+#include <CoreFoundation/CoreFoundation.h>
+#include <TargetConditionals.h>
+
 #include <algorithm>
 #include <atomic>
+#include <cctype>
+#include <climits>
 #include <condition_variable>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <dlfcn.h>
 #include <fcntl.h>
-#include <libgen.h>
 #include <mutex>
 #include <pthread.h>
 #include <stdlib.h>
@@ -33,7 +32,13 @@
 #include <unistd.h>
 #include <vector>
 
+#if TARGET_OS_OSX
+#define GL_SILENCE_DEPRECATION
+#import <AppKit/AppKit.h>
+#include <OpenGL/gl.h>
+#else
 #include <GLES2/gl2.h>
+#endif
 
 static const char *waitForGamePath(void);
 
@@ -42,6 +47,7 @@ namespace {
 std::mutex gLock;
 std::string gGamePath;
 std::string gLauncherIdentity;
+std::string gLauncherVersion = "unknown";
 std::string gCABundlePath;
 std::string gDebugLogPath;
 
@@ -114,8 +120,6 @@ std::vector<unsigned char> gSnapshotRGBA;
 int gSnapshotW = 0;
 int gSnapshotH = 0;
 std::atomic<bool> gCheatsEnabled{false};
-std::atomic<bool> gShowViewportBounds{false};
-std::atomic<bool> gControllerCaptureEnabled{false};
 std::atomic<int> gFastForwardMultiplier{1};
 // The frame path measures the rate over windows of kFpsWindowSeconds.
 // A read changes nothing, because with a game process the app reads it
@@ -139,26 +143,110 @@ std::atomic<char **> gArgv{nullptr};
 constexpr size_t kGameStackBytes = 16 * 1024 * 1024;
 
 // The core reads its own files from its own bundle, so a launcher embeds
-// the framework and ships no PSDK file of its own. dladdr on a
-// function in this image names the framework binary, and its folder is
-// the bundle. mkxp-z finds its assets the same way
-// (filesystemImplIOS.mm mkxpOwnBundle).
-std::string ownBundlePath() {
+// the framework and ships no PSDK file of its own. dladdr on a function in
+// this image names the framework binary. CFBundle knows where the
+// resources are: at the top on iOS, in Versions/A/Resources on macOS.
+std::string supportPath() {
     Dl_info info;
-    if (dladdr(reinterpret_cast<const void *>(&ownBundlePath), &info) == 0 || !info.dli_fname) {
+    if (dladdr(reinterpret_cast<const void *>(&supportPath), &info) == 0 || !info.dli_fname) {
         return {};
     }
-    std::string path(info.dli_fname);
-    std::string copy(path);
-    return dirname(&copy[0]);
+    const std::string binary(info.dli_fname);
+    const size_t end = binary.rfind(".framework/");
+    if (end == std::string::npos) {
+        return {};
+    }
+    const std::string framework = binary.substr(0, end + strlen(".framework"));
+    CFURLRef frameworkURL = CFURLCreateFromFileSystemRepresentation(
+        nullptr, reinterpret_cast<const UInt8 *>(framework.data()), framework.size(), true);
+    CFBundleRef bundle = CFBundleCreate(nullptr, frameworkURL);
+    CFRelease(frameworkURL);
+    if (!bundle) {
+        return {};
+    }
+    CFURLRef supportURL = CFBundleCopyResourceURL(bundle, CFSTR("PsdkSupport"), nullptr, nullptr);
+    CFRelease(bundle);
+    if (!supportURL) {
+        return {};
+    }
+    char path[PATH_MAX];
+    const bool found =
+        CFURLGetFileSystemRepresentation(supportURL, true, reinterpret_cast<UInt8 *>(path), sizeof(path));
+    CFRelease(supportURL);
+    return found ? path : std::string();
+}
+
+// Each byte is a \x escape, so no value can end the string early.
+std::string rubyStringLiteral(const std::string &value) {
+    std::string literal = "\"";
+    char escaped[5];
+    for (unsigned char byte : value) {
+        snprintf(escaped, sizeof(escaped), "\\x%02x", byte);
+        literal += escaped;
+    }
+    return literal + "\".force_encoding(Encoding::UTF_8)";
+}
+
+// Gives the game $userAgent = "<name>", $<name> = true, and
+// $userAgentVersion = "<version>". psdk_run takes Ruby code only as a
+// file. The file deletes itself when Ruby loads it, because a killed
+// game never gets back here.
+std::string writeLauncherIdentityPrelude() {
+    std::string identity;
+    std::string version;
+    {
+        std::lock_guard<std::mutex> guard(gLock);
+        identity = gLauncherIdentity;
+        version = gLauncherVersion;
+    }
+    if (identity.empty()) {
+        return {};
+    }
+
+    std::string ruby = "File.delete(__FILE__) rescue nil\n";
+    ruby += "$userAgent = " + rubyStringLiteral(identity) + "\n";
+    ruby += "$userAgentVersion = " + rubyStringLiteral(version) + ".freeze\n";
+
+    bool validIdentifier = isalpha(static_cast<unsigned char>(identity[0])) || identity[0] == '_';
+    for (size_t i = 1; validIdentifier && i < identity.size(); ++i) {
+        validIdentifier = isalnum(static_cast<unsigned char>(identity[i])) || identity[i] == '_';
+    }
+    if (validIdentifier) {
+        ruby += "$" + identity + " = true\n";
+    }
+
+    char tempDir[PATH_MAX];
+    if (confstr(_CS_DARWIN_USER_TEMP_DIR, tempDir, sizeof(tempDir)) == 0) {
+        fprintf(stderr, "[psdk-bridge] no temp folder for the launcher identity\n");
+        return {};
+    }
+    const std::string path = std::string(tempDir) + "psdk-launcher-identity-" + std::to_string(getpid()) + ".rb";
+    FILE *file = fopen(path.c_str(), "w");
+    if (!file) {
+        fprintf(stderr, "[psdk-bridge] cannot write %s\n", path.c_str());
+        return {};
+    }
+    const bool written = fwrite(ruby.data(), 1, ruby.size(), file) == ruby.size();
+    if (fclose(file) != 0 || !written) {
+        fprintf(stderr, "[psdk-bridge] cannot write %s\n", path.c_str());
+        unlink(path.c_str());
+        return {};
+    }
+    return path;
 }
 
 void *runGame(void *) {
-    const std::string bundle = ownBundlePath();
-    const std::string support = bundle + "/PsdkSupport";
+    const std::string support = supportPath();
+    if (support.empty()) {
+        fprintf(stderr, "[psdk-bridge] PsdkSupport is not in the core's bundle\n");
+    }
     const char *path = waitForGamePath();
+    // The launcher sets the identity before the game path, so it is
+    // here by now.
+    const std::string prelude = writeLauncherIdentityPrelude();
 
-    int result = psdk_run(gArgc.load(), gArgv.load(), path, support.c_str(), nullptr);
+    int result = psdk_run(gArgc.load(), gArgv.load(), path, support.c_str(),
+                          prelude.empty() ? nullptr : prelude.c_str());
     fprintf(stderr, "[psdk-bridge] psdk_run returned %d\n", result);
 
     gExitedCleanly.store(result == PSDK_OK);
@@ -209,8 +297,7 @@ void placeOutputRegion() {
         // Rotation safety: the launcher sets one region for each
         // orientation. A region tagged for the other one belongs to the
         // rotation that has not landed yet, so the whole window holds the
-        // picture until the matching call arrives. mkxp-z reads the same
-        // tag for the same reason.
+        // picture until the matching call arrives.
         if (gHostRegionPortrait.load() == windowIsPortrait) {
             hostRegionApplies = true;
             x = gHostRegionX.load();
@@ -223,9 +310,8 @@ void placeOutputRegion() {
     if (!hostRegionApplies) {
         // Automatic placement. The launcher clamps its own region to the
         // safe area before it sends one, so the insets apply on this path
-        // only. mkxp-z states the same rule in app_bridge.h, and the
-        // launcher's reset animation aims at this rect, so the two must
-        // give the same answer (ScreenPresetPlacement.swift).
+        // only. The reset animation of ScreenPresetPlacement.swift aims at
+        // this rect.
         //
         // The launcher sends the insets in points and the window
         // measures in pixels, so the insets take the backing scale.
@@ -236,7 +322,7 @@ void placeOutputRegion() {
         w = 1.0f - (left + right) / static_cast<float>(windowW);
         if (windowIsPortrait) {
             // Landscape keeps the full height, so the picture stays as
-            // large as the screen permits. mkxp-z makes the same choice.
+            // large as the screen permits.
             const float top = gSafeTop.load() * scale;
             const float bottom = gSafeBottom.load() * scale;
             y = top / static_cast<float>(windowH);
@@ -413,26 +499,47 @@ void onFrame(void *) {
     // PSDK's FPSBalancer counts frames from the microsecond part of the
     // clock. So after a pause of any length, the game catches up less
     // than one second of updates.
+#if TARGET_OS_OSX
+    // The game runs on the main thread here, so the pause keeps the
+    // app's events moving: the menu, the quit sheet and the resume.
+    lock.unlock();
+    while (gPausedFlag.load()) {
+        NSEvent *event = [NSApp nextEventMatchingMask:NSEventMaskAny
+                                            untilDate:[NSDate distantFuture]
+                                               inMode:NSDefaultRunLoopMode
+                                              dequeue:YES];
+        if (event && event.type != NSEventTypeApplicationDefined) {
+            [NSApp sendEvent:event];
+        }
+    }
+#else
     gResumeSignal.wait(lock, [] { return !gPausedFlag.load(); });
+#endif
     psdk_resume_audio();
 }
 
 }  // namespace
 
-// MARK: - Starting the game
-
-// Starts the game on its own thread and returns at once.
+// On iOS, starts the game on its own thread and returns at once. SFML
+// marshals every UIKit call to the main thread with dispatch_sync, so
+// the main thread has to stay in its run loop and answer them.
 //
-// MkxpCore holds the calling thread here until the game ends. This core
-// cannot: SFML marshals every UIKit call to the main thread with
-// dispatch_sync, so the main thread has to stay in its run loop and
-// answer them. A launcher reads gamecore_isEngineTerminated or takes the
-// terminated callback either way.
+// On macOS, holds the main thread until the game ends, as MkxpCore does.
+// SFML makes its window and reads its events only on the main thread
+// there (SFWindowController.mm).
+//
+// A launcher reads gamecore_isEngineTerminated or takes the terminated
+// callback either way.
 int gamecore_run_app(int argc, char **argv) {
     gArgc.store(argc);
     gArgv.store(argv);
     psdk_set_frame_callback(onFrame, nullptr);
     psdk_set_resolution_callback(onGameResolution, nullptr);
+
+#if TARGET_OS_OSX
+    runGame(nullptr);
+    return 0;
+#else
 
     pthread_attr_t attr;
     pthread_attr_init(&attr);
@@ -446,6 +553,7 @@ int gamecore_run_app(int argc, char **argv) {
     }
     pthread_detach(thread);
     return 0;
+#endif
 }
 
 void gamecore_setGamePath(const char *path) {
@@ -467,20 +575,14 @@ static const char *waitForGamePath(void) {
     return path;
 }
 
-// MARK: - Input
-
 // The launcher's scancodes are USB HID usages, which the core takes.
 void gamecore_injectKeyEvent(int scancode, int pressed) {
     psdk_inject_key(scancode, pressed);
 }
 
-// MARK: - The window
-
 void *gamecore_getGameWindow(void) {
     return psdk_game_window();
 }
-
-// MARK: - Callbacks
 
 void gamecore_setFrameRenderedCallback(gamecore_FrameRenderedCallback cb, void *userdata) {
     gFrameRendered = {reinterpret_cast<void *>(cb), userdata};
@@ -502,6 +604,9 @@ void gamecore_setErrorMessageCallback(gamecore_ErrorMessageCallback, void *) {
 void gamecore_setInfoMessageCallback(gamecore_InfoMessageCallback, void *) {
 }
 
+void gamecore_setSaveEventCallback(gamecore_SaveEventCallback, void *) {
+}
+
 void gamecore_setPausedCallback(gamecore_PausedCallback cb, void *userdata) {
     gPaused = {reinterpret_cast<void *>(cb), userdata};
 }
@@ -514,8 +619,6 @@ void gamecore_setTextInputModeCallback(gamecore_TextInputModeCallback cb, void *
     gTextInputMode = {reinterpret_cast<void *>(cb), userdata};
     psdk_set_keyboard_callback(cb ? forwardTextInputMode : nullptr, nullptr);
 }
-
-// MARK: - Session state
 
 int gamecore_isGameReady(void) {
     return gGameReady.load() ? 1 : 0;
@@ -564,8 +667,6 @@ void gamecore_resetSessionState(void) {
     gSnapshotH = 0;
 }
 
-// MARK: - Pause
-
 // onFrame stops the game thread and the audio.
 void gamecore_requestPause(void) {
     gPausedFlag.store(true);
@@ -577,6 +678,19 @@ void gamecore_requestResume(void) {
         gPausedFlag.store(false);
     }
     gResumeSignal.notify_one();
+#if TARGET_OS_OSX
+    // Wakes the paused loop in onFrame, which waits for an event.
+    [NSApp postEvent:[NSEvent otherEventWithType:NSEventTypeApplicationDefined
+                                        location:NSZeroPoint
+                                   modifierFlags:0
+                                       timestamp:0
+                                    windowNumber:0
+                                         context:nil
+                                         subtype:0
+                                           data1:0
+                                           data2:0]
+             atStart:NO];
+#endif
     {
         std::lock_guard<std::mutex> lock(gSnapshotLock);
         gSnapshotRGBA.clear();
@@ -587,12 +701,6 @@ void gamecore_requestResume(void) {
         reinterpret_cast<gamecore_ResumedCallback>(gResumed.fn)(gResumed.userdata);
     }
 }
-
-bool gamecore_isPaused(void) {
-    return gPausedFlag.load();
-}
-
-// MARK: - Snapshots
 
 bool gamecore_getSnapshotSize(int *width, int *height) {
     std::lock_guard<std::mutex> lock(gSnapshotLock);
@@ -622,8 +730,6 @@ bool gamecore_copySnapshotRGBA(unsigned char *dest, int destSize, int *width, in
     return true;
 }
 
-// MARK: - Text input
-
 // PSDK keeps one typed string, and `Input.swap_states` clears it on
 // every frame, so text that no screen reads is dropped by the next
 // frame. There is no buffer to fill, so the answer is always yes. The
@@ -644,8 +750,6 @@ void gamecore_pushTextInput(const char *utf8) {
     }
 }
 
-// MARK: - Alerts
-
 // The launcher shows the alert and calls the signal when the person
 // closes it. Nothing on this side waits, so the signals do nothing.
 void gamecore_signalErrorDismissed(void) {
@@ -653,11 +757,10 @@ void gamecore_signalErrorDismissed(void) {
 void gamecore_signalInfoDismissed(void) {
 }
 
-// MARK: - What the launcher pushes
-
-void gamecore_setLauncherIdentity(const char *name) {
+void gamecore_setLauncherIdentity(const char *name, const char *version) {
     std::lock_guard<std::mutex> guard(gLock);
     gLauncherIdentity = name ? name : "";
+    gLauncherVersion = version && *version ? version : "unknown";
 }
 
 void gamecore_setCABundlePath(const char *path) {
@@ -710,12 +813,10 @@ void gamecore_setTouchMouseEnabled(bool enabled) {
     psdk_set_touch_enabled(enabled ? 1 : 0);
 }
 
-void gamecore_setGameControllerCaptureEnabled(bool enabled) {
-    gControllerCaptureEnabled.store(enabled);
+// psdk_core.h has no call for game controllers or viewport bounds.
+void gamecore_setGameControllerCaptureEnabled(bool) {
 }
-
-void gamecore_setShowViewportBounds(bool enabled) {
-    gShowViewportBounds.store(enabled);
+void gamecore_setShowViewportBounds(bool) {
 }
 void gamecore_setViewportBoundsColor(float, float, float, float) {
 }
@@ -766,14 +867,11 @@ void gamecore_applySessionConfig(const GameCoreSessionConfig *config) {
     placeOutputRegion();
 }
 
-// MARK: - What the launcher reads
-
-// The keys are "smoothScaling" and "fixedAspectRatio", each "1" or "0".
 void gamecore_setSetting(const char *key, const char *value) {
     const bool on = value && std::strcmp(value, "1") == 0;
-    if (key && std::strcmp(key, "smoothScaling") == 0) {
+    if (key && std::strcmp(key, GAMECORE_SETTING_SMOOTH_SCALING) == 0) {
         psdk_set_smooth(on ? 1 : 0);
-    } else if (key && std::strcmp(key, "fixedAspectRatio") == 0) {
+    } else if (key && std::strcmp(key, GAMECORE_SETTING_FIXED_ASPECT_RATIO) == 0) {
         gFixedAspectRatio.store(on);
         placeOutputRegion();
     } else {

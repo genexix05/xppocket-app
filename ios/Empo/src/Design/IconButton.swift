@@ -104,6 +104,7 @@ private struct IconGlassModifier: ViewModifier {
 private struct IconPressStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
+            .glassPress(configuration.isPressed)
             .onChange(of: configuration.isPressed) { _, pressed in
                 if pressed { Haptics.tap() }
             }

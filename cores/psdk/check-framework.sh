@@ -8,13 +8,17 @@
 # check. Only psdk_ names out, no Ruby and no LiteRGSS name in.
 #
 # Usage:
-#   cores/psdk/check-framework.sh [--sdk iphoneos|iphonesimulator]
+#   cores/psdk/check-framework.sh [--sdk iphoneos|iphonesimulator|macosx]
 #   cores/psdk/check-framework.sh --framework <path> --sdk <sdk>
 #
 # Without --framework, it checks the four PSDK cores in the build tree.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+# shellcheck source=cores/framework-common.sh
+. "$REPO_ROOT/cores/framework-common.sh"
+# shellcheck source=cores/cores.sh
+. "$REPO_ROOT/cores/cores.sh"
 SDK="${PLATFORM_NAME:-iphoneos}"
 FRAMEWORKS=()
 
@@ -36,7 +40,8 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ "${#FRAMEWORKS[@]}" -eq 0 ]; then
-    for ruby in 25 30 32 33; do
+    read -ra RUBIES <<<"$(psdk_rubies)"
+    for ruby in "${RUBIES[@]}"; do
         FRAMEWORKS+=("$REPO_ROOT/ios/Dependencies/build-${SDK}-arm64/Psdk${ruby}Core.framework")
     done
 fi
@@ -48,9 +53,9 @@ fail() {
 
 # A launcher opens the core and calls every name GameCore.h declares.
 # A missing one aborts in the forwarder, so fail here first.
-WANT_NAMES=$("$REPO_ROOT/cores/gamecore-exports.sh" /dev/stdout)
+WANT_NAMES=$(sort -u "$REPO_ROOT/cores/gamecore.exports")
 
-if [ "$SDK" = iphonesimulator ]; then WANT_PLATFORM=7; else WANT_PLATFORM=2; fi
+WANT_PLATFORM="$(platform_number "$SDK")"
 
 for FW in "${FRAMEWORKS[@]}"; do
     NAME="$(basename "$FW" .framework)"
@@ -80,11 +85,12 @@ for FW in "${FRAMEWORKS[@]}"; do
     otool -l "$BIN" | grep -Eq "platform ${WANT_PLATFORM}([[:space:]]|$)" ||
         fail "$NAME is not built for $SDK (platform $WANT_PLATFORM)"
 
-    FILES="Info.plist PsdkSupport/compat.rb
+    FILES="Info.plist PrivacyInfo.xcprivacy PsdkSupport/compat.rb
         PsdkSupport/ruby-dist/lib/LiteRGSS.rb PsdkSupport/ruby-dist/lib/SFMLAudio.rb PsdkSupport/uri.rb"
     [ "$NAME" = Psdk25Core ] && FILES="$FILES PsdkSupport/litergss1.rb PsdkSupport/RubyFmod.rb"
+    RES="$(resources_dir "$FW" "$SDK")"
     for f in $FILES; do
-        [ -e "$FW/$f" ] || fail "$NAME.framework/$f missing"
+        [ -e "$RES/$f" ] || fail "$NAME.framework/$f missing"
     done
 
     echo "OK: $NAME.framework is closed for $SDK"

@@ -72,6 +72,46 @@ final class RescuedSavesTests: XCTestCase {
         XCTAssertNil(RescuedSaves.readMarker(inBucket: bucket))
     }
 
+    // MARK: - The backup exclusion of SPEC 5.13
+
+    func testANewBucketIsNotExcludedFromBackup() throws {
+        let bucket = try makeBucket("Fixture Quest", identity: "Fixture Quest")
+
+        XCTAssertFalse(RescuedSaves.isExcludedFromBackup(bucket: bucket))
+    }
+
+    func testTheDeleteMarksTheBucketOutOfTheBackupSet() throws {
+        let bucket = try makeBucket("Fixture Quest", identity: "Fixture Quest")
+
+        XCTAssertTrue(RescuedSaves.excludeFromBackup(bucket: bucket))
+
+        XCTAssertTrue(RescuedSaves.isExcludedFromBackup(bucket: bucket))
+        // The exclusion keeps the identity the rescue wrote, so the
+        // bucket still matches its game on this device.
+        XCTAssertEqual(
+            RescuedSaves.readMarker(inBucket: bucket)?.folderName, "Fixture Quest")
+    }
+
+    func testABucketWithNoMarkerStillTakesTheExclusion() throws {
+        let bucket = try makeBucket("Orphan", identity: nil)
+
+        XCTAssertTrue(RescuedSaves.excludeFromBackup(bucket: bucket))
+        XCTAssertTrue(RescuedSaves.isExcludedFromBackup(bucket: bucket))
+    }
+
+    func testAnExcludedBucketLeavesTheBackupSet() throws {
+        let bucket = try makeBucket(
+            "Fixture Quest", identity: "Fixture Quest", files: ["Save1.rxdata": "slot"])
+        let request = LibraryBackupSetRequest(rescuedSavesBuckets: ["Fixture Quest": bucket])
+        XCTAssertFalse(BackupSetResolver.resolveLibraryStream(request).members.isEmpty)
+
+        RescuedSaves.excludeFromBackup(bucket: bucket)
+
+        // The saves the delete of 5.13 drained do not go back to the
+        // remote on the next run.
+        XCTAssertTrue(BackupSetResolver.resolveLibraryStream(request).members.isEmpty)
+    }
+
     // MARK: - Matching
 
     func testMatchingPrefersTheMarkerIdentityOverTheBucketName() throws {
@@ -83,6 +123,38 @@ final class RescuedSavesTests: XCTestCase {
             in: tempRoot, folderName: "Pokemon Example")
 
         XCTAssertEqual(matches, [bucket])
+    }
+
+    func testARestoreWritesOnlyItsOwnBucketsAndNewOnes() throws {
+        let own = try makeBucket("Nickname", identity: "Pokemon Example")
+        _ = try makeBucket("Other Game", identity: "Other Game")
+
+        let buckets = RescuedSaves.restorableBuckets(
+            named: ["Nickname", "Other Game", "New Bucket", "..", "a/b", ""],
+            in: tempRoot, folderName: "Pokemon Example")
+
+        XCTAssertEqual(buckets["Nickname"], own)
+        XCTAssertEqual(
+            buckets["New Bucket"], tempRoot.appendingPathComponent("New Bucket", isDirectory: true))
+        XCTAssertEqual(Set(buckets.keys), ["Nickname", "New Bucket"])
+    }
+
+    func testARestoreFindsItsOwnBucketInAnotherCase() throws {
+        let own = try makeBucket("nickname", identity: "Pokemon Example")
+
+        let buckets = RescuedSaves.restorableBuckets(
+            named: ["Nickname"], in: tempRoot, folderName: "Pokemon Example")
+
+        XCTAssertEqual(buckets["Nickname"], own)
+    }
+
+    func testTheStreamOfNoGameKeepsEveryPlainBucketName() throws {
+        _ = try makeBucket("Other Game", identity: "Other Game")
+
+        let buckets = RescuedSaves.restorableBuckets(
+            named: ["Other Game", "..", "a/b"], in: tempRoot, folderName: nil)
+
+        XCTAssertEqual(Set(buckets.keys), ["Other Game"])
     }
 
     func testMatchingIsCaseInsensitive() throws {
@@ -189,8 +261,40 @@ final class RescuedSavesTests: XCTestCase {
             "rescued")
     }
 
+    func testTheMarkerStaysWhileTheSavesMove() throws {
+        let bucket = try makeBucket(
+            "Nickname", identity: "Pokemon Example",
+            files: ["Save A.rxdata": "slot a", "Save B.rxdata": "slot b"])
+        let gameRoot = tempRoot.appendingPathComponent("Game", isDirectory: true)
+        try fm.createDirectory(at: gameRoot, withIntermediateDirectories: true)
+        let failing = FailingFileManager()
+        var identitiesDuringMoves: [RescuedSaves.Identity?] = []
+        failing.onMove = {
+            identitiesDuringMoves.append(RescuedSaves.readMarker(inBucket: bucket))
+        }
+
+        let outcome = RescuedSaves.restore(from: bucket, into: gameRoot, fm: failing)
+
+        XCTAssertTrue(outcome.isComplete)
+        XCTAssertTrue(outcome.removedSource)
+        XCTAssertEqual(
+            identitiesDuringMoves,
+            Array(repeating: RescuedSaves.Identity(folderName: "Pokemon Example"), count: 2))
+        XCTAssertFalse(fm.fileExists(atPath: bucket.path))
+    }
+
+    func testAMarkerFromBeforeTheBackupFlagReadsAsIncluded() throws {
+        let bucket = try makeBucket("Nickname", identity: nil)
+        try Data(#"{"folderName":"Pokemon Example"}"#.utf8)
+            .write(to: bucket.appendingPathComponent(RescuedSaves.markerName))
+
+        XCTAssertEqual(
+            RescuedSaves.readMarker(inBucket: bucket),
+            RescuedSaves.Identity(folderName: "Pokemon Example", backupExcluded: false))
+    }
+
     #if canImport(Darwin)
-    func testPartialRestoreRewritesTheMarkerForTheNextAttempt() throws {
+    func testPartialRestoreKeepsTheMarkerForTheNextAttempt() throws {
         // An unlistable subdirectory makes the drain fail on
         // that entry. The bucket must stay identifiable.
         let bucket = try makeBucket(

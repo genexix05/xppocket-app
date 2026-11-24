@@ -5,7 +5,7 @@ import Foundation
 import GameProbe
 import Observation
 import SwiftUI
-import Synchronization
+import os
 
 struct QueuedImportRequest: Identifiable, Hashable, Sendable {
     let id: UUID
@@ -72,6 +72,32 @@ struct ImportReplacePrompt: Identifiable {
     let titles: [String]
 
     var id: UUID { requestID }
+
+    var title: String {
+        #if os(macOS)
+        if titles.count > 1 { return String(localized: "These games are already in your library.") }
+        return String(localized: "This game is already in your library.")
+        #else
+        if titles.count > 1 { return String(localized: "These games are already in your library") }
+        return String(localized: "This game is already in your library")
+        #endif
+    }
+
+    var message: String {
+        if titles.count == 1, let name = titles.first {
+            return String(
+                localized:
+                    "\"\(name)\" is already in your library. Importing replaces its files with the new ones. Your saves and settings stay. You can't undo this.",
+                comment: "The placeholder is the game's name."
+            )
+        }
+        let names = titles.map { "\"\($0)\"" }.formatted(.list(type: .and))
+        return String(
+            localized:
+                "\(names) are already in your library. Importing replaces their files with the new ones. Your saves and settings stay. You can't undo this.",
+            comment: "The placeholder is a list of game names."
+        )
+    }
 }
 
 struct ImportPipelineAlert: Identifiable {
@@ -114,11 +140,18 @@ struct ImportPreparedSource: Hashable, Sendable {
     }
 }
 
+/// A source that finished probing, and what the probe found.
+struct ProbedSource {
+    let source: ImportPreparedSource
+    let inventory: ArchiveExtractor.Inventory?
+}
+
 struct ImportPipelineSession {
     enum State {
         case staging
-        case probing
+        case probing(ImportPreparedSource)
         case awaitingChoice(
+            ProbedSource,
             [GameImportValidator.ImportRootChoice],
             updatingChoiceIDs: Set<String>
         )
@@ -126,13 +159,21 @@ struct ImportPipelineSession {
         /// paths) the user already approved in the picker's Update
         /// step - the alert asks only about the others, and
         /// declining drops only the others.
-        case awaitingReplaceConfirmation([PlannedImport], approvedUpdateIDs: Set<String>)
+        case awaitingReplaceConfirmation(
+            ProbedSource, [PlannedImport], approvedUpdateIDs: Set<String>)
         case launching
+
+        var preparedSource: ImportPreparedSource? {
+            switch self {
+            case .staging, .launching: nil
+            case .probing(let source): source
+            case .awaitingChoice(let probed, _, _), .awaitingReplaceConfirmation(let probed, _, _):
+                probed.source
+            }
+        }
     }
 
     let request: QueuedImportRequest
-    var preparedSource: ImportPreparedSource?
-    var probeInventory: ArchiveExtractor.Inventory?
     var state: State
 }
 
@@ -147,7 +188,7 @@ final class ImportPipeline {
 
     var activePrompt: ImportRootPrompt? {
         guard let currentSession else { return nil }
-        guard case .awaitingChoice(let choices, let updatingChoiceIDs) = currentSession.state
+        guard case .awaitingChoice(_, let choices, let updatingChoiceIDs) = currentSession.state
         else { return nil }
         return ImportRootPrompt(
             request: currentSession.request,
@@ -159,7 +200,7 @@ final class ImportPipeline {
     var activeReplacePrompt: ImportReplacePrompt? {
         guard let currentSession else { return nil }
         guard
-            case .awaitingReplaceConfirmation(let plans, let approvedUpdateIDs) =
+            case .awaitingReplaceConfirmation(_, let plans, let approvedUpdateIDs) =
                 currentSession.state
         else {
             return nil
@@ -177,6 +218,7 @@ final class ImportPipeline {
         )
     }
 
+    #if os(iOS)
     var importButtonPhase: ImportButton.Phase {
         if activePrompt != nil {
             return .multipleGames
@@ -185,6 +227,25 @@ final class ImportPipeline {
             return .validating
         }
         return .idle
+    }
+
+    private var openGameNames: [String] {
+        [PauseManager.shared.pausedGame?.id ?? AppState.shared.selectedGame?.id].compactMap { $0 }
+    }
+    #else
+    private var openGameNames: [String] { GameLauncher.shared.playingGameIDs }
+    #endif
+
+    private var refusedOpenGameMessage: String {
+        #if os(iOS)
+        guard EngineSessionCoordinator.shared.canEndGame else {
+            return String(
+                localized:
+                    "This game is still running. Close XP Pocket from the app switcher, reopen it, then import again."
+            )
+        }
+        #endif
+        return String(localized: "This game is open. Quit it, then import again.")
     }
 
     func configure(library: GameLibrary) {
@@ -208,7 +269,7 @@ final class ImportPipeline {
         guard let currentSession else { return }
         guard case .awaitingChoice = currentSession.state else { return }
 
-        currentSession.preparedSource?.cleanup()
+        currentSession.state.preparedSource?.cleanup()
         self.currentSession = nil
         startNextResolutionIfPossible()
     }
@@ -222,9 +283,10 @@ final class ImportPipeline {
         approvedUpdateIDs: Set<String>
     ) {
         guard let currentSession else { return }
-        guard case .awaitingChoice = currentSession.state else { return }
+        guard case .awaitingChoice(let probed, _, _) = currentSession.state else { return }
 
         launchImports(
+            probed,
             choices.map(ImportSelection.init(choice:)),
             for: currentSession.request.id,
             updatesApprovedFor: approvedUpdateIDs
@@ -241,10 +303,11 @@ final class ImportPipeline {
     /// every planned selection proceeds, replacements included.
     func confirmReplace() {
         guard let currentSession else { return }
-        guard case .awaitingReplaceConfirmation(let plans, _) = currentSession.state else {
+        guard case .awaitingReplaceConfirmation(let probed, let plans, _) = currentSession.state
+        else {
             return
         }
-        proceed(with: plans, for: currentSession.request.id)
+        proceed(with: plans, from: probed, for: currentSession.request.id)
     }
 
     /// User declined: only the UNAPPROVED conflicting selections
@@ -253,7 +316,7 @@ final class ImportPipeline {
     func cancelReplace() {
         guard let currentSession else { return }
         guard
-            case .awaitingReplaceConfirmation(let plans, let approvedUpdateIDs) =
+            case .awaitingReplaceConfirmation(let probed, let plans, let approvedUpdateIDs) =
                 currentSession.state
         else {
             return
@@ -264,12 +327,12 @@ final class ImportPipeline {
                 || approvedUpdateIDs.contains(plan.selection.relativePath)
         }
         guard !remaining.isEmpty else {
-            currentSession.preparedSource?.cleanup()
+            probed.source.cleanup()
             self.currentSession = nil
             startNextResolutionIfPossible()
             return
         }
-        proceed(with: remaining, for: currentSession.request.id)
+        proceed(with: remaining, from: probed, for: currentSession.request.id)
     }
 
     func cancelValidation() {
@@ -299,8 +362,7 @@ final class ImportPipeline {
                     return
                 }
 
-                currentSession?.preparedSource = preparedSource
-                currentSession?.state = .probing
+                currentSession?.state = .probing(preparedSource)
 
                 let probeResult = try await ImportPipelineService.probeChoices(for: preparedSource)
                 guard isCurrentSession(request.id) else {
@@ -308,17 +370,19 @@ final class ImportPipeline {
                     return
                 }
 
-                currentSession?.probeInventory = probeResult.inventory
+                let probed = ProbedSource(source: preparedSource, inventory: probeResult.inventory)
                 let choices = probeResult.choices
 
                 if choices.count > 1 {
                     currentSession?.state = .awaitingChoice(
+                        probed,
                         choices,
                         updatingChoiceIDs: Self.updatingChoiceIDs(for: choices)
                     )
                     resolutionTask = nil
                 } else {
                     launchImports(
+                        probed,
                         choices.map(ImportSelection.init(choice:)),
                         for: request.id,
                         updatesApprovedFor: []
@@ -326,14 +390,14 @@ final class ImportPipeline {
                 }
             } catch is CancellationError {
                 guard isCurrentSession(request.id) else { return }
-                currentSession?.preparedSource?.cleanup()
+                currentSession?.state.preparedSource?.cleanup()
                 currentSession = nil
                 resolutionTask = nil
                 startNextResolutionIfPossible()
             } catch {
                 guard isCurrentSession(request.id) else { return }
 
-                currentSession?.preparedSource?.cleanup()
+                currentSession?.state.preparedSource?.cleanup()
                 currentSession = nil
                 resolutionTask = nil
                 presentError(
@@ -367,18 +431,13 @@ final class ImportPipeline {
     /// whose installed status changed while the picker was open)
     /// still raises the confirmation alert.
     private func launchImports(
+        _ probed: ProbedSource,
         _ selections: [ImportSelection],
         for requestID: UUID,
         updatesApprovedFor approvedUpdateIDs: Set<String>
     ) {
         guard var currentSession else { return }
         guard currentSession.request.id == requestID else { return }
-        guard currentSession.preparedSource != nil else {
-            self.currentSession = nil
-            resolutionTask = nil
-            startNextResolutionIfPossible()
-            return
-        }
 
         let plans = planImports(selections)
 
@@ -388,13 +447,13 @@ final class ImportPipeline {
         }
         if needsConfirmation {
             currentSession.state = .awaitingReplaceConfirmation(
-                plans, approvedUpdateIDs: approvedUpdateIDs)
+                probed, plans, approvedUpdateIDs: approvedUpdateIDs)
             self.currentSession = currentSession
             resolutionTask = nil
             return
         }
 
-        proceed(with: plans, for: requestID)
+        proceed(with: plans, from: probed, for: requestID)
     }
 
     /// Resolve each selection to its destination folder name (the
@@ -443,7 +502,7 @@ final class ImportPipeline {
         let context = ImportNameResolution.Context(
             installedFolderNames: installed.map(\.folderName),
             inFlightNames: inFlightNames,
-            openGameName: PauseManager.shared.pausedGame?.id ?? AppState.shared.selectedGame?.id
+            openGameNames: openGameNames
         )
 
         var reservedBatchKeys = Set<String>()
@@ -505,25 +564,16 @@ final class ImportPipeline {
                     selection.displayName)
                 presentError(
                     name: selection.displayName,
-                    message: String(
-                        localized:
-                            "This game is still running. Close XP Pocket from the app switcher, reopen it, then import again."
-                    )
+                    message: refusedOpenGameMessage
                 )
             }
         }
         return plans
     }
 
-    private func proceed(with plans: [PlannedImport], for requestID: UUID) {
+    private func proceed(with plans: [PlannedImport], from probed: ProbedSource, for requestID: UUID) {
         guard var currentSession else { return }
         guard currentSession.request.id == requestID else { return }
-        guard let preparedSource = currentSession.preparedSource else {
-            self.currentSession = nil
-            resolutionTask = nil
-            startNextResolutionIfPossible()
-            return
-        }
 
         currentSession.state = .launching
         self.currentSession = currentSession
@@ -541,9 +591,9 @@ final class ImportPipeline {
         }
 
         startImports(
-            from: preparedSource,
+            from: probed.source,
             archiveName: currentSession.request.archiveName,
-            inventory: currentSession.probeInventory,
+            inventory: probed.inventory,
             plans: plans
         )
 
@@ -595,9 +645,11 @@ final class ImportPipeline {
             preparedSource.cleanup()
 
             let succeeded = batchSelections.count - failures.count
+            #if os(iOS)
             if succeeded > 0 {
                 Haptics.impact()
             }
+            #endif
             for (selection, error) in failures where !(error is GameLibrary.ImportCancelled) {
                 self.presentError(
                     name: selection.displayName,
@@ -612,7 +664,7 @@ final class ImportPipeline {
 
         resolutionTask?.cancel()
         resolutionTask = nil
-        currentSession.preparedSource?.cleanup()
+        currentSession.state.preparedSource?.cleanup()
         self.currentSession = nil
         startNextResolutionIfPossible()
     }
@@ -673,6 +725,7 @@ private enum ImportPipelineService {
                 let copyURL = copyDirectoryURL.appendingPathComponent(url.lastPathComponent)
                 do {
                     try fm.copyItem(at: url, to: copyURL)
+                    try GameTreeUpdate.removeSymbolicLinks(under: copyURL, fm: fm)
                 } catch {
                     try? fm.removeItem(at: copyDirectoryURL)
                     throw error
@@ -694,11 +747,16 @@ private enum ImportPipelineService {
                 }
             }
 
+            #if os(iOS)
             do {
                 try fm.moveItem(at: url, to: archiveCopyURL)
             } catch {
                 try fm.copyItem(at: url, to: archiveCopyURL)
             }
+            #else
+            // The Mac open panel and a drop give the user's own file, not a copy.
+            try fm.copyItem(at: url, to: archiveCopyURL)
+            #endif
             copied = true
 
             return ImportPreparedSource(
@@ -769,33 +827,34 @@ extension GameLibrary {
         var errorDescription: String? {
             switch self {
             case .outOfSpace:
+                #if os(macOS)
+                return String(
+                    localized: "Not enough space to import. Free up space on this Mac and try again.")
+                #else
                 return String(
                     localized: "Not enough space to import. Free up space on your device and try again.")
+                #endif
             }
         }
-    }
-
-    /// True when `error` is the Foundation / POSIX flavor of "disk
-    /// full". Covers both `NSFileWriteOutOfSpaceError` (from
-    /// FileManager writes) and `ENOSPC` (from libc-level calls that
-    /// libarchive bubbles up as NSError).
-    nonisolated static func isOutOfSpace(_ error: Error) -> Bool {
-        let ns = error as NSError
-        if ns.domain == NSCocoaErrorDomain && ns.code == NSFileWriteOutOfSpaceError {
-            return true
-        }
-        if ns.domain == NSPOSIXErrorDomain && ns.code == Int(ENOSPC) {
-            return true
-        }
-        return false
     }
 
     nonisolated func isImportCancelled(_ id: String) -> Bool {
         cancelledImports.withLock { $0.contains(id) }
     }
 
+    /// Does nothing when the import is gone: a flag with no import to
+    /// consume it would cancel a later import of the same folder.
     nonisolated func cancelImport(_ id: String) {
-        cancelledImports.withLock { _ = $0.insert(id) }
+        inFlightImports.withLock { inFlight in
+            if inFlight.contains(id) { cancelledImports.withLock { _ = $0.insert(id) } }
+        }
+    }
+
+    nonisolated func endInFlightImport(_ id: String) {
+        inFlightImports.withLock { inFlight in
+            _ = inFlight.remove(id)
+            cancelledImports.withLock { _ = $0.remove(id) }
+        }
     }
 
     nonisolated func clearCancellation(_ id: String) {
@@ -841,7 +900,7 @@ extension GameLibrary {
         let isReplacement = replacingImports.withLock { $0.remove(importID) != nil }
         if isReplacement {
             if let resolvedContainer {
-                mergeImportedGame(container: resolvedContainer)
+                Task { await mergeImportedGame(container: resolvedContainer) }
             }
             return
         }
@@ -1032,7 +1091,7 @@ extension GameLibrary {
             func failSelection(_ sel: GameLibrary.BatchSelection, _ error: Error) {
                 failures.append((sel, error))
                 active.removeAll { $0.importID == sel.importID }
-                self.inFlightImports.withLock { _ = $0.remove(sel.importID) }
+                self.endInFlightImport(sel.importID)
                 Task { @MainActor in
                     GameLibrary.shared.abandonImport(
                         importID: sel.importID, container: containers[sel.importID])
@@ -1165,11 +1224,17 @@ extension GameLibrary {
                     let tmpDest = tmpDir.appendingPathComponent(folderName)
 
                     try ImportSignpost.interval("stage-source", id: batchID) {
+                        #if os(macOS)
+                        // The Mac imports the user's own folder, not a copy.
+                        try fm.copyItem(at: sourceURL, to: tmpDest)
+                        #else
                         do {
                             try fm.moveItem(at: sourceURL, to: tmpDest)
                         } catch {
                             try fm.copyItem(at: sourceURL, to: tmpDest)
                         }
+                        #endif
+                        try GameTreeUpdate.removeSymbolicLinks(under: tmpDest, fm: fm)
                     }
                     try ImportSignpost.interval("unpack-packed-exe", id: batchID) {
                         try EnigmaVirtualBoxImport.unpackAll(under: tmpDest) {
@@ -1330,7 +1395,7 @@ extension GameLibrary {
                             GameContainer.normalizeImportedGamePermissions(at: container.gameURL)
                         }
                     } catch {
-                        let surfaced: Error = Self.isOutOfSpace(error) ? ImportError.outOfSpace : error
+                        let surfaced: Error = error.isOutOfSpace ? ImportError.outOfSpace : error
                         failSelection(sel, surfaced)
                         continue
                     }
@@ -1381,13 +1446,14 @@ extension GameLibrary {
                     }
 
                     committed = true
-                    self.inFlightImports.withLock { _ = $0.remove(sel.importID) }
                     active.removeAll { $0.importID == sel.importID }
                     self.updateCardProgress(sel.importID, 1.0)
 
-                    await MainActor.run {
-                        GameLibrary.shared.mergeImportedGame(container: container)
-                    }
+                    // The import stays registered until the card is
+                    // ready. A library reload in between skips this
+                    // game, so it cannot replace the import card.
+                    await GameLibrary.shared.mergeImportedGame(container: container)
+                    self.endInFlightImport(sel.importID)
                 }
 
                 await finishBatch(failures)
@@ -1398,7 +1464,7 @@ extension GameLibrary {
                 failAllActive(ImportCancelled())
                 await finishBatch(failures)
             } catch {
-                let surfaced: Error = Self.isOutOfSpace(error) ? ImportError.outOfSpace : error
+                let surfaced: Error = error.isOutOfSpace ? ImportError.outOfSpace : error
                 failAllActive(surfaced)
                 await finishBatch(failures)
             }

@@ -4,7 +4,12 @@
 import Foundation
 import Observation
 import SwiftUI
+
+#if os(iOS)
 import UIKit
+#else
+import AppKit
+#endif
 
 enum LibraryDisplayMode: String, CaseIterable {
     case grid
@@ -31,6 +36,20 @@ enum LibrarySortOption: String, CaseIterable {
     case smallestSize
 
     var label: LocalizedStringResource {
+        #if os(macOS)
+        switch self {
+        case .titleAZ: "Title A to Z"
+        case .titleZA: "Title Z to A"
+        case .recentlyAdded: "Recently Added"
+        case .leastRecentlyAdded: "Added Longest Ago"
+        case .recentlyPlayed: "Recently Played"
+        case .leastRecentlyPlayed: "Played Longest Ago"
+        case .mostPlayed: "Most Played"
+        case .leastPlayed: "Least Played"
+        case .largestSize: "Largest First"
+        case .smallestSize: "Smallest First"
+        }
+        #else
         switch self {
         case .titleAZ: "Title A to Z"
         case .titleZA: "Title Z to A"
@@ -43,6 +62,7 @@ enum LibrarySortOption: String, CaseIterable {
         case .largestSize: "Largest first"
         case .smallestSize: "Smallest first"
         }
+        #endif
     }
 
     var icon: String {
@@ -112,6 +132,7 @@ enum AppTheme: String, CaseIterable {
         }
     }
 
+    #if os(iOS)
     var userInterfaceStyle: UIUserInterfaceStyle {
         switch self {
         case .dark: .dark
@@ -119,26 +140,15 @@ enum AppTheme: String, CaseIterable {
         case .auto: .unspecified
         }
     }
+    #endif
 }
 
-// We removed the `ExperimentalFeature` enum and its `isEnabled` /
-// `setEnabled` machinery in May 2026, after `gamePause` and
-// `cheats` graduated to always-on. No experimental toggles remain.
-// We also planned `gameQuit` as an experimental feature. It never
-// landed, and we removed the quit paths in August 2026. See
-// ios/Empo/docs/multi-session.md.
-//
-// To bring back an opt-in experimental toggle later, restore:
-//   - this enum (cases + `label` + `description` + `id`)
-//   - `AppSettings.experimentalFlags`, `isEnabled`, `setEnabled`
-//   - the loop in `init` that loads the dictionary from defaults
-//   - the `experimentalBinding(for:)` helper in `SettingsView`
-//   - the `ForEach(ExperimentalFeature.allCases)` in `SettingsView`
-//   - per-feature gating sites in PlayerMoreSheet etc.
-//
-// Make the DefaultsKey strings reuse the historical
-// `experimental.<name>` shape. Users with the old toggle stored
-// then pick it up again automatically.
+/// Where a game runs: in the app, or in a game process of its own
+/// (`GameProcessHost`). See ios/Empo/docs/multi-session.md.
+enum GameRunner: String {
+    case app
+    case gameProcess
+}
 
 @MainActor
 @Observable
@@ -184,6 +194,13 @@ class AppSettings {
         didSet { UserDefaults.standard.set(debugLogs, forKey: DefaultsKey.debugLogs) }
     }
 
+    var errorReports: Bool {
+        didSet {
+            UserDefaults.standard.set(errorReports, forKey: DefaultsKey.errorReports)
+            ErrorReports.apply(enabled: errorReports)
+        }
+    }
+
     var maxLogFiles: Int {
         didSet { UserDefaults.standard.set(maxLogFiles, forKey: DefaultsKey.maxLogFiles) }
     }
@@ -198,6 +215,13 @@ class AppSettings {
 
     var controllerHaptics: Bool {
         didSet { UserDefaults.standard.set(controllerHaptics, forKey: DefaultsKey.controllerHaptics) }
+    }
+
+    var respectsSilentMode: Bool {
+        didSet {
+            UserDefaults.standard.set(respectsSilentMode, forKey: DefaultsKey.respectsSilentMode)
+            pushSilentModeToCore()
+        }
     }
 
     var titlePosition: TitlePosition {
@@ -220,6 +244,45 @@ class AppSettings {
         }
     }
 
+    #if os(macOS)
+    var quitClosesGamesWithoutAsking: Bool {
+        didSet {
+            UserDefaults.standard.set(
+                quitClosesGamesWithoutAsking, forKey: DefaultsKey.quitClosesGamesWithoutAsking)
+        }
+    }
+    #endif
+
+    /// Where the games of `GameCores.gameProcessCores` run from the next
+    /// launch. Experimental, and off
+    /// (`.app`) by default.
+    var rubyGameRunner: GameRunner {
+        didSet { UserDefaults.standard.set(rubyGameRunner.rawValue, forKey: DefaultsKey.rubyGameRunner) }
+    }
+
+    /// `rubyGameRunner` until Empo closes. A game in the app stays
+    /// for the life of the process, so a change applies at the next
+    /// launch only.
+    nonisolated static let rubyGameRunnerThisLaunch: GameRunner = {
+        let raw = UserDefaults.standard.string(forKey: DefaultsKey.rubyGameRunner) ?? ""
+        return gameProcessIsAvailable && DataDirectory.isInAppGroup ? GameRunner(rawValue: raw) ?? .app : .app
+    }()
+
+    /// The game process needs a core that cannot kill its session, and
+    /// an app group for the games and the saves. A sideload tool can
+    /// remove the extensions to save App IDs.
+    nonisolated static var gameProcessIsInBuild: Bool {
+        !GameCores.gameProcessCores.isEmpty
+            && DataDirectory.appGroupURL != nil
+            && FileManager.default.fileExists(
+                atPath: Bundle.main.bundleURL.appendingPathComponent("Extensions/GameProcess.appex").path)
+    }
+
+    nonisolated static var gameProcessIsAvailable: Bool {
+        guard #available(iOS 26.0, *) else { return false }
+        return gameProcessIsInBuild
+    }
+
     // MARK: - Splash disclaimer acknowledgment
 
     /// A version number that only increases. The flow can then prompt
@@ -239,7 +302,9 @@ class AppSettings {
 
     func acknowledgeDisclaimer() {
         disclaimerAcknowledgedVersion = Self.currentDisclaimerVersion
+        #if os(iOS)
         acknowledgeWhatsNew()
+        #endif
     }
 
     // MARK: - What's new
@@ -250,39 +315,139 @@ class AppSettings {
         }
     }
 
+    #if os(iOS)
     var needsWhatsNew: Bool {
-        whatsNewSeenVersion < WhatsNew.version
+        // Accepting the disclaimer marks the news read, so a prompt
+        // that waits behind the disclaimer would never open or finish.
+        !needsDisclaimer && whatsNewSeenVersion < WhatsNew.version
     }
 
     func acknowledgeWhatsNew() {
         whatsNewSeenVersion = WhatsNew.version
     }
+    #endif
 
     private init() {
-        let ud = UserDefaults.standard
-        let themeRaw = ud.string(forKey: DefaultsKey.theme) ?? AppTheme.auto.rawValue
-        self.theme = AppTheme(rawValue: themeRaw) ?? .auto
-        self.diagnosticsOverlay = ud.bool(forKey: DefaultsKey.debugMode)
-        self.showViewportBounds = ud.bool(forKey: DefaultsKey.showViewportBounds)
-        self.showTouchZone = ud.bool(forKey: DefaultsKey.showTouchZone)
-        self.viewportBoundsColor = Self.loadViewportBoundsColor()
-        self.debugLogs = (ud.object(forKey: DefaultsKey.debugLogs) as? Bool) ?? true
-        let storedMax = ud.integer(forKey: DefaultsKey.maxLogFiles)
-        self.maxLogFiles = storedMax > 0 ? storedMax : 20
-        self.cleanupInvalidGames = ud.bool(forKey: DefaultsKey.cleanupInvalidGames)
-        // Haptics default to on. UserDefaults.bool returns false for unset keys.
-        self.interfaceHaptics = ud.object(forKey: DefaultsKey.interfaceHaptics) as? Bool ?? true
-        self.controllerHaptics = ud.object(forKey: DefaultsKey.controllerHaptics) as? Bool ?? true
-        let raw = ud.string(forKey: DefaultsKey.titlePosition) ?? TitlePosition.inside.rawValue
-        self.titlePosition = TitlePosition(rawValue: raw) ?? .inside
-        let modeRaw = ud.string(forKey: DefaultsKey.libraryDisplayMode) ?? LibraryDisplayMode.list.rawValue
-        self.libraryDisplayMode = LibraryDisplayMode(rawValue: modeRaw) ?? .list
-        self.showContinuePlaying = ud.object(forKey: DefaultsKey.showContinuePlaying) as? Bool ?? true
-        let sortRaw = ud.string(forKey: DefaultsKey.librarySortOption) ?? LibrarySortOption.titleAZ.rawValue
-        self.librarySortOption = LibrarySortOption(rawValue: sortRaw) ?? .titleAZ
-        self.disclaimerAcknowledgedVersion = ud.integer(forKey: DefaultsKey.disclaimerAcknowledgedVersion)
-        self.whatsNewSeenVersion = ud.integer(forKey: DefaultsKey.whatsNewSeenVersion)
+        let stored = Stored(UserDefaults.standard)
+        self.theme = stored.theme
+        self.diagnosticsOverlay = stored.diagnosticsOverlay
+        self.showViewportBounds = stored.showViewportBounds
+        self.showTouchZone = stored.showTouchZone
+        self.viewportBoundsColor = stored.viewportBoundsColor
+        self.debugLogs = stored.debugLogs
+        self.errorReports = stored.errorReports
+        self.maxLogFiles = stored.maxLogFiles
+        self.cleanupInvalidGames = stored.cleanupInvalidGames
+        self.interfaceHaptics = stored.interfaceHaptics
+        self.controllerHaptics = stored.controllerHaptics
+        self.respectsSilentMode = stored.respectsSilentMode
+        self.titlePosition = stored.titlePosition
+        self.libraryDisplayMode = stored.libraryDisplayMode
+        self.showContinuePlaying = stored.showContinuePlaying
+        self.librarySortOption = stored.librarySortOption
+        self.rubyGameRunner = stored.rubyGameRunner
+        self.disclaimerAcknowledgedVersion = stored.disclaimerAcknowledgedVersion
+        self.whatsNewSeenVersion = stored.whatsNewSeenVersion
+        #if os(macOS)
+        self.quitClosesGamesWithoutAsking = stored.quitClosesGamesWithoutAsking
+        #endif
+        // A settings restore and a sync pass write UserDefaults
+        // directly.
+        NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification, object: nil, queue: .main
+        ) { _ in
+            MainActor.assumeIsolated { AppSettings.shared.reload() }
+        }
+    }
 
+    /// Each `didSet` writes UserDefaults, and that write posts the
+    /// change notification again, so only a changed value is set.
+    private func reload() {
+        let stored = Stored(UserDefaults.standard)
+        func update<Value: Equatable>(_ path: ReferenceWritableKeyPath<AppSettings, Value>, _ value: Value) {
+            if self[keyPath: path] != value { self[keyPath: path] = value }
+        }
+        update(\.theme, stored.theme)
+        update(\.diagnosticsOverlay, stored.diagnosticsOverlay)
+        update(\.showViewportBounds, stored.showViewportBounds)
+        update(\.showTouchZone, stored.showTouchZone)
+        update(\.viewportBoundsColor, stored.viewportBoundsColor)
+        update(\.debugLogs, stored.debugLogs)
+        update(\.errorReports, stored.errorReports)
+        update(\.maxLogFiles, stored.maxLogFiles)
+        update(\.cleanupInvalidGames, stored.cleanupInvalidGames)
+        update(\.interfaceHaptics, stored.interfaceHaptics)
+        update(\.controllerHaptics, stored.controllerHaptics)
+        update(\.respectsSilentMode, stored.respectsSilentMode)
+        update(\.titlePosition, stored.titlePosition)
+        update(\.libraryDisplayMode, stored.libraryDisplayMode)
+        update(\.showContinuePlaying, stored.showContinuePlaying)
+        update(\.librarySortOption, stored.librarySortOption)
+        update(\.rubyGameRunner, stored.rubyGameRunner)
+        update(\.disclaimerAcknowledgedVersion, stored.disclaimerAcknowledgedVersion)
+        update(\.whatsNewSeenVersion, stored.whatsNewSeenVersion)
+        #if os(macOS)
+        update(\.quitClosesGamesWithoutAsking, stored.quitClosesGamesWithoutAsking)
+        #endif
+    }
+
+    @MainActor
+    private struct Stored {
+        let theme: AppTheme
+        let diagnosticsOverlay: Bool
+        let showViewportBounds: Bool
+        let showTouchZone: Bool
+        let viewportBoundsColor: Color
+        let debugLogs: Bool
+        let errorReports: Bool
+        let maxLogFiles: Int
+        let cleanupInvalidGames: Bool
+        let interfaceHaptics: Bool
+        let controllerHaptics: Bool
+        let respectsSilentMode: Bool
+        let titlePosition: TitlePosition
+        let libraryDisplayMode: LibraryDisplayMode
+        let showContinuePlaying: Bool
+        let librarySortOption: LibrarySortOption
+        let rubyGameRunner: GameRunner
+        let disclaimerAcknowledgedVersion: Int
+        let whatsNewSeenVersion: Int
+        #if os(macOS)
+        let quitClosesGamesWithoutAsking: Bool
+        #endif
+
+        init(_ ud: UserDefaults) {
+            let themeRaw = ud.string(forKey: DefaultsKey.theme) ?? AppTheme.auto.rawValue
+            theme = AppTheme(rawValue: themeRaw) ?? .auto
+            diagnosticsOverlay = ud.bool(forKey: DefaultsKey.debugMode)
+            showViewportBounds = ud.bool(forKey: DefaultsKey.showViewportBounds)
+            showTouchZone = ud.bool(forKey: DefaultsKey.showTouchZone)
+            viewportBoundsColor = AppSettings.loadViewportBoundsColor()
+            debugLogs = (ud.object(forKey: DefaultsKey.debugLogs) as? Bool) ?? true
+            errorReports = (ud.object(forKey: DefaultsKey.errorReports) as? Bool) ?? true
+            let storedMax = ud.integer(forKey: DefaultsKey.maxLogFiles)
+            maxLogFiles = storedMax > 0 ? storedMax : 20
+            cleanupInvalidGames = ud.bool(forKey: DefaultsKey.cleanupInvalidGames)
+            // Haptics default to on. UserDefaults.bool returns false for unset keys.
+            interfaceHaptics = ud.object(forKey: DefaultsKey.interfaceHaptics) as? Bool ?? true
+            controllerHaptics = ud.object(forKey: DefaultsKey.controllerHaptics) as? Bool ?? true
+            respectsSilentMode = ud.bool(forKey: DefaultsKey.respectsSilentMode)
+            let raw = ud.string(forKey: DefaultsKey.titlePosition) ?? TitlePosition.inside.rawValue
+            titlePosition = TitlePosition(rawValue: raw) ?? .inside
+            let modeRaw =
+                ud.string(forKey: DefaultsKey.libraryDisplayMode) ?? LibraryDisplayMode.list.rawValue
+            libraryDisplayMode = LibraryDisplayMode(rawValue: modeRaw) ?? .list
+            showContinuePlaying = ud.object(forKey: DefaultsKey.showContinuePlaying) as? Bool ?? true
+            let sortRaw =
+                ud.string(forKey: DefaultsKey.librarySortOption) ?? LibrarySortOption.titleAZ.rawValue
+            librarySortOption = LibrarySortOption(rawValue: sortRaw) ?? .titleAZ
+            rubyGameRunner = GameRunner(rawValue: ud.string(forKey: DefaultsKey.rubyGameRunner) ?? "") ?? .app
+            disclaimerAcknowledgedVersion = ud.integer(forKey: DefaultsKey.disclaimerAcknowledgedVersion)
+            whatsNewSeenVersion = ud.integer(forKey: DefaultsKey.whatsNewSeenVersion)
+            #if os(macOS)
+            quitClosesGamesWithoutAsking = ud.bool(forKey: DefaultsKey.quitClosesGamesWithoutAsking)
+            #endif
+        }
     }
 
     private static let defaultViewportBoundsColor = Color(
@@ -301,7 +466,11 @@ class AppSettings {
     }
 
     private func resolvedRGBA() -> (r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat) {
+        #if os(iOS)
         let resolved = UIColor(viewportBoundsColor)
+        #else
+        let resolved = NSColor(viewportBoundsColor).usingColorSpace(.sRGB) ?? .orange
+        #endif
         var r: CGFloat = 0
         var g: CGFloat = 0
         var b: CGFloat = 0
@@ -326,9 +495,18 @@ class AppSettings {
     /// `EngineSessionCoordinator.openCore` calls this once the core is
     /// in.
     func pushToCore() {
+        #if os(iOS)
         guard EmpoCoreIsOpen() != 0 else { return }
         gamecore_setShowViewportBounds(showViewportBounds)
         let c = resolvedRGBA()
         gamecore_setViewportBoundsColor(Float(c.r), Float(c.g), Float(c.b), Float(c.a))
+        #endif
+    }
+
+    func pushSilentModeToCore() {
+        #if os(iOS)
+        guard EmpoCoreIsOpen() != 0 else { return }
+        EmpoCoreSetRespectsSilentMode(respectsSilentMode)
+        #endif
     }
 }

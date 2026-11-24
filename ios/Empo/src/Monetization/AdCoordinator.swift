@@ -11,6 +11,8 @@ final class AdCoordinator {
         case importComplete
         case gameLoad
         case sessionEnd
+        /// 30 minutes of play passed since the last ad.
+        case playTime
     }
 
     /// Posted once the SDK may be asked for ads (consent resolved + SDK started).
@@ -30,6 +32,16 @@ final class AdCoordinator {
     private var interstitialFailures = 0
     private var interstitialRetryAt: Date?
     private var interstitialRetryTask: Task<Void, Never>?
+
+    /// True once the game reached `AdsConfig.playTimeInterval` of play and
+    /// was paused for the ad. It stays true until an ad shows.
+    private(set) var playTimeAdDue = false
+    private static let playTimeTick: TimeInterval = 10
+
+    private var playSeconds: TimeInterval {
+        get { UserDefaults.standard.double(forKey: DefaultsKey.adPlaySeconds) }
+        set { UserDefaults.standard.set(newValue, forKey: DefaultsKey.adPlaySeconds) }
+    }
 
     private init() {}
 
@@ -117,9 +129,13 @@ final class AdCoordinator {
         }
         guard let interstitial else {
             NSLog("AdCoordinator: interstitial not ready for \(reason.rawValue)")
+            postponePlayTimeAd(for: reason)
             return
         }
-        guard let presenter = AppWindow.topViewController else { return }
+        guard let presenter = AppWindow.topViewController else {
+            postponePlayTimeAd(for: reason)
+            return
+        }
         isShowingInterstitial = true
         defer {
             isShowingInterstitial = false
@@ -136,13 +152,52 @@ final class AdCoordinator {
         }
     }
 
+    // MARK: - Play time
+
+    /// Counts the seconds of play while the game runs in the foreground.
+    /// After `AdsConfig.playTimeInterval` it pauses the game, which takes
+    /// the player back to the library. The library then shows the ad,
+    /// and the player resumes the game from there. The task ends when
+    /// the game leaves `.playing`, and RootView restarts it on the next
+    /// play.
+    func trackPlayTime(of appState: AppState) async {
+        guard shouldShowAds, AdsConfig.isConfigured else { return }
+        while !Task.isCancelled {
+            try? await Task.sleep(for: .seconds(Self.playTimeTick))
+            guard !Task.isCancelled, appState.phase == .playing else { return }
+            guard UIApplication.shared.applicationState == .active, shouldShowAds else { continue }
+            // An alert holds the game, so wait until the player closes it.
+            guard appState.shownError == nil, appState.infoMessage == nil else { continue }
+            playSeconds += Self.playTimeTick
+            guard playSeconds >= AdsConfig.playTimeInterval, !isShowingInterstitial else { continue }
+            playTimeAdDue = true
+            appState.requestPause()
+            return
+        }
+    }
+
+    /// No ad was ready for the ad of play time. The game must not pause
+    /// again at once, so the count goes back and the ad is due again in
+    /// five minutes.
+    private func postponePlayTimeAd(for reason: InterstitialReason) {
+        guard reason == .playTime else { return }
+        playTimeAdDue = false
+        playSeconds = max(AdsConfig.playTimeInterval - 5 * 60, 0)
+    }
+
+    /// The reason to ask for when a game session ends.
+    var sessionEndReason: InterstitialReason {
+        playTimeAdDue ? .playTime : .sessionEnd
+    }
+
     // MARK: - Policy
 
     private func canPresentInterstitial(reason: InterstitialReason) -> Bool {
         if isShowingInterstitial { return false }
 
-        // Every game launch shows one, regardless of the cooldown.
-        if reason == .gameLoad { return true }
+        // Every game launch shows one, regardless of the cooldown. So does
+        // the ad of 30 minutes of play.
+        if reason == .gameLoad || reason == .playTime { return true }
 
         let now = Date().timeIntervalSince1970
         if let last = UserDefaults.standard.object(forKey: DefaultsKey.lastInterstitialTimestamp) as? TimeInterval,
@@ -152,13 +207,16 @@ final class AdCoordinator {
         }
 
         switch reason {
-        case .importComplete, .gameLoad, .sessionEnd:
+        case .importComplete, .gameLoad, .sessionEnd, .playTime:
             return true
         }
     }
 
     private func recordInterstitialShown() {
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: DefaultsKey.lastInterstitialTimestamp)
+        // Any ad restarts the count of play time.
+        playSeconds = 0
+        playTimeAdDue = false
     }
 
     private var isInterstitialBackingOff: Bool {

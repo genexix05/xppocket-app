@@ -7,8 +7,11 @@ sidebar:
 
 ## Empo cannot start a different game
 
-This is a known limitation, and not a defect in the game. Force-close Empo from the app
-switcher, and open it again. [`multi-session.md`](https://github.com/mateo-m/empo-app/blob/main/ios/Empo/docs/multi-session.md) explains why.
+This is a known limitation on an iPhone or an iPad, and not a defect in the game. Force-close
+Empo from the app switcher, and open it again. [`multi-session.md`](https://github.com/mateo-m/empo-app/blob/main/ios/Empo/docs/multi-session.md) explains why.
+
+Empo 0.9.0 had a setting to switch games without a restart. Empo 0.9.1 and later do not have it for
+now. See [One game for each session](/playing#one-game-for-each-session).
 
 ## The game does not start
 
@@ -46,9 +49,18 @@ Report the game. A compatibility report with the title and the version helps.
 
 ## No music, or no sound
 
-Check the volume of the device and the silent switch first. If the game is still silent, turn on
+Check the volume of the device first. If **Respect silent mode** is on under **Settings →
+Gameplay**, also check that the device is not in silent mode. If the game is still silent, turn on
 **Debug logs**, play until the music should start, and attach the log to an issue. The log names
 each audio file that the engine opens.
+
+## MIDI music sounds different than on Windows
+
+Empo plays MIDI music with its built-in sound set, GeneralUser GS. Windows uses its own sound set,
+so some instruments sound different. To hear a game as on Windows, copy `gm.dls` from
+`C:\Windows\System32\drivers` on a Windows PC to your device. Then open **Settings → Music** and
+tap **Import Sound Set…**. On the Mac, the setting is in **Settings → General**. You can also
+import any SoundFont 2 file (`.sf2`). A game that ships its own sound set keeps it.
 
 ## A movie does not play
 
@@ -75,7 +87,7 @@ Empo keeps saves inside the folder of the game, so an app update never removes t
 A defect in versions before v0.6.1 renamed the save files of some games. Empo v0.6.1 and newer
 restore the newest save for each affected game at launch, and show a **Saves recovered** sheet.
 The renamed copies stay in the folder of the game as backups. You can reach them in the Files
-app, under **On My iPhone → Empo**.
+app. Tap **Show in Files** in Empo's **Settings**.
 
 :::warning
 Do not delete Empo to fix a problem. iOS removes the app sandbox with the app, and your games

@@ -32,11 +32,8 @@ struct GameInfoView: View {
     private let madeWith: String?
     private let coreName: String?
 
-    init(game: GameEntry) {
+    init(game: GameEntry, container: GameContainer) {
         self.game = game
-        // GameInfoView is only shown for ready entries that have a
-        // committed container on disk.
-        let container = game.container!
         let meta = GameMetadata.load(from: container)
         _metadata = State(initialValue: meta)
         _editingTitle = State(initialValue: meta.customTitle ?? "")
@@ -167,8 +164,7 @@ struct GameInfoView: View {
 
                             DetailRow("Folder name") {
                                 Text(game.id)
-                                    .monospaced()
-                                    .font(.caption)
+                                    .font(.caption.monospaced())
                                     .lineLimit(1)
                                     .truncationMode(.middle)
                                     .textSelection(.enabled)
@@ -182,7 +178,7 @@ struct GameInfoView: View {
                                 ForEach(runtimeRows) { row in
                                     DetailRow(Text(row.label)) {
                                         if let value = row.value {
-                                            Text(value).monospaced()
+                                            Text(value).font(.body.monospaced())
                                         } else {
                                             Text("Unknown")
                                                 .foregroundStyle(.secondary)
@@ -205,11 +201,16 @@ struct GameInfoView: View {
                                     .padding(.vertical, Spacing.lg)
                             }
 
-                            if let logURL = sessionLogURL(), settings.debugLogs {
+                            if let container,
+                                let report = GameReport.latest(gameTitle: displayTitle, in: container)
+                            {
                                 Divider().padding(.leading, Spacing.xl)
 
-                                ShareLink(item: logURL) {
-                                    Label("Export logs", systemImage: "square.and.arrow.up")
+                                ShareLink(
+                                    item: report,
+                                    preview: SharePreview("\(AppInfo.name) report for \(report.gameTitle)")
+                                ) {
+                                    Label("Share report", systemImage: "square.and.arrow.up")
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.horizontal, Spacing.xl)
                                         .padding(.vertical, Spacing.lg)
@@ -260,8 +261,8 @@ struct GameInfoView: View {
                 title: LocalizedStringResource(
                     "Artwork", comment: "Title of the sheet that changes the game's cover image"),
                 hasExisting: hasCustomArtwork,
-                onImageSelected: { saveArtwork($0) },
-                onRemove: { removeArtwork() }
+                onImageSelected: { saveImage($0, as: .artwork) },
+                onRemove: { removeImage(.artwork) }
             )
             .imageSourcePicker(
                 isPresented: $showBannerPicker,
@@ -269,8 +270,8 @@ struct GameInfoView: View {
                     "Banner",
                     comment: "Title of the sheet that changes the wide image at the top of the game's page"),
                 hasExisting: hasCustomBanner,
-                onImageSelected: { saveBanner($0) },
-                onRemove: { removeBanner() }
+                onImageSelected: { saveImage($0, as: .banner) },
+                onRemove: { removeImage(.banner) }
             )
             .onAppear {
                 if let container {
@@ -310,6 +311,7 @@ struct GameInfoView: View {
                 runtimeRows = await core.infoRows(for: container)
             }
             .onDisappear {
+                finishEditingTitle()
                 if needsLibraryRefresh {
                     library.refreshGameEntry(id: game.id)
                 }
@@ -476,37 +478,25 @@ struct GameInfoView: View {
         guard isEditingTitle else { return }
         isEditingTitle = false
         guard let container else { return }
-        let title = editingTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        metadata.customTitle = title.isEmpty ? nil : title
-        metadata.save(to: container)
+        metadata = GameMetadata.saveCustomTitle(editingTitle, in: container)
         needsLibraryRefresh = true
     }
 
-    private func saveCustomImage(
-        _ image: UIImage, kind: String,
-        pathGetter: (GameMetadata, GameContainer) -> String?,
-        filenameSetter: (inout GameMetadata, String?) -> Void
-    ) {
+    private func saveImage(_ image: UIImage, as kind: GameMetadata.CustomImage) {
+        guard let container, let updated = GameMetadata.saveCustomImage(image, as: kind, in: container) else {
+            return
+        }
+        metadata = updated
+        didChangeImage()
+    }
+
+    private func removeImage(_ kind: GameMetadata.CustomImage) {
         guard let container else { return }
-        if let path = pathGetter(metadata, container) {
-            ImageCache.shared.evict(path: path)
-        }
-        guard let filename = GameMetadata.saveImage(image, as: kind, in: container) else { return }
-        filenameSetter(&metadata, filename)
-        metadata.save(to: container)
-        if let path = pathGetter(metadata, container) {
-            // Second evict, now that the new bytes are on disk: the
-            // pre-write evict above can't cover a load that raced
-            // the gap and cached the old contents. Then prime the
-            // cache so cache-first readers pick up the new image.
-            ImageCache.shared.evict(path: path)
-            Task.detached(priority: .userInitiated) {
-                ImageCache.shared.prewarmThumbnail(
-                    for: path, maxPixelSize: ImageCache.PixelBudget.cell)
-                ImageCache.shared.prewarmThumbnail(
-                    for: path, maxPixelSize: ImageCache.PixelBudget.hero)
-            }
-        }
+        metadata = GameMetadata.removeCustomImage(kind, in: container)
+        didChangeImage()
+    }
+
+    private func didChangeImage() {
         // The media file lives at a fixed name, so a replacement
         // changes no model field and `refreshGameEntry`'s guarded
         // apply() notifies nobody. The revision bump is the explicit
@@ -516,64 +506,10 @@ struct GameInfoView: View {
         needsLibraryRefresh = true
     }
 
-    private func removeCustomImage(
-        pathGetter: (GameMetadata, GameContainer) -> String?,
-        filenameGetter: (GameMetadata) -> String?,
-        filenameSetter: (inout GameMetadata, String?) -> Void
-    ) {
-        guard let container else { return }
-        if let path = pathGetter(metadata, container) {
-            ImageCache.shared.evict(path: path)
-        }
-        if let filename = filenameGetter(metadata) {
-            GameMetadata.removeImage(named: filename, in: container)
-        }
-        filenameSetter(&metadata, nil)
-        metadata.save(to: container)
-        game.artworkRevision += 1
-        customImageRefreshToken += 1
-        needsLibraryRefresh = true
-    }
-
-    private func saveArtwork(_ image: UIImage) {
-        saveCustomImage(
-            image, kind: "artwork",
-            pathGetter: { $0.customArtworkPath(in: $1) },
-            filenameSetter: { $0.customArtworkFilename = $1 })
-    }
-
-    private func removeArtwork() {
-        removeCustomImage(
-            pathGetter: { $0.customArtworkPath(in: $1) },
-            filenameGetter: { $0.customArtworkFilename },
-            filenameSetter: { $0.customArtworkFilename = $1 })
-    }
-
-    private func saveBanner(_ image: UIImage) {
-        saveCustomImage(
-            image, kind: "banner",
-            pathGetter: { $0.customBannerPath(in: $1) },
-            filenameSetter: { $0.customBannerFilename = $1 })
-    }
-
-    private func removeBanner() {
-        removeCustomImage(
-            pathGetter: { $0.customBannerPath(in: $1) },
-            filenameGetter: { $0.customBannerFilename },
-            filenameSetter: { $0.customBannerFilename = $1 })
-    }
-
     private func openInFiles() {
-        let encoded = game.path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? game.path
-        if let url = URL(string: "shareddocuments://\(encoded)") {
+        if let url = DataDirectory.filesAppURL(for: game.path) {
             UIApplication.shared.open(url)
         }
-    }
-
-    private func sessionLogURL() -> URL? {
-        guard let container else { return nil }
-        let historyLog = container.sessionHistoryURL
-        return FileManager.default.fileExists(atPath: historyLog.path) ? historyLog : nil
     }
 }
 

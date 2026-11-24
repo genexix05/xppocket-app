@@ -3,7 +3,12 @@
 
 import Foundation
 import GameProbe
+
+#if os(iOS)
 import UIKit
+#else
+import AppKit
+#endif
 
 /// Write pipeline for imported games: metadata seeding and JGP
 /// finalization after files land in the container.
@@ -91,8 +96,8 @@ enum GameImporter {
         for name in ["manifest.json", "configuration.json"] {
             try? fm.removeItem(at: gameRoot.appendingPathComponent(name))
         }
-        if let iconRel = bundle.manifest.icon, !iconRel.isEmpty {
-            try? fm.removeItem(at: gameRoot.appendingPathComponent(iconRel))
+        if let iconURL = bundle.iconURL {
+            try? fm.removeItem(at: iconURL)
         }
 
         return bundle

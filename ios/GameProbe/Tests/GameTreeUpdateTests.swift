@@ -84,6 +84,53 @@ final class GameTreeUpdateTests: XCTestCase {
             contentsOf: root.appendingPathComponent(relativePath), encoding: .utf8)
     }
 
+    // MARK: - removeSymbolicLinks
+
+    func testRemoveSymbolicLinksKeepsTheTargets() throws {
+        let outside = try makeTree("outside", files: ["secret.txt": "keep"])
+        let game = try makeTree("game", files: ["Game.exe": "exe", "Data/Map.rxdata": "map"])
+        try fm.createSymbolicLink(
+            at: game.appendingPathComponent("Data/link-dir"), withDestinationURL: outside)
+        try fm.createSymbolicLink(
+            atPath: game.appendingPathComponent("link-file").path,
+            withDestinationPath: "../outside/secret.txt")
+
+        try GameTreeUpdate.removeSymbolicLinks(under: game)
+
+        XCTAssertFalse(fm.fileExists(atPath: game.appendingPathComponent("Data/link-dir").path))
+        XCTAssertNil(try? fm.destinationOfSymbolicLink(atPath: game.appendingPathComponent("link-file").path))
+        XCTAssertEqual(contents(game, "Data/Map.rxdata"), "map")
+        XCTAssertEqual(contents(outside, "secret.txt"), "keep")
+    }
+
+    func testRemoveSymbolicLinksFailsOnAFolderItCannotRead() throws {
+        try XCTSkipIf(getuid() == 0, "Root reads every folder.")
+        let game = try makeTree("game", files: ["locked/Map.rxdata": "map"])
+        let locked = game.appendingPathComponent("locked")
+        try fm.setAttributes([.posixPermissions: 0], ofItemAtPath: locked.path)
+        defer { try? fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: locked.path) }
+
+        XCTAssertThrowsError(try GameTreeUpdate.removeSymbolicLinks(under: game))
+    }
+
+    func testAnUpdateReplacesALinkInTheInstalledGameAndKeepsItsTarget() throws {
+        let outside = try makeTree("outside", files: ["Map.rxdata": "outside"])
+        let installed = try makeTree("installed/Game", files: ["Game.exe": "old"])
+        try fm.createSymbolicLink(
+            at: installed.appendingPathComponent("Data"), withDestinationURL: outside)
+        let saves = try makeTree("installed/Game/Saves", files: [:])
+        try fm.createSymbolicLink(
+            at: saves.appendingPathComponent("Save1.rxdata"),
+            withDestinationURL: outside.appendingPathComponent("Map.rxdata"))
+        let source = try makeTree("source", files: ["Data/Map.rxdata": "new"])
+
+        try GameTreeUpdate.stageAndSwap(newTree: source, over: installed)
+
+        XCTAssertEqual(contents(installed, "Data/Map.rxdata"), "new")
+        XCTAssertNil(try? fm.destinationOfSymbolicLink(atPath: saves.appendingPathComponent("Save1.rxdata").path))
+        XCTAssertEqual(contents(outside, "Map.rxdata"), "outside")
+    }
+
     // MARK: - mergeMove
 
     func testMergeIntoMissingDestinationIsAPlainMove() throws {
@@ -225,6 +272,22 @@ final class GameTreeUpdateTests: XCTestCase {
 
         XCTAssertEqual(contents(destination, "Save A.rxdata"), "transferred save")
         XCTAssertEqual(contents(destination, displaced("Save A.rxdata")), "stale save")
+    }
+
+    func testFailedProtectedReplaceKeepsTheInstalledSave() throws {
+        let source = try makeTree("source", files: ["Save A.rxdata": "transferred save"])
+        let destination = try makeTree("dest", files: ["Save A.rxdata": "stale save"])
+        try setModificationDate(source, "Save A.rxdata", Date(timeIntervalSince1970: 2000))
+        try setModificationDate(destination, "Save A.rxdata", Date(timeIntervalSince1970: 1000))
+        let failing = FailingFileManager()
+        failing.failMoveFrom = source.appendingPathComponent("Save A.rxdata")
+
+        XCTAssertThrowsError(
+            try GameTreeUpdate.mergeMove(
+                from: source, into: destination, protecting: ["Save A.rxdata"], fm: failing))
+
+        XCTAssertEqual(contents(destination, "Save A.rxdata"), "stale save")
+        XCTAssertNil(contents(destination, displaced("Save A.rxdata")))
     }
 
     func testProtectedCollisionTieGoesToTheIncomingFile() throws {
@@ -514,6 +577,20 @@ final class GameTreeUpdateTests: XCTestCase {
                 atPath: parent.appendingPathComponent(GameTreeUpdate.backupDirectoryName).path))
     }
 
+    func testStageAndSwapRestoresAMissingTreeBeforeItClearsLeftovers() throws {
+        let parent = tempRoot.appendingPathComponent("container", isDirectory: true)
+        let target = parent.appendingPathComponent("Game", isDirectory: true)
+        _ = try makeTree(
+            "container/\(GameTreeUpdate.backupDirectoryName)",
+            files: ["Game.exe": "v1", "Save01.rxdata": "precious save"])
+        let source = try makeTree("incoming", files: ["Game.exe": "v2"])
+
+        try GameTreeUpdate.stageAndSwap(newTree: source, over: target)
+
+        XCTAssertEqual(contents(target, "Game.exe"), "v2")
+        XCTAssertEqual(contents(target, "Save01.rxdata"), "precious save")
+    }
+
     func testStageAndSwapFailureLeavesTargetUntouched() throws {
         let target = try makeTree(
             "container/Game",
@@ -711,11 +788,11 @@ final class GameTreeUpdateTests: XCTestCase {
 
     // MARK: - sweepInterruptedUpdate
 
-    func testSweepRestoresMergedTreeWhenSwapDiedBetweenRenames() throws {
+    func testSweepRestoresTheOldTreeWhenSwapDiedBetweenRenames() throws {
         // replaceItemAt = rename target->backup, rename
         // staging->target, delete backup. A kill between the
-        // renames leaves NO target. The staging tree (fully merged)
-        // must be restored, never swept.
+        // renames leaves NO target. The update did not finish, so
+        // the backup (the old tree) comes back, as on a failed swap.
         let parent = tempRoot.appendingPathComponent("container", isDirectory: true)
         let target = parent.appendingPathComponent("Game", isDirectory: true)
         _ = try makeTree(
@@ -727,9 +804,9 @@ final class GameTreeUpdateTests: XCTestCase {
 
         let outcome = GameTreeUpdate.sweepInterruptedUpdate(target: target)
 
-        XCTAssertEqual(outcome.restoredFrom, GameTreeUpdate.stagingDirectoryName)
-        XCTAssertEqual(outcome.removed, [GameTreeUpdate.backupDirectoryName])
-        XCTAssertEqual(contents(target, "Game.exe"), "v2 merged")
+        XCTAssertEqual(outcome.restoredFrom, GameTreeUpdate.backupDirectoryName)
+        XCTAssertEqual(outcome.removed, [GameTreeUpdate.stagingDirectoryName])
+        XCTAssertEqual(contents(target, "Game.exe"), "v1")
         XCTAssertEqual(contents(target, "Save01.rxdata"), "precious save")
     }
 

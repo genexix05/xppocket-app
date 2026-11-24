@@ -2,7 +2,6 @@
 // Copyright (C) 2026 Mateo M. Additional terms apply: see ADDITIONAL-TERMS.md.
 
 import SwiftUI
-import UIKit
 
 /// Root picker for sources that contain more than one game,
 /// presented as up to two steps:
@@ -54,12 +53,10 @@ struct ImportRootPickerSheet: View {
         self.onCancel = onCancel
         self.onConfirm = onConfirm
 
-        let updateChoices = prompt.choices.filter { prompt.updatingChoiceIDs.contains($0.id) }
-        let freshChoices = prompt.choices.filter { !prompt.updatingChoiceIDs.contains($0.id) }
-        self.freshChoices = freshChoices
-        self.updateChoices = updateChoices
-        _step = State(initialValue: freshChoices.isEmpty ? .update : .add)
-        _selectedUpdateIDs = State(initialValue: Set(updateChoices.map(\.id)))
+        freshChoices = prompt.freshChoices
+        updateChoices = prompt.updateChoices
+        _step = State(initialValue: prompt.freshChoices.isEmpty ? .update : .add)
+        _selectedUpdateIDs = State(initialValue: Set(prompt.updateChoices.map(\.id)))
     }
 
     private var stepChoices: [GameImportValidator.ImportRootChoice] {
@@ -79,9 +76,7 @@ struct ImportRootPickerSheet: View {
     }
 
     private var bannerText: LocalizedStringResource {
-        step == .add
-            ? "This import includes more than one game"
-            : "Importing replaces the games in your library"
+        ImportRootPrompt.title(showingUpdates: step == .update)
     }
 
     private var bannerSystemImage: String {
@@ -131,22 +126,23 @@ struct ImportRootPickerSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     if step == .update && !freshChoices.isEmpty {
-                        Button("Back") {
+                        SheetBarButton("Back", systemImage: "chevron.backward") {
                             withAnimation(Motion.gentle) { step = .add }
                         }
                     } else {
-                        Button("Cancel", action: onCancel)
+                        SheetBarButton.cancel(action: onCancel)
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     if isFinalStep {
-                        Button("Import") {
+                        SheetBarButton("Import", systemImage: "square.and.arrow.down") {
                             onConfirm(selectedChoices, selectedUpdateIDs)
                         }
                         .disabled(confirmedSelectionCount == 0)
                     } else {
-                        Button(
-                            LocalizedStringResource("Next", comment: "Moves to the next step of the import")
+                        SheetBarButton(
+                            LocalizedStringResource("Next", comment: "Moves to the next step of the import"),
+                            systemImage: "chevron.forward"
                         ) {
                             withAnimation(Motion.gentle) { step = .update }
                         }
@@ -287,72 +283,5 @@ private struct ImportRootChoiceRow: View {
         .padding(.horizontal, Spacing._2xl)
         .padding(.vertical, Spacing.md)
         .contentShape(Rectangle())
-    }
-}
-
-/// Square artwork thumbnail for import sheet rows. Shared by the
-/// root picker and the update picker.
-struct ImportRootChoiceArtworkView: View {
-    let artwork: ImportRootChoiceArtwork?
-
-    var body: some View {
-        ZStack {
-            placeholderBackground
-            renderedArtwork
-        }
-        .frame(width: AppSize.listArtwork, height: AppSize.listArtwork)
-        .clipShape(.rect(cornerRadius: Radius.sm))
-    }
-
-    @ViewBuilder
-    private var renderedArtwork: some View {
-        if let data = artwork?.imageData {
-            if let image = UIImage(data: data) {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } else {
-                placeholderIcon
-            }
-        } else if let data = artwork?.iconData {
-            if let image = UIImage(data: data) {
-                GeometryReader { geo in
-                    let side = min(geo.size.width, geo.size.height)
-                    Image(uiImage: image)
-                        .resizable()
-                        .interpolation(.high)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: side * 0.75, height: side * 0.75)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-            } else {
-                placeholderIcon
-            }
-        } else {
-            placeholderIcon
-        }
-    }
-
-    private var placeholderIcon: some View {
-        Image(.pocketMark)
-            .resizable()
-            .scaledToFit()
-            .frame(width: 16, height: 16)
-            .opacity(0.45)
-    }
-
-    private var placeholderBackground: some View {
-        ZStack {
-            Color(.secondarySystemBackground)
-            LinearGradient(
-                stops: [
-                    .init(color: .white.opacity(0.10), location: 0),
-                    .init(color: .clear, location: 0.5),
-                    .init(color: .black.opacity(0.05), location: 1),
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        }
     }
 }

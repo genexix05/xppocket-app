@@ -1,6 +1,19 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "XP Pocket"
+          }
+        }
+      }
+    },
+    "JoiPlay game archive" : {},
     "NSBluetoothAlwaysUsageDescription" : {
       "comment" : "System prompt that asks for Bluetooth access.",
       "extractionState" : "extracted_with_value",
@@ -198,20 +211,7 @@
           }
         }
       }
-    },
-    "CFBundleName" : {
-      "comment" : "Bundle name",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "XP Pocket"
-          }
-        }
-      }
-    },
-    "JoiPlay game archive" : {}
+    }
   },
   "version" : "1.1"
 }

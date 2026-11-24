@@ -37,18 +37,29 @@ public enum RubyScriptGrammarSniffer {
         case legacy
 
         /// Legacy grammar that also calls Ruby 1.9+ methods, such as
-        /// `force_encoding`. Ruby 1.8 lacks the methods, and plain
+        /// `force_encoding`, or has a 1.9 block parameter default.
+        /// Ruby 1.8 lacks the methods and the grammar, and plain
         /// Ruby 3.1 rejects the grammar, so only Ruby 3.1 with the
         /// legacy syntax transform runs it (Vinemon Sauce Edition).
         case mixed
 
         /// The sniffer could not read the live source. Causes: an
-        /// encrypted archive with no unpack, a missing file, a
-        /// parse error, an unknown Marshal tag, or scripts packed
-        /// in a `Data/*.fpk` archive. The caller falls back to
+        /// archive that it cannot read, a missing file, a parse
+        /// error, an unknown Marshal tag, or scripts packed in a
+        /// `Data/*.fpk` archive. The caller falls back to
         /// packaging signals, the extension, Game.ini, or the
         /// default.
         case inconclusive
+    }
+
+    enum CoreScripts: Equatable, Sendable {
+        case read
+        /// The sniffer read them from the encrypted archive, so the
+        /// extension of a loose Scripts file says nothing about them.
+        case archived
+        /// A `Data/*.fpk` archive holds them, so the sniffer skipped them.
+        case packed
+        case unread
     }
 
     /// Sniffs a game directory. The sniffer reads loose `.rb`
@@ -58,7 +69,7 @@ public enum RubyScriptGrammarSniffer {
     /// compiled `Scripts.{rxdata,rvdata,rvdata2}` file, unless a
     /// packed script archive makes that file a stale bootstrap.
     /// It runs the grammar classifier on those scripts.
-    static func sniff(gameDirectory: URL) -> Result {
+    static func sniff(gameDirectory: URL) -> (result: Result, core: CoreScripts) {
         let fm = FileManager.default
 
         // Loose .rb files take priority. Forks like Pokemon Reborn
@@ -66,12 +77,14 @@ public enum RubyScriptGrammarSniffer {
         // Forks like Pokemon Infinite Fusion ship loose scripts
         // next to a stale compiled Scripts.rxdata. The loose files
         // are the live runtime. The .rxdata is a leftover.
-        let plugins = decodePluginScripts(in: gameDirectory) ?? []
         let looseURLs = locateLooseScripts(in: gameDirectory, fm: fm)
+        let extras =
+            (decodePluginScripts(in: gameDirectory) ?? [])
+            + readLooseScripts(urls: locateConfigScripts(in: gameDirectory, besides: looseURLs, fm: fm))
         if !looseURLs.isEmpty {
             let scripts = readLooseScripts(urls: looseURLs)
             if !scripts.isEmpty {
-                return classify(scripts: scripts + plugins)
+                return (classify(scripts: scripts + extras), .read)
             }
         }
 
@@ -81,24 +94,31 @@ public enum RubyScriptGrammarSniffer {
         // Scripts file next to it is a small bootstrap, not the
         // live source, so the sniffer must not classify it.
         if hasPackedScriptArchive(in: gameDirectory, fm: fm) {
-            return classifyPluginsAlone(plugins)
+            return (classifyExtrasAlone(extras), .packed)
         }
 
         // Compiled Scripts file. Vanilla RPG Maker XP / VX /
         // VX Ace projects use it, and so do forks that did not
-        // extract their scripts.
-        guard let url = locateCompiledScriptsFile(in: gameDirectory, fm: fm),
-            let scripts = decodeScripts(at: url)
-        else {
-            return classifyPluginsAlone(plugins)
+        // extract their scripts. The engine reads the copy in the
+        // encrypted archive before the one in the game folder.
+        if let scripts = archivedScripts(in: gameDirectory, fm: fm) {
+            return (classify(scripts: scripts + extras), .archived)
         }
-        return classify(scripts: scripts + plugins)
+        guard
+            let scripts = locateCompiledScriptsFile(in: gameDirectory, fm: fm)
+                .flatMap({ try? Data(contentsOf: $0) }).flatMap(decodeScripts)
+        else {
+            return (classifyExtrasAlone(extras), .unread)
+        }
+        return (classify(scripts: scripts + extras), .read)
     }
 
-    /// Without the core scripts, only modern plugin code is a sure
-    /// signal. Legacy-looking plugins say nothing about the core.
-    private static func classifyPluginsAlone(_ plugins: [String]) -> Result {
-        plugins.isEmpty || classify(scripts: plugins) != .modern ? .inconclusive : .modern
+    /// Without the core scripts, legacy-looking plugin or config script
+    /// code says nothing about the core. Modern or mixed code still
+    /// rules out the older Rubies, because the engine runs it too.
+    private static func classifyExtrasAlone(_ extras: [String]) -> Result {
+        let result = extras.isEmpty ? .inconclusive : classify(scripts: extras)
+        return result == .legacy ? .inconclusive : result
     }
 
     // MARK: - File location
@@ -116,7 +136,7 @@ public enum RubyScriptGrammarSniffer {
 
     /// True when `Data/` holds a packed script archive. Vanilla
     /// RPG Maker never uses `.fpk`.
-    static func hasPackedScriptArchive(in gameDirectory: URL, fm: FileManager) -> Bool {
+    private static func hasPackedScriptArchive(in gameDirectory: URL, fm: FileManager) -> Bool {
         let dataDir = gameDirectory.appendingPathComponent("Data")
         return !dataDir.directoryEntries(matchingExtensions: ["fpk"], fm: fm).isEmpty
     }
@@ -138,6 +158,17 @@ public enum RubyScriptGrammarSniffer {
             }
         }
         return nil
+    }
+
+    private static func archivedScripts(in gameDirectory: URL, fm: FileManager) -> [String]? {
+        let names =
+            RGSSArchive.gameINI(in: gameDirectory, fm: fm).map {
+                [$0.scripts.replacingOccurrences(of: "\\", with: "/")]
+            }
+            ?? scriptsFilenames.flatMap { [$0, "Data/\($0)"] }
+        let paths = Set(names.map { $0.lowercased() })
+        return RGSSArchive.mountable(in: gameDirectory, fm: fm)
+            .flatMap { RGSSArchive.file(at: paths, in: $0) }.flatMap(decodeScripts)
     }
 
     /// Walks `Scripts/` and `Data/Scripts/` to find `.rb` files.
@@ -176,13 +207,34 @@ public enum RubyScriptGrammarSniffer {
         return found
     }
 
-    /// Reads up to `maxLooseFiles` `.rb` files.
-    /// A 4 MB cap on the total prevents one huge generated file
-    /// from using too much memory.
+    /// The files that the game's `mkxp.json` names in `preloadScript`
+    /// and `postloadScript`, as one string or an array. The engine
+    /// runs them before and after the Scripts file, from any folder.
+    static func locateConfigScripts(in gameDirectory: URL, besides looseURLs: [URL], fm: FileManager) -> [URL]
+    {
+        guard let config = ManagedMkxpConfig.loadBaseDict(from: gameDirectory) else { return [] }
+        var seenPaths = Set(looseURLs.map { $0.resolvingSymlinksInPath().path })
+        return ["preloadScript", "postloadScript"]
+            .flatMap { key -> [String] in
+                switch config[key] {
+                case let name as String: [name]
+                case let names as [Any]: names.compactMap { $0 as? String }
+                default: []
+                }
+            }
+            .map { gameDirectory.appendingPathComponent($0) }
+            .filter {
+                fm.fileExists(atPath: $0.path) && seenPaths.insert($0.resolvingSymlinksInPath().path).inserted
+            }
+    }
+
+    /// Reads up to `maxLooseFiles` `.rb` files, and stops after 16 MB.
+    /// Pokemon Rejuvenation ships about 15 MB of loose scripts, half of
+    /// them data tables, and the read order is the disk order.
     private static func readLooseScripts(urls: [URL]) -> [String] {
         var scripts: [String] = []
         var total = 0
-        let cap = 4_000_000
+        let cap = 16_000_000
         for url in urls {
             guard let str = try? Data(contentsOf: url).decodeAsLooseText() else { continue }
             scripts.append(str)
@@ -194,8 +246,7 @@ public enum RubyScriptGrammarSniffer {
 
     // MARK: - Marshal + Zlib decode
 
-    private static func decodeScripts(at url: URL) -> [String]? {
-        guard let data = try? Data(contentsOf: url) else { return nil }
+    private static func decodeScripts(_ data: Data) -> [String]? {
         var reader = MarshalReader(data: data)
         guard reader.readVersion() else { return nil }
         // The outer container is an array of script entries.
@@ -307,6 +358,10 @@ public enum RubyScriptGrammarSniffer {
         #"\{\s*[^}]*\b_[1-9]\b"#,
         // Keyword-arg shorthand (3.1+): foo(x:, y:)
         #"\b\w+:\s*[,)]"#,
+        // Keyword parameter (2.0+): `def f(a, b = [1], c: 1)`. A label
+        // inside a bracket of a default value (`g(k: 1)`, `[k: 1]`) is a
+        // 1.9 hash.
+        #"(?<![.:\w])def[ \t]+[\w.?!]+[ \t]*\((?:(?:[^{(\[)\n]|\{[^{}()\[\]\n]*\}|\([^{}()\[\]\n]*\)|\[[^{}()\[\]\n]*\])*,)?[ \t]*\w+:(?!:)"#,
         // Hash#except (3.0+): h.except(:k)
         #"\.except\s*\("#,
         // Array#filter_map (2.7+): arr.filter_map { ... }
@@ -346,18 +401,21 @@ public enum RubyScriptGrammarSniffer {
             hits += regex.numberOfMatches(in: code, range: range)
         }
         if hits >= modernThreshold { return .modern }
+        if blockParameterDefault?.firstMatch(in: code, range: range) != nil { return .mixed }
         return scripts.contains(where: callsRuby19Methods) ? .mixed : .legacy
     }
 
-    /// The source with comments and the plain part of string literals
-    /// and heredoc bodies replaced by spaces. Almost Heroic lists `font:, value:`
-    /// in a comment, which reads as keyword-arg shorthand. A quoted
-    /// string over several lines stays code, because one misread quote
-    /// would hide the rest of every script. For the same reason, a
-    /// heredoc counts only when its end line exists.
+    /// A block parameter with a default value (1.9+), as in
+    /// `do |hwnd = 0|`. Ruby 1.8 stops with a SyntaxError on it.
+    /// `codeOnly` keeps the `#` of a comment, so a comment can sit
+    /// between `do` and the `|`.
+    private static let blockParameterDefault = try? NSRegularExpression(
+        pattern: #"(?:\bdo|\{)[\s#]*\|[^|]*\b\w+\s*=(?![=~>])[^|]*\|"#)
+
     private static func startsFrozen(_ script: String) -> Bool {
         for line in script.split(separator: "\n", omittingEmptySubsequences: false).map(String.init) {
-            if frozenStringLiteral?.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)) != nil {
+            if frozenStringLiteral?.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)) != nil
+            {
                 return true
             }
             let trimmed = line.trimmingCharacters(in: .whitespaces)
@@ -366,89 +424,37 @@ public enum RubyScriptGrammarSniffer {
         return false
     }
 
+    /// The source with comments and the plain part of string literals
+    /// and heredoc bodies replaced by spaces. Almost Heroic lists `font:, value:`
+    /// in a comment, which reads as keyword-arg shorthand. A quoted
+    /// string over several lines stays code, because one misread quote
+    /// would hide the rest of every script. For the same reason, a
+    /// heredoc counts only when its end line exists.
     private static func codeOnly(_ source: String) -> String {
-        let lines = source.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
-        var inBlockComment = false
-        var heredocs: [(end: String, indented: Bool, interpolates: Bool)] = []
-        var bodyStack = heredocBody
-        var code: [String] = []
-        for (number, line) in lines.enumerated() {
-            if let open = heredocs.first {
-                if (open.indented ? withoutIndent(line) : line[...]) == open.end {
-                    heredocs.removeFirst()
-                    bodyStack = heredocBody
-                    code.append("")
-                } else {
-                    let units = line.utf16.map { Character(Unicode.Scalar($0) ?? "\u{FFFD}") }
-                    let mask = open.interpolates ? codeMask(units, stack: &bodyStack) : []
-                    code.append(String(units.indices.map { mask.isEmpty || !mask[$0] ? " " : units[$0] }))
-                }
-                continue
-            }
-            if startsDirective(line, "=begin") { inBlockComment = true }
-            if inBlockComment {
-                if startsDirective(line, "=end") { inBlockComment = false }
-                code.append("")
-                continue
-            }
-            let range = NSRange(line.startIndex..., in: line)
-            let units = line.utf16.map { Character(Unicode.Scalar($0) ?? "\u{FFFD}") }
-            let mask = codeMask(units)
-            for match in heredocStart?.matches(in: line, range: range) ?? [] where mask[match.range.location] {
-                guard let endRange = Range(match.range(at: 3), in: line) else { continue }
-                let end = String(line[endRange])
-                let indented = match.range(at: 1).length > 0
-                let closed = lines[(number + 1)...].contains {
-                    (indented ? withoutIndent($0) : $0[...]) == end
-                }
-                let quote = Range(match.range(at: 2), in: line).map { line[$0] } ?? ""
-                if closed { heredocs.append((end, indented, quote != "'")) }
-            }
-            code.append(String(units.indices.map { mask[$0] ? units[$0] : " " }))
-        }
-        return code.joined(separator: "\n")
+        scanLines(source).map { line in
+            line.kind == .skipped
+                ? "" : String(line.units.indices.map { line.code[$0] ? line.units[$0] : " " })
+        }.joined(separator: "\n")
     }
 
-    private static let ruby19Call = try? NSRegularExpression(
-        pattern: #"\.force_encoding\b|\bEncoding::[A-Z]"#)
-
-    /// Only an `if` or `elsif` that checks for 1.9 directly. A negated
-    /// check, `unless`, `else`, or an `||` / `or` in the condition runs
-    /// its body on 1.8. Group 1 is the receiver of `respond_to?`.
-    private static let ruby19Guard = try? NSRegularExpression(
-        pattern: #"\b(?:if|elsif)\s+\(?\s*(?:(?:([@$]?[\w.]+)\.)?respond_to\?[\s(]*:force_encoding\b|defined\?[\s(]*Encoding\b)(?![^#;]*(?:\|\||\bor\b))"#)
-
-    /// A `<<` right after a value, as in `i<<x` or `(1<<n)`, is a shift.
-    private static let heredocStart = try? NSRegularExpression(
-        pattern: #"(?<![\w)\]}"'`])<<([-~]?)(["'`]?)([A-Za-z_]\w*)\2"#)
-
-    /// What a guard makes safe: every 1.9 call after `defined?(Encoding)`,
-    /// or only `force_encoding` on the receiver that `respond_to?` checked.
-    private enum Cover: Equatable {
-        case all
-        case receiver(String)
+    private enum LineKind {
+        case code
+        case heredocBody
+        /// A block comment line or a heredoc end line.
+        case skipped
     }
 
-    /// Scripts written for both 1.8 and 1.9 check for the method first,
-    /// in a postfix `if` on the same statement or in an `if` block, so
-    /// those calls do not count.
-    private static func callsRuby19Methods(_ source: String) -> Bool {
-        guard let ruby19Call, let ruby19Guard, let heredocStart else { return false }
-        func covered(_ call: NSRange, in units: [Character], by covers: [Cover]) -> Bool {
-            if covers.contains(.all) { return true }
-            guard units[call.location] == "." else { return false }
-            var start = call.location
-            while start > 0, units[start - 1].isLetter || units[start - 1].isNumber
-                || "_.@$".contains(units[start - 1]) {
-                start -= 1
-            }
-            let receiver = String(units[start..<call.location])
-            return covers.contains(.receiver(receiver.isEmpty ? "self" : receiver))
-        }
-        var inBlockComment = false
-        var heredocs: [(end: String, indented: Bool, interpolates: Bool)] = []
-        var bodyStack = heredocBody
-        var blocks: [(indent: Int, cover: Cover)] = []
+    private struct ScannedLine {
+        let text: String
+        let units: [Character]
+        /// True at each UTF-16 unit that Ruby reads as code.
+        let code: [Bool]
+        let kind: LineKind
+    }
+
+    /// Splits a script into lines and follows its block comments and
+    /// heredocs, so every scan reads the same characters as code.
+    private static func scanLines(_ source: String) -> [ScannedLine] {
         let lines = source.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
         // Ruby needs the end line of a heredoc. With no end line after
         // it, `value <<token` is a shift.
@@ -458,32 +464,31 @@ public enum RubyScriptGrammarSniffer {
             lastLine[line] = number
             lastIndentlessLine[String(withoutIndent(line))] = number
         }
-        for (number, line) in lines.enumerated() {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            let indent = line.prefix { $0 == " " || $0 == "\t" }.count
+        var inBlockComment = false
+        var heredocs: [(end: String, indented: Bool, interpolates: Bool)] = []
+        var bodyStack = heredocBody
+        return lines.enumerated().map { number, line in
             let units = line.utf16.map { Character(Unicode.Scalar($0) ?? "\u{FFFD}") }
-            let range = NSRange(line.startIndex..., in: line)
+            let noCode = [Bool](repeating: false, count: units.count + 1)
             if let open = heredocs.first {
                 if (open.indented ? withoutIndent(line) : line[...]) == open.end {
                     heredocs.removeFirst()
                     bodyStack = heredocBody
-                } else if open.interpolates {
-                    let code = codeMask(units, stack: &bodyStack)
-                    let calls = ruby19Call.matches(in: line, range: range).filter { code[$0.range.location] }
-                    if calls.contains(where: { !covered($0.range, in: units, by: blocks.map(\.cover)) }) {
-                        return true
-                    }
+                    return ScannedLine(text: line, units: units, code: noCode, kind: .skipped)
                 }
-                continue
+                let code = open.interpolates ? codeMask(units, stack: &bodyStack) : noCode
+                return ScannedLine(text: line, units: units, code: code, kind: .heredocBody)
             }
             if startsDirective(line, "=begin") { inBlockComment = true }
-            if startsDirective(line, "=end") { inBlockComment = false }
-            if inBlockComment { continue }
-            let code = codeMask(units)
-            func codeMatches(_ regex: NSRegularExpression) -> [NSTextCheckingResult] {
-                regex.matches(in: line, range: range).filter { code[$0.range.location] }
+            if inBlockComment {
+                // Ruby also ignores the rest of the `=end` line.
+                if startsDirective(line, "=end") { inBlockComment = false }
+                return ScannedLine(text: line, units: units, code: noCode, kind: .skipped)
             }
-            for match in codeMatches(heredocStart) {
+            let code = codeMask(units)
+            let range = NSRange(line.startIndex..., in: line)
+            for match in heredocStart?.matches(in: line, range: range) ?? [] where code[match.range.location]
+            {
                 func group(_ number: Int) -> Substring {
                     Range(match.range(at: number), in: line).map { line[$0] } ?? ""
                 }
@@ -493,32 +498,158 @@ public enum RubyScriptGrammarSniffer {
                     heredocs.append((end, indented, group(2) != "'"))
                 }
             }
-            func closes(_ text: String) -> Bool {
-                ["end", "else", "elsif"].contains { text.hasPrefix($0) }
+            return ScannedLine(text: line, units: units, code: code, kind: .code)
+        }
+    }
+
+    /// `prepend` is `String#prepend` (1.9.3) or `Module#prepend` (2.0).
+    /// The `def` check comes after `.prepend`. Before it, ICU runs the
+    /// look-behind at every character, 40 times slower on a 1 MB line.
+    private static let ruby19Call = try? NSRegularExpression(
+        pattern:
+            #"\.force_encoding\b|\bEncoding::[A-Z]|\.prepend\b(?<!\bdef\s{1,8}[\w:]{1,64}\.prepend)|(?:^|(?<=;))\s*prepend[\s(]+(?:::)?[A-Z]"#
+    )
+
+    /// Only an `if` or `elsif` that checks for 1.9 directly. A negated
+    /// check, `unless`, `else`, or an `||` / `or` in the condition runs
+    /// its body on 1.8. So does a comparison such as `vxace? == false`.
+    /// Group 1 is the receiver of `respond_to?`, and group 2 is the
+    /// method that it checks.
+    /// Zeus81's `vxace?` is false only on RPG Maker XP's own Ruby 1.8.1.
+    /// On Empo's 1.8.8 it is true and a 1.9 call under it raises, but
+    /// Pokemon Xenoverse ships these scripts and runs on Ruby 1.8.7 in
+    /// its own engine.
+    private static let ruby19Guard = try? NSRegularExpression(
+        pattern:
+            #"\b(?:if|elsif)\s+\(?\s*(?:(?:([@$]?[\w.:]+)\.)?respond_to\?[\s(]*:(force_encoding|prepend)\b|defined\?[\s(]*Encoding\b|vxace\?(?:\(\s*\))?+(?![\s)]*[=!]=))(?![^#;]*(?:\|\||\bor\b))"#
+    )
+
+    private static let branchBlockStart = try? NSRegularExpression(
+        pattern: #";\s*(?:begin|case|if|unless|while|until)\b|\bdo\b"#)
+
+    /// A `<<` right after a value, as in `i<<x` or `(1<<n)`, is a shift.
+    private static let heredocStart = try? NSRegularExpression(
+        pattern: #"(?<![\w)\]}"'`])<<([-~]?)(["'`]?)([A-Za-z_]\w*)\2"#)
+
+    /// What a guard makes safe: every 1.9 call after `defined?(Encoding)`,
+    /// or only the method and the receiver that `respond_to?` checked.
+    private enum Cover: Equatable {
+        case all
+        case call(receiver: String, method: String)
+    }
+
+    /// Scripts written for both 1.8 and 1.9 check for the method first,
+    /// in a postfix `if` on the same statement or in an `if` block, so
+    /// those calls do not count.
+    private static func callsRuby19Methods(_ source: String) -> Bool {
+        guard let ruby19Call, let ruby19Guard else { return false }
+        func covered(_ call: NSRange, in units: [Character], by covers: [Cover]) -> Bool {
+            if covers.contains(.all) { return true }
+            let text = String(units[call.location..<call.location + call.length])
+                .trimmingCharacters(in: .whitespaces)
+            guard text.hasPrefix(".") else {
+                return text.hasPrefix("prepend")
+                    && covers.contains(.call(receiver: "self", method: "prepend"))
             }
-            if let last = blocks.last, indent == last.indent && closes(trimmed) {
+            var start = call.location
+            while start > 0,
+                units[start - 1].isLetter || units[start - 1].isNumber
+                    || "_.:@$".contains(units[start - 1])
+            {
+                start -= 1
+            }
+            let receiver = String(units[start..<call.location])
+            let method = String(text.dropFirst())
+            return covers.contains(.call(receiver: receiver.isEmpty ? "self" : receiver, method: method))
+        }
+        func codeMatches(_ regex: NSRegularExpression, in scanned: ScannedLine) -> [NSTextCheckingResult] {
+            regex.matches(in: scanned.text, range: NSRange(scanned.text.startIndex..., in: scanned.text))
+                .filter { scanned.code[$0.range.location] }
+        }
+        func cover(of match: NSTextCheckingResult, in line: String) -> Cover {
+            guard let method = Range(match.range(at: 2), in: line) else { return .all }
+            let receiver = Range(match.range(at: 1), in: line).map { String(line[$0]) } ?? "self"
+            return .call(receiver: receiver, method: String(line[method]))
+        }
+        // `when 2; begin` opens a block of its own, so the search stops there.
+        func branchOpensNoBlock(_ text: String) -> Bool {
+            branchBlockStart?.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)) == nil
+        }
+        func indent(of line: String) -> Int { line.prefix { $0 == " " || $0 == "\t" }.count }
+        func closes(_ text: String) -> Bool {
+            ["end", "else", "elsif"].contains { text.hasPrefix($0) }
+        }
+        let lines = scanLines(source)
+        // In `case ... end if vxace?`, the guard on the end line covers the
+        // `case` or `begin` block at the same indent.
+        var endGuards = [[Cover]](repeating: [], count: lines.count)
+        for (number, scanned) in lines.enumerated() where scanned.kind == .code {
+            let line = scanned.text
+            let covers = codeMatches(ruby19Guard, in: scanned)
+                .filter {
+                    (line as NSString).substring(to: $0.range.location).trimmingCharacters(in: .whitespaces)
+                        == "end"
+                }
+                .map { cover(of: $0, in: line) }
+            guard !covers.isEmpty else { continue }
+            let opener = lines[..<number].lastIndex { candidate in
+                let text = candidate.text.trimmingCharacters(in: .whitespaces)
+                return candidate.kind == .code
+                    && candidate.units.indices.contains {
+                        candidate.code[$0] && !candidate.units[$0].isWhitespace && candidate.units[$0] != "#"
+                    }
+                    && indent(of: candidate.text) <= indent(of: line)
+                    && !(["when", "else", "elsif", "rescue", "ensure"].contains { startsDirective(text, $0) }
+                        && branchOpensNoBlock(text))
+            }
+            guard let opener, indent(of: lines[opener].text) == indent(of: line),
+                ["case", "begin"].contains(where: {
+                    startsDirective(String(withoutIndent(lines[opener].text)), $0)
+                })
+            else { continue }
+            for inside in opener..<number { endGuards[inside] += covers }
+        }
+        var blocks: [(indent: Int, cover: Cover)] = []
+        for (number, scanned) in lines.enumerated() {
+            let line = scanned.text
+            let units = scanned.units
+            switch scanned.kind {
+            case .skipped:
+                continue
+            case .heredocBody:
+                if codeMatches(ruby19Call, in: scanned).contains(where: {
+                    !covered($0.range, in: units, by: blocks.map(\.cover) + endGuards[number])
+                }) {
+                    return true
+                }
+                continue
+            case .code:
+                break
+            }
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            let lineIndent = indent(of: line)
+            if let last = blocks.last, lineIndent == last.indent && closes(trimmed) {
                 blocks.removeLast()
             }
-            let guards = codeMatches(ruby19Guard)
-            let calls = codeMatches(ruby19Call)
+            let guards = codeMatches(ruby19Guard, in: scanned)
+            let calls = codeMatches(ruby19Call, in: scanned)
             var inline: [Cover] = []
             var start = 0
-            let ends = units.indices.filter { units[$0] == ";" && code[$0] } + [units.count]
-            for (number, end) in ends.enumerated() {
+            let ends = units.indices.filter { units[$0] == ";" && scanned.code[$0] } + [units.count]
+            for (segment, end) in ends.enumerated() {
                 defer { start = end + 1 }
                 let text = String(units[start..<end]).trimmingCharacters(in: .whitespaces)
                 if !inline.isEmpty && closes(text) { inline.removeAll() }
-                let own = guards.filter { (start..<end).contains($0.range.location) }.map { match in
-                    Range(match.range(at: 1), in: line).map { Cover.receiver(String(line[$0])) }
-                        ?? (line[Range(match.range, in: line)!].contains("respond_to") ? .receiver("self") : .all)
+                let own = guards.filter { (start..<end).contains($0.range.location) }.map {
+                    cover(of: $0, in: line)
                 }
-                let covers = blocks.map(\.cover) + inline + own
+                let covers = blocks.map(\.cover) + endGuards[number] + inline + own
                 let open = calls.filter { (start..<end).contains($0.range.location) }
                 if open.contains(where: { !covered($0.range, in: units, by: covers) }) { return true }
                 let opensBlock = text.hasPrefix("if ") || text.hasPrefix("elsif ")
                 guard opensBlock && !text.hasSuffix("end"), !own.isEmpty else { continue }
-                if number == ends.count - 1 {
-                    blocks += own.map { (indent, $0) }
+                if segment == ends.count - 1 {
+                    blocks += own.map { (lineIndent, $0) }
                 } else {
                     inline += own
                 }
@@ -626,7 +757,8 @@ public enum RubyScriptGrammarSniffer {
         var cursor = slash
         while cursor > 0, chars[cursor - 1] == " " || chars[cursor - 1] == "\t" { cursor -= 1 }
         let next: Character = slash + 1 < chars.count ? chars[slash + 1] : " "
-        let callArgument = cursor < slash && !next.isWhitespace && next != "="
+        let callArgument =
+            cursor < slash && !next.isWhitespace && next != "="
             && closesRegex(chars, after: slash)
         guard cursor > 0 else { return true }
         let previous = chars[cursor - 1]
@@ -636,7 +768,9 @@ public enum RubyScriptGrammarSniffer {
         while start > 0, chars[start - 1].isLetter || chars[start - 1].isNumber || chars[start - 1] == "_" {
             start -= 1
         }
-        let keywords: Set<String> = ["if", "elsif", "unless", "when", "while", "until", "and", "or", "not", "return", "then"]
+        let keywords: Set<String> = [
+            "if", "elsif", "unless", "when", "while", "until", "and", "or", "not", "return", "then",
+        ]
         return callArgument || keywords.contains(String(chars[start..<cursor]))
     }
 
@@ -781,21 +915,31 @@ private struct MarshalReader {
     /// Reads a Marshal string body without the leading tag byte:
     /// a length prefix, then that many bytes.
     private mutating func readRawString() -> Data? {
-        guard let len = readLong(), len >= 0, pos + len <= data.count else {
+        readCountedBytes().map { data.subdata(in: $0) }
+    }
+
+    /// Reads a length prefix and moves past that many bytes. A
+    /// negative length from the file would move the cursor back
+    /// before the buffer, and the next read would trap.
+    private mutating func readCountedBytes() -> Range<Int>? {
+        guard let len = readLong(), len >= 0, len <= data.count - pos else {
             return nil
         }
-        let bytes = data.subdata(in: pos..<(pos + len))
         pos += len
-        return bytes
+        return (pos - len)..<pos
     }
+
+    /// Real script archives nest 2 or 3 levels. A file of deeply nested
+    /// arrays would overflow the stack.
+    private static let maxDepth = 32
 
     /// Skips a complete Marshal value of any supported type. This
     /// discards fields we do not need (script id, title) and
     /// keeps the reader in sync with the byte stream. If the
     /// reader finds an unknown tag, it returns false. The result
     /// then becomes "inconclusive".
-    mutating func skipValue() -> Bool {
-        guard let tag = readByte() else { return false }
+    mutating func skipValue(depth: Int = 0) -> Bool {
+        guard depth < Self.maxDepth, let tag = readByte() else { return false }
         switch tag {
         case 0x30:  // '0' = nil
             return true
@@ -803,37 +947,28 @@ private struct MarshalReader {
             return true
         case 0x69:  // 'i' = integer
             return readLong() != nil
-        case 0x66:  // 'f' = float (string repr)
-            return readLong().map { len in
-                pos += len
-                return pos <= data.count
-            } ?? false
-        case 0x22, 0x3a:  // '"' string, ':' symbol
-            guard let len = readLong(), len >= 0, pos + len <= data.count else {
-                return false
-            }
-            pos += len
-            return true
+        case 0x66, 0x22, 0x3a:  // 'f' float (string repr), '"' string, ':' symbol
+            return readCountedBytes() != nil
         case 0x3b, 0x40:  // ';' symbol link, '@' object link
             return readLong() != nil
         case 0x49:  // 'I' = ivar wrapper
-            guard skipValue() else { return false }
+            guard skipValue(depth: depth + 1) else { return false }
             guard let n = readLong(), n >= 0 else { return false }
             for _ in 0..<n {
-                guard skipValue() else { return false }
-                guard skipValue() else { return false }
+                guard skipValue(depth: depth + 1) else { return false }
+                guard skipValue(depth: depth + 1) else { return false }
             }
             return true
         case 0x5b:  // '[' = array
             guard let n = readLong(), n >= 0 else { return false }
             for _ in 0..<n {
-                guard skipValue() else { return false }
+                guard skipValue(depth: depth + 1) else { return false }
             }
             return true
         case 0x7b:  // '{' = hash
             guard let n = readLong(), n >= 0 else { return false }
             for _ in 0..<(n * 2) {
-                guard skipValue() else { return false }
+                guard skipValue(depth: depth + 1) else { return false }
             }
             return true
         default:

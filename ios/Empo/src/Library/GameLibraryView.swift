@@ -10,6 +10,11 @@ private struct EmptyStateHeightKey: PreferenceKey {
     }
 }
 
+private enum ImportStop {
+    case one(String)
+    case all
+}
+
 struct GameLibraryView: View {
     var heroNamespace: Namespace.ID
     var splashDismissed: Bool = true
@@ -24,12 +29,18 @@ struct GameLibraryView: View {
     @Environment(\.pauseManager) private var pauseManager
     @State private var showImporter = false
     @State private var showSettings = false
+    /// The Backups screen, which the pill of 13.2 and the 21-day
+    /// banner of 7.1 both open.
+    @State private var showsBackups = false
+    @State private var resumeAsk: ResumeQuestionAsk?
+    @State private var launchPrompts = LaunchPrompts()
+    @State private var settingsScrollTarget: SettingsSection?
     @State private var errorMessage: String?
     @State private var errorTitle = String(localized: "Couldn't delete this game")
     @State private var showErrorAlert = false
-    @State private var showCancelValidationAlert = false
+    /// What the open "Stop import" alert stops, or nil when it is closed.
+    @State private var importStop: ImportStop?
     @State private var gameToDelete: GameEntry?
-    @State private var showDeleteConfirm = false
     /// Games whose delete aborted because their saves could not
     /// move into `Data/`. A queue, not a slot: a bulk delete can
     /// fail several rescues, and each game gets its own Delete
@@ -59,7 +70,7 @@ struct GameLibraryView: View {
     @State private var sizesTask: Task<Void, Never>?
     @State private var importPipeline = ImportPipeline()
     /// Per-game record of which visual source triggered the most recent
-    /// navigation into the player. Drives `.navigationTransition(.zoom)`
+    /// navigation into the player. Drives `zoomTransition`
     /// so the exit animation lands on the same spot the user tapped.
     @State private var tappedSource: [String: GameTapSource] = [:]
 
@@ -113,7 +124,7 @@ struct GameLibraryView: View {
     /// feedback on the Import button so the empty state doesn't
     /// bounce in and out on invalid imports.
     private var pendingValidationEntries: [GameEntry] {
-        library.pendingValidationCatalog()
+        library.games.isEmpty ? [] : library.pendingValidationCatalog()
     }
 
     /// True only once the initial scan has confirmed the library is
@@ -176,11 +187,14 @@ struct GameLibraryView: View {
                 // to the grid/list item source id since that's the one
                 // always visible in the library.
                 let source = tappedSource[game.id] ?? .item
-                GameLoadingView(game: game, dormant: dormant)
-                    .navigationTransition(
-                        .zoom(
-                            sourceID: source.transitionID(for: game.id),
-                            in: heroNamespace))
+                GameLoadingView(
+                    game: game, dormant: dormant,
+                    mode: appState.isLaunching || appState.phase != nil ? .loading : .resuming
+                )
+                .zoomTransition(sourceID: source.transitionID(for: game.id), in: heroNamespace)
+            }
+            .onChange(of: appState.isLaunching) { _, launching in
+                if !launching, appState.phase == nil { path = NavigationPath() }
             }
             .onChange(of: appState.phase) { oldPhase, newPhase in
                 handleAppPhaseChange(from: oldPhase, to: newPhase)
@@ -204,14 +218,9 @@ struct GameLibraryView: View {
                 }
                 debouncedSearch = searchText
             }
-            .task(id: library.initialScanCompleted) {
-                // Size data is only consumed by the size sorts. The
-                // walk enumerates every file of every game, so don't
-                // pay for it while another sort is active. Keyed on
-                // scan completion: at launch this view appears while
-                // the initial scan is still off-main and `games` is
-                // empty, so the appear-time run walks nothing. The
-                // refire when the scan lands does the real work.
+            .onChange(of: library.readyGameIDs, initial: true) {
+                // The walk reads every file of every game, so only the
+                // size sorts pay for it.
                 if settings.librarySortOption.usesDiskSizes {
                     refreshGameSizes()
                 }
@@ -219,13 +228,59 @@ struct GameLibraryView: View {
             .task {
                 duplicateNoticeNames = GameContainerMigration.pendingDuplicateNoticeNames()
             }
-            .task(id: library.initialScanCompleted && appState.errorMessage == nil) {
+            .task(id: library.initialScanCompleted) {
+                BackupBadges.shared.reads {
+                    library.games.map { BackupBadgeGame(id: $0.id, lastPlayed: $0.lastPlayed) }
+                }
+            }
+            .task { takeTheResumeQuestion() }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) {
+                _ in
+                takeTheResumeQuestion()
+            }
+            .task(id: library.initialScanCompleted && appState.shownError == nil) {
                 autoStartGameFromEnvironment()
             }
     }
 
+    /// The question of 13.18 comes once, at the launch after the
+    /// interruption. The system relaunches Empo in the background for
+    /// a finished upload, and that launch never reaches the user, so
+    /// only an active app takes the question. `scenePhase` stays
+    /// `.inactive` under the UIHostingController, so this reads UIKit.
+    private func takeTheResumeQuestion() {
+        guard UIApplication.shared.applicationState == .active, splashDismissed,
+            !Self.tookTheResumeQuestion
+        else {
+            return
+        }
+        // The library comes back from the player with a new `.task`,
+        // and a run that a game start stopped still holds its record
+        // for a moment. Only the first active look is the launch.
+        Self.tookTheResumeQuestion = true
+        resumeAsk = ResumeQuestionAsk.pending()
+        if resumeAsk != nil { launchPrompts.wait(.resumeQuestion) }
+    }
+
+    private var resumeAskBinding: Binding<ResumeQuestionAsk?> {
+        Binding(
+            get: { launchPrompts.showing == .resumeQuestion ? resumeAsk : nil },
+            set: { resumeAsk = $0 })
+    }
+
+    @MainActor private static var tookTheResumeQuestion = false
+
     private var libraryPresentedContent: some View {
         libraryScene
+            .sheet(isPresented: $showsBackups) {
+                NavigationStack { BackupsScreen() }
+                    .tint(.brand)
+            }
+            .sheet(
+                item: resumeAskBinding,
+                onDismiss: { launchPrompts.done(.resumeQuestion) },
+                content: { ask in ResumeQuestionSheet(ask: ask) }
+            )
             .modifier(
                 BulkDeleteAlert(
                     isPresented: $showBulkDeleteConfirm,
@@ -241,15 +296,24 @@ struct GameLibraryView: View {
                 )
             )
             .modifier(
-                DuplicateGamesNotice(names: $duplicateNoticeNames, active: splashDismissed)
+                DuplicateGamesNotice(
+                    names: $duplicateNoticeNames, prompts: launchPrompts, active: splashDismissed)
+            )
+            .modifier(PackageImportPresentation(prompts: launchPrompts, active: splashDismissed))
+            .modifier(
+                SaveRecoveryPresentation(
+                    games: library.games, prompts: launchPrompts, active: splashDismissed)
             )
             .modifier(
-                SaveRecoveryPresentation(games: library.games, active: splashDismissed)
+                WhatsNewPresentation(prompts: launchPrompts, active: splashDismissed) { section in
+                    settingsScrollTarget = section
+                    showSettings = true
+                }
             )
-            .modifier(WhatsNewPresentation(active: splashDismissed))
             .modifier(
                 LibrarySheetPresentation(
                     showSettings: $showSettings,
+                    settingsScrollTarget: $settingsScrollTarget,
                     showImporter: $showImporter,
                     gameForSettings: $gameForSettings,
                     gameForInfo: $gameForInfo,
@@ -266,9 +330,8 @@ struct GameLibraryView: View {
                     errorMessage: errorMessage,
                     showErrorAlert: $showErrorAlert,
                     gameToDelete: $gameToDelete,
-                    showDeleteConfirm: $showDeleteConfirm,
                     invalidReason: $invalidReason,
-                    showCancelValidationAlert: $showCancelValidationAlert,
+                    showCancelValidationAlert: showStopAlert,
                     showPausedGameAlert: $showPausedGameAlert,
                     gameWithNoCore: $gameWithNoCore,
                     warnedLaunch: $warnedLaunch,
@@ -277,16 +340,16 @@ struct GameLibraryView: View {
                     pausedGame: pauseManager.pausedGame,
                     pendingGame: pendingGame,
                     canClosePausedGame: appState.canKillPausedGame,
-                    onDeleteGame: deleteSelectedGame,
+                    onDeleteGame: deleteGame,
                     onDeleteGameDiscardingSaves: deleteGameDiscardingSaves,
                     onDismissImportPipelineAlert: importPipeline.dismissAlert,
-                    onCancelValidation: importPipeline.cancelValidation,
+                    onCancelValidation: stopImport,
                     onDismissPausedGameAlert: { pendingGame = nil },
                     onReplacePausedGame: replacePausedGame,
                     onContinueDespiteWarning: continueDespiteLaunchWarning
                 )
             )
-            .toolbarVisibility(.hidden, for: .navigationBar)
+            .toolbar(.hidden, for: .navigationBar)
     }
 
     private var libraryScene: some View {
@@ -305,10 +368,7 @@ struct GameLibraryView: View {
             // Match GameLoadingView: NavigationStack container fills stay
             // opaque on device under parent opacity(0). Clear them while
             // the SDL window must show through AppWindow.
-            .containerBackground(
-                appState.phase == .playing ? .clear : Color(.systemBackground),
-                for: .navigation
-            )
+            .navigationBackground(appState.phase == .playing ? .clear : Color(.systemBackground))
             .animation(Motion.standard, value: showEmpty)
             .onChange(of: splashDismissed) { _, dismissed in
                 handleSplashDismissedChange(dismissed)
@@ -325,6 +385,7 @@ struct GameLibraryView: View {
                     AdBannerView()
                 }
             }
+            .safeAreaInset(edge: .bottom, spacing: 0) { bottomPills }
             .task {
                 // Yield past the first commit before mounting the
                 // full-screen GeometryReader ImportButton.
@@ -332,6 +393,8 @@ struct GameLibraryView: View {
                 try? await Task.sleep(for: .milliseconds(50))
                 launchChromeReady = true
             }
+            .animation(Motion.bouncy, value: showsBackupPill)
+            .animation(Motion.bouncy, value: BackupBadges.shared.banner)
     }
 
     private var libraryContentLayer: some View {
@@ -392,6 +455,22 @@ struct GameLibraryView: View {
         }
     }
 
+    /// The one banner of 7.1, at 21 days. It names the cause and
+    /// carries the single action that clears it.
+    @ViewBuilder private var backupStaleBanner: some View {
+        if let banner = BackupBadges.shared.banner, !selectionMode, splashDismissed {
+            BackupStaleBannerView(
+                banner: banner, targetLabel: BackupBadges.shared.bannerTargetLabel
+            ) {
+                if BackupBadges.shared.bannerOpensTheBackupsScreen {
+                    showsBackups = true
+                } else {
+                    BackupBadges.shared.pressTheBanner()
+                }
+            }
+        }
+    }
+
     private var libraryBackground: some View {
         // Clear while playing so a faded-out library cannot paint an
         // opaque systemBackground over the SDL game window beneath
@@ -405,6 +484,27 @@ struct GameLibraryView: View {
             }
         }
         .ignoresSafeArea()
+    }
+
+    private var showsBackupPill: Bool {
+        BackupRunMonitor.shared.showsPill && !selectionMode
+    }
+
+    /// The floating pills of the library: the backup progress pill and
+    /// the stale-backup banner. Selection mode hides them for the delete
+    /// button.
+    @ViewBuilder
+    private var bottomPills: some View {
+        VStack(spacing: Spacing.md) {
+            if showsBackupPill {
+                BackupProgressPill { showsBackups = true }
+                    .transition(.move(edge: .bottom).combined(with: .fadeBlur))
+            }
+            backupStaleBanner
+                .transition(.move(edge: .bottom).combined(with: .fadeBlur))
+        }
+        .padding(.horizontal, Spacing.xl)
+        .padding(.bottom, Spacing._2xl)
     }
 
     @ViewBuilder
@@ -424,14 +524,16 @@ struct GameLibraryView: View {
                 // surface a spinner during archive/root
                 // inspection before any progress card exists.
                 phase: importPipeline.importButtonPhase,
-                collapsedCenter: sensorStripEdge.map { edge in { railSlotCenter(1, edge: edge, in: $0) } },
-                onRequestCancelValidation: { showCancelValidationAlert = true }
+                collapsedCenter: hasSensorStrip ? { railSlotCenter(1, in: $0) } : nil,
+                onRequestCancelValidation: {
+                    importStop = .all
+                }
             )
         }
     }
 
-    private var sensorStripEdge: HorizontalEdge? {
-        windowInsets.sensorStripEdge(minWidth: AppSize.toolbarButton + 2 * Spacing.xs)
+    private var hasSensorStrip: Bool {
+        windowInsets.sensorStripEdge(minWidth: AppSize.toolbarButton + 2 * Spacing.xs) != nil
     }
 
     private static let railSlotCount = 4
@@ -439,20 +541,17 @@ struct GameLibraryView: View {
     /// Center of a slot in the sensor strip column, in the space of
     /// the overlays on `libraryScene`. That space stops at the strip,
     /// so the strip lies just past its leading or trailing edge.
-    private func railSlotCenter(_ slot: Int, edge: HorizontalEdge, in size: CGSize) -> CGPoint {
-        let pitch = AppSize.toolbarButton + Spacing.md
-        let length = CGFloat(Self.railSlotCount) * pitch - Spacing.md
-        let windowWidth = size.width + windowInsets.leading + windowInsets.trailing
-        let windowHeight = size.height + windowInsets.top + windowInsets.bottom
-        let strip =
-            edge == .trailing
-            ? CGRect(
-                x: windowWidth - windowInsets.trailing, y: 0, width: windowInsets.trailing,
-                height: windowHeight)
-            : CGRect(x: 0, y: 0, width: windowInsets.leading, height: windowHeight)
-        let x = sensorStripColumnX(strip: strip, occluded: AppWindow.occludedRects) - windowInsets.leading
-        let y = (size.height - length + AppSize.toolbarButton) / 2 + CGFloat(slot) * pitch
-        return CGPoint(x: x, y: y)
+    private func railSlotCenter(_ slot: Int, in size: CGSize) -> CGPoint {
+        let window = CGSize(
+            width: size.width + windowInsets.leading + windowInsets.trailing,
+            height: size.height + windowInsets.top + windowInsets.bottom)
+        let column = ControlsZone.toolbarPlacement(
+            safeArea: windowInsets, geoSize: window, occluded: AppWindow.occludedRects,
+            btnSize: AppSize.toolbarButton, gap: Spacing.md, count: CGFloat(Self.railSlotCount))
+        let firstSlotY = column.center.y - column.length / 2 + AppSize.toolbarButton / 2
+        return CGPoint(
+            x: column.center.x - windowInsets.leading,
+            y: firstSlotY + CGFloat(slot) * (AppSize.toolbarButton + Spacing.md) - windowInsets.top)
     }
 
     /// On a sensor strip (iPhone Duo), the header and search bar
@@ -460,18 +559,21 @@ struct GameLibraryView: View {
     /// the import button flies into it.
     @ViewBuilder
     private var sensorStripRail: some View {
-        if let edge = sensorStripEdge {
+        if hasSensorStrip {
             GeometryReader { geo in
                 Group {
-                    if !selectionMode {
+                    if selectionMode {
+                        IconButton("checkmark", label: "Done", style: .primary) { exitSelectionMode() }
+                            .position(railSlotCenter(0, in: geo.size))
+                    } else {
                         IconButton("gearshape", label: "Settings", style: .outline) { showSettings = true }
-                            .position(railSlotCenter(0, edge: edge, in: geo.size))
+                            .position(railSlotCenter(0, in: geo.size))
                     }
                     if !library.games.isEmpty {
                         LibrarySortButton(showSortSheet: $showSortSheet)
-                            .position(railSlotCenter(2, edge: edge, in: geo.size))
+                            .position(railSlotCenter(2, in: geo.size))
                         LibraryDisplayModeButton(onToggle: toggleDisplayMode)
-                            .position(railSlotCenter(3, edge: edge, in: geo.size))
+                            .position(railSlotCenter(3, in: geo.size))
                     }
                 }
                 .tint(.primary)
@@ -525,11 +627,16 @@ struct GameLibraryView: View {
                 )
                 .font(.headline)
                 Spacer()
-                Button("Done") { exitSelectionMode() }
-                    .font(.body.weight(.semibold))
-                    .tint(.brand)
+                if hasSensorStrip {
+                    Color.clear.frame(width: AppSize.toolbarButton, height: AppSize.toolbarButton)
+                        .accessibilityHidden(true)
+                } else {
+                    Button("Done") { exitSelectionMode() }
+                        .font(.body.weight(.semibold))
+                        .tint(.brand)
+                }
             } else {
-                if sensorStripEdge == nil {
+                if !hasSensorStrip {
                     IconButton("gearshape", label: "Settings", style: .outline) { showSettings = true }
                 } else {
                     Color.clear.frame(width: AppSize.toolbarButton, height: AppSize.toolbarButton)
@@ -559,7 +666,7 @@ struct GameLibraryView: View {
         LibrarySearchBar(
             searchText: $searchText,
             showSortSheet: $showSortSheet,
-            showsActions: sensorStripEdge == nil,
+            showsActions: !hasSensorStrip,
             onDisplayModeToggle: toggleDisplayMode
         )
     }
@@ -638,7 +745,6 @@ struct GameLibraryView: View {
             appState: appState,
             onTap: { handleGameTap(game, from: .hero) },
             gameToDelete: $gameToDelete,
-            showDeleteConfirm: $showDeleteConfirm,
             gameForSettings: $gameForSettings,
             gameForInfo: $gameForInfo
         )
@@ -655,7 +761,6 @@ struct GameLibraryView: View {
             appState: appState,
             onTap: { handleGameTap(game, from: .hero) },
             gameToDelete: $gameToDelete,
-            showDeleteConfirm: $showDeleteConfirm,
             gameForSettings: $gameForSettings,
             gameForInfo: $gameForInfo
         )
@@ -685,15 +790,14 @@ struct GameLibraryView: View {
             ForEach(pending, id: \.id) { pendingEntry in
                 GameListRow(
                     game: pendingEntry,
-                    onStopImport: { showCancelValidationAlert = true }
+                    onStopImport: { requestStopImport(pendingEntry.id) }
                 )
                 .gameContextMenu(
                     game: pendingEntry,
                     appState: appState,
                     onPlay: {},
-                    onCancelImport: { showCancelValidationAlert = true },
+                    onCancelImport: { requestStopImport(pendingEntry.id) },
                     gameToDelete: $gameToDelete,
-                    showDeleteConfirm: $showDeleteConfirm,
                     gameForSettings: $gameForSettings,
                     gameForInfo: $gameForInfo
                 )
@@ -721,16 +825,15 @@ struct GameLibraryView: View {
         ForEach(pending, id: \.id) { pendingEntry in
             GameCard(
                 game: pendingEntry,
-                onStopImport: { showCancelValidationAlert = true }
+                onStopImport: { requestStopImport(pendingEntry.id) }
             )
             .cardShadow()
             .gameContextMenu(
                 game: pendingEntry,
                 appState: appState,
                 onPlay: {},
-                onCancelImport: { showCancelValidationAlert = true },
+                onCancelImport: { requestStopImport(pendingEntry.id) },
                 gameToDelete: $gameToDelete,
-                showDeleteConfirm: $showDeleteConfirm,
                 gameForSettings: $gameForSettings,
                 gameForInfo: $gameForInfo
             )
@@ -767,7 +870,6 @@ struct GameLibraryView: View {
                 onStopImport: game.status == .importing
                     ? {
                         gameToDelete = game
-                        showDeleteConfirm = true
                     } : nil
             )
             // Anchor on .topLeading so the badge floats over
@@ -792,11 +894,9 @@ struct GameLibraryView: View {
             onCancelImport: game.isImporting
                 ? {
                     gameToDelete = game
-                    showDeleteConfirm = true
                 } : nil,
             onSelect: selectionMode ? nil : { enterSelectionMode(seedingWith: game.id) },
             gameToDelete: $gameToDelete,
-            showDeleteConfirm: $showDeleteConfirm,
             gameForSettings: $gameForSettings,
             gameForInfo: $gameForInfo
         )
@@ -812,7 +912,6 @@ struct GameLibraryView: View {
                 game: game,
                 onStopImport: {
                     gameToDelete = game
-                    showDeleteConfirm = true
                 }
             )
             .cardShadow()
@@ -822,10 +921,8 @@ struct GameLibraryView: View {
                 onPlay: {},
                 onCancelImport: {
                     gameToDelete = game
-                    showDeleteConfirm = true
                 },
                 gameToDelete: $gameToDelete,
-                showDeleteConfirm: $showDeleteConfirm,
                 gameForSettings: $gameForSettings,
                 gameForInfo: $gameForInfo
             )
@@ -859,7 +956,6 @@ struct GameLibraryView: View {
                 appState: appState,
                 onPlay: { handleGameTap(game, from: .item) },
                 gameToDelete: $gameToDelete,
-                showDeleteConfirm: $showDeleteConfirm,
                 gameForSettings: $gameForSettings,
                 gameForInfo: $gameForInfo
             )
@@ -895,7 +991,7 @@ struct GameLibraryView: View {
         }
         // NOTE: no .id("...-\(isPaused)") here on purpose.
         // Forcing a remount on pause toggle destroys the
-        // matchedTransitionSource mid-animation, which
+        // zoomTransitionSource mid-animation, which
         // makes the exit hero zoom snap to a fallback
         // frame at its end. GameCard already animates its
         // own pause overlay via GameStatusIndicator's
@@ -909,7 +1005,6 @@ struct GameLibraryView: View {
             onPlay: { handleGameTap(game, from: .item) },
             onSelect: selectionMode ? nil : { enterSelectionMode(seedingWith: game.id) },
             gameToDelete: $gameToDelete,
-            showDeleteConfirm: $showDeleteConfirm,
             gameForSettings: $gameForSettings,
             gameForInfo: $gameForInfo
         )
@@ -923,27 +1018,15 @@ struct GameLibraryView: View {
     /// it dispatches to the existing per-status flow.
     private func handleCardTap(for game: GameEntry) {
         if selectionMode {
-            guard game.status == .ready else { return }
+            guard game.status == .ready, !GameLibrary.isInUse(game) else { return }
             toggleSelection(game.id)
             return
         }
         switch game.status {
         case .ready: handleGameTap(game, from: .item)
-        case .invalid: invalidReason = Self.whyInvalid(game)
+        case .invalid: invalidReason = GameLibrary.whyInvalid(game)
         case .importing, .deleting: break
         }
-    }
-
-    /// A core that refuses a game gives its own reason. A new import
-    /// meets the same refusal, so the usual advice to import again
-    /// would be wrong there.
-    private static func whyInvalid(_ game: GameEntry) -> String {
-        do {
-            if let container = game.container { try GameImportValidator.validate(container.gameURL) }
-        } catch GameImportValidator.ImportError.unsupportedRuntime(let reason) {
-            return reason
-        } catch {}
-        return String(localized: "XP Pocket can't read this game's files. Delete it, then import it again.")
     }
 
     /// Enter selection mode. When `gameId` is non-nil the game is
@@ -981,17 +1064,10 @@ struct GameLibraryView: View {
         let ids = selectedIDs
         let games = library.games.filter { ids.contains($0.id) }
         for game in games {
-            // Capture the title, not the model: the error closure is
-            // @Sendable and may run after the model left the library.
-            let title = game.title
-            library.deleteGame(game) { error in
-                errorTitle = String(
-                    localized: "Couldn't delete \"\(title)\"",
-                    comment: "Alert title. The placeholder is the game's name.")
-                errorMessage = error
-                showErrorAlert = true
-            } onSaveRescueFailure: { failedGame in
-                enqueueSaveRescueFailure(failedGame)
+            library.delete(game) {
+                showDeleteFailure(title: $0, message: $1)
+            } onSaveRescueFailure: {
+                enqueueSaveRescueFailure($0)
             }
         }
         exitSelectionMode()
@@ -1056,7 +1132,7 @@ struct GameLibraryView: View {
         #if DEBUG
         // UIKit refuses a second alert while the "Last session ended
         // early" alert is up, and SwiftUI drops the launch warning.
-        guard !autoStartDone, library.initialScanCompleted, appState.errorMessage == nil,
+        guard !autoStartDone, library.initialScanCompleted, appState.shownError == nil,
             let wanted = ProcessInfo.processInfo.environment["EMPO_AUTOSTART_GAME"],
             let game = library.games.first(where: { $0.title == wanted })
         else { return }
@@ -1145,14 +1221,10 @@ struct GameLibraryView: View {
     }
 
     private func startUnlessWarned(_ game: GameEntry) {
-        if let container = game.container,
-            let warning = GameCores.core(forGameAt: container.gameURL)?
-                .launchWarning(for: container, gameTitle: game.title)
-        {
+        if let warning = library.launchWarning(for: game) {
             warnedLaunch = WarnedLaunch(game: game, warning: warning)
         } else {
-            appState.selectGame(game)
-            push(game)
+            if appState.selectGame(game) { push(game) }
         }
     }
 
@@ -1171,28 +1243,38 @@ struct GameLibraryView: View {
     }
 
     private func continueDespiteLaunchWarning(_ game: GameEntry) {
-        appState.selectGame(game)
-        push(game)
+        if appState.selectGame(game) { push(game) }
+    }
+
+    private func requestStopImport(_ id: String) {
+        importStop = .one(id)
+    }
+
+    private var showStopAlert: Binding<Bool> {
+        Binding(get: { importStop != nil }, set: { if !$0 { importStop = nil } })
+    }
+
+    private func stopImport() {
+        switch importStop {
+        case .one(let id):
+            library.cancelPendingImport(id)
+        case .all:
+            importPipeline.cancelValidation()
+        case nil:
+            break
+        }
     }
 
     private func refreshGameSizes() {
         sizesTask?.cancel()
         sizesTask = Task {
-            var sizes: [String: Int64] = [:]
-            for game in library.games {
-                guard !Task.isCancelled else { return }
-                guard let container = game.container else { continue }
-                // Whole container size (Game/ + EmpoState/ + Logs/
-                // + Metadata/). Game/ holds almost all of it.
-                sizes[game.id] = await GameMetadata.diskSize(for: container.url)
-            }
-            guard !Task.isCancelled else { return }
-            gameSizes = sizes
+            if let sizes = await GameMetadata.diskSizes(of: library.games) { gameSizes = sizes }
         }
     }
 
     private func handleSplashDismissedChange(_ dismissed: Bool) {
         if dismissed {
+            takeTheResumeQuestion()
             staggerTrigger = UUID()
             // Clear entrance delay after first mount so subsequent
             // animations (view mode switch, new imports) play instantly.
@@ -1206,7 +1288,8 @@ struct GameLibraryView: View {
     private func handleAppPhaseChange(from oldPhase: GamePhase?, to newPhase: GamePhase?) {
         if oldPhase == .playing && newPhase == nil {
             Task {
-                await AdCoordinator.shared.showInterstitialIfNeeded(reason: .sessionEnd)
+                await AdCoordinator.shared.showInterstitialIfNeeded(
+                    reason: AdCoordinator.shared.sessionEndReason)
             }
         }
         if newPhase == nil && !path.isEmpty {
@@ -1226,29 +1309,24 @@ struct GameLibraryView: View {
         }
     }
 
-    private func deleteSelectedGame() {
-        guard let game = gameToDelete else { return }
-        library.deleteGame(game) { error in
-            errorTitle = String(
-                localized: "Couldn't delete \"\(game.title)\"",
-                comment: "Alert title. The placeholder is the game's name.")
-            errorMessage = error
-            showErrorAlert = true
-        } onSaveRescueFailure: { failedGame in
-            enqueueSaveRescueFailure(failedGame)
+    private func deleteGame(_ game: GameEntry) {
+        library.delete(game) {
+            showDeleteFailure(title: $0, message: $1)
+        } onSaveRescueFailure: {
+            enqueueSaveRescueFailure($0)
         }
     }
 
     /// The user's explicit "Delete Anyway" after a failed save
     /// rescue: delete without rescuing again.
     private func deleteGameDiscardingSaves(_ game: GameEntry) {
-        library.deleteGame(game, skipSaveRescue: true) { error in
-            errorTitle = String(
-                localized: "Couldn't delete \"\(game.title)\"",
-                comment: "Alert title. The placeholder is the game's name.")
-            errorMessage = error
-            showErrorAlert = true
-        }
+        library.delete(game, discardingSaves: true) { showDeleteFailure(title: $0, message: $1) }
+    }
+
+    private func showDeleteFailure(title: String, message: String) {
+        errorTitle = title
+        errorMessage = message
+        showErrorAlert = true
     }
 
     private func enqueueSaveRescueFailure(_ game: GameEntry) {
@@ -1325,13 +1403,14 @@ private struct BulkDeleteAlert: ViewModifier {
 /// `BulkDeleteAlert`.
 private struct DuplicateGamesNotice: ViewModifier {
     @Binding var names: [String]
+    let prompts: LaunchPrompts
     /// False while the splash is still up. One-time surfaces wait
     /// for it (see `SaveRecoveryPresentation.active`).
     var active: Bool = true
 
     private var isPresented: Binding<Bool> {
         Binding(
-            get: { active && !names.isEmpty },
+            get: { active && prompts.showing == .duplicateGames && !names.isEmpty },
             set: { presented in
                 if !presented { acknowledge() }
             }
@@ -1353,82 +1432,28 @@ private struct DuplicateGamesNotice: ViewModifier {
     private func acknowledge() {
         GameContainerMigration.clearPendingDuplicateNotice()
         names = []
+        prompts.done(.duplicateGames)
     }
 
     func body(content: Content) -> some View {
-        content.alert(
-            "\(AppInfo.name) moved your duplicate games",
-            isPresented: isPresented
-        ) {
-            Button("Got it", action: acknowledge)
-        } message: {
-            Text(message)
-        }
-    }
-}
-
-/// Alert wrapper for the import update confirmation. Only the
-/// single-choice import path reaches it (multi-game sources confirm
-/// updates inside the root picker's "Already in Library" step).
-/// Extracted for the same type-checker-budget reason as
-/// `BulkDeleteAlert`.
-///
-/// Button actions run before SwiftUI resets the binding, and the
-/// pipeline consumes the prompt state in the action, so the
-/// trailing set-to-nil (also fired by swipe/outside dismissal)
-/// falls through to a guarded no-op after an explicit choice.
-private struct ImportReplaceAlert: ViewModifier {
-    @Binding var prompt: ImportReplacePrompt?
-    let onReplace: () -> Void
-    let onCancel: () -> Void
-
-    private var isPresented: Binding<Bool> {
-        Binding(
-            get: { prompt != nil },
-            set: { presented in
-                if !presented { prompt = nil }
+        content
+            .onChange(of: names.isEmpty, initial: true) { _, empty in
+                if !empty { prompts.wait(.duplicateGames) }
             }
-        )
-    }
-
-    private var title: String {
-        (prompt?.titles.count ?? 1) > 1
-            ? String(localized: "These games are already in your library")
-            : String(localized: "This game is already in your library")
-    }
-
-    private func message(for prompt: ImportReplacePrompt) -> String {
-        if prompt.titles.count == 1, let name = prompt.titles.first {
-            return String(
-                localized:
-                    "\"\(name)\" is already in your library. Importing replaces its files with the new ones. Your saves and settings stay. You can't undo this.",
-                comment: "The placeholder is the game's name."
-            )
-        }
-        let names = prompt.titles.map { "\"\($0)\"" }.formatted(.list(type: .and))
-        return String(
-            localized:
-                "\(names) are already in your library. Importing replaces their files with the new ones. Your saves and settings stay. You can't undo this.",
-            comment: "The placeholder is a list of game names."
-        )
-    }
-
-    func body(content: Content) -> some View {
-        content.alert(
-            title,
-            isPresented: isPresented,
-            presenting: prompt
-        ) { _ in
-            Button("Update", role: .destructive, action: onReplace)
-            Button("Cancel", role: .cancel, action: onCancel)
-        } message: { prompt in
-            Text(message(for: prompt))
-        }
+            .alert(
+                "XP Pocket moved your duplicate games",
+                isPresented: isPresented
+            ) {
+                Button("Got it", action: acknowledge)
+            } message: {
+                Text(message)
+            }
     }
 }
 
 private struct LibrarySheetPresentation: ViewModifier {
     @Binding var showSettings: Bool
+    @Binding var settingsScrollTarget: SettingsSection?
     @Binding var showImporter: Bool
     @Binding var gameForSettings: GameEntry?
     @Binding var gameForInfo: GameEntry?
@@ -1440,19 +1465,25 @@ private struct LibrarySheetPresentation: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .sheet(isPresented: $showSettings) {
-                SettingsView()
-            }
+            .sheet(
+                isPresented: $showSettings,
+                onDismiss: { settingsScrollTarget = nil },
+                content: { SettingsView(scrollTarget: settingsScrollTarget) }
+            )
             .sheet(isPresented: $showImporter) {
                 DocumentPickerView { urls in
                     onImportPicked(urls)
                 }
             }
             .sheet(item: $gameForSettings) { game in
-                GameSettingsView(game: game)
+                if let container = game.container {
+                    GameSettingsView(game: game, container: container)
+                }
             }
             .sheet(item: $gameForInfo) { game in
-                GameInfoView(game: game)
+                if let container = game.container {
+                    GameInfoView(game: game, container: container)
+                }
             }
             .sheet(isPresented: $showSortSheet) {
                 LibrarySortSheet(isPresented: $showSortSheet)
@@ -1478,7 +1509,6 @@ private struct LibraryAlertPresentation: ViewModifier {
     let errorMessage: String?
     @Binding var showErrorAlert: Bool
     @Binding var gameToDelete: GameEntry?
-    @Binding var showDeleteConfirm: Bool
     @Binding var invalidReason: String?
     @Binding var showCancelValidationAlert: Bool
     @Binding var showPausedGameAlert: Bool
@@ -1489,7 +1519,7 @@ private struct LibraryAlertPresentation: ViewModifier {
     let pausedGame: GameEntry?
     let pendingGame: GameEntry?
     let canClosePausedGame: Bool
-    let onDeleteGame: () -> Void
+    let onDeleteGame: (GameEntry) -> Void
     let onDeleteGameDiscardingSaves: (GameEntry) -> Void
     let onDismissImportPipelineAlert: () -> Void
     let onCancelValidation: () -> Void
@@ -1511,52 +1541,17 @@ private struct LibraryAlertPresentation: ViewModifier {
             } message: {
                 errorMessage.map { Text($0) } ?? Text("XP Pocket couldn't finish this. Reopen XP Pocket and try again.")
             }
-            .alert("Delete this game?", isPresented: $showDeleteConfirm) {
-                Button("Delete", role: .destructive, action: onDeleteGame)
-                    .keyboardShortcut(.defaultAction)
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                if let game = gameToDelete {
-                    if game.isImporting {
-                        // Deleting an importing card cancels the
-                        // import. For an update, the installed game
-                        // stays - promising file removal here would
-                        // be false.
-                        Text(
-                            String(localized: "This stops importing \"\(game.title)\". If you were updating a game you already have, that copy stays as it is.")
-                        )
-                    } else {
-                        Text(
-                            "This deletes \"\(game.title)\" from your device. XP Pocket moves the saves it recognizes to Rescued Saves. Saves it doesn't recognize are deleted with the game. You can't undo this."
-                        )
-                    }
-                }
-            }
-            .alert(
-                "Couldn't move the saves",
-                isPresented: Binding(
-                    get: { !saveRescueFailures.isEmpty },
-                    set: { presented in
-                        // Dismissal pops the queue. The binding
-                        // then reads true again while more
-                        // failures wait, so the next game's
-                        // choice presents in turn.
-                        if !presented, !saveRescueFailures.isEmpty {
-                            saveRescueFailures.removeFirst()
-                        }
-                    }
-                ),
-                presenting: saveRescueFailures.first
-            ) { game in
-                Button("Delete anyway", role: .destructive) {
-                    onDeleteGameDiscardingSaves(game)
-                }
-                Button("Keep game", role: .cancel) {}
-            } message: { game in
-                Text(
-                    "\(AppInfo.name) couldn't move the saves for \"\(game.title)\" to Rescued Saves. Free up space and delete again, or delete now and lose those saves. You can't undo this."
+            .modifier(
+                DeleteGameAlerts(
+                    isPresented: Binding(
+                        get: { gameToDelete != nil },
+                        set: { if !$0 { gameToDelete = nil } }),
+                    game: gameToDelete,
+                    saveRescueFailures: $saveRescueFailures,
+                    onDelete: onDeleteGame,
+                    onDeleteDiscardingSaves: onDeleteGameDiscardingSaves
                 )
-            }
+            )
             .alert(
                 "\(AppInfo.name) can't run this game",
                 isPresented: Binding(
@@ -1567,28 +1562,11 @@ private struct LibraryAlertPresentation: ViewModifier {
             ) { _ in
                 Button("Got it") { gameWithNoCore = nil }
             } message: { game in
-                if let container = game.container,
-                    let core = AppState.missingCore(for: container)
-                {
-                    Text(
-                        "This build of XP Pocket has no \(core.displayName), so it can't run \"\(game.title)\".",
-                        comment:
-                            "First placeholder: a game engine name, such as \"RPG Maker MV core\". Second: the game's name."
-                    )
+                if let container = game.container, let core = AppState.missingCore(for: container) {
+                    Text(core.notInThisBuildMessage)
                 }
             }
-            .alert(
-                "This game won't open",
-                isPresented: Binding(
-                    get: { invalidReason != nil },
-                    set: { presented in if !presented { invalidReason = nil } }
-                ),
-                presenting: invalidReason
-            ) { _ in
-                Button("Got it") { invalidReason = nil }
-            } message: { reason in
-                Text(reason)
-            }
+            .modifier(InvalidGameAlert(reason: $invalidReason))
             .alert(
                 warnedLaunch?.warning.title ?? "",
                 isPresented: Binding(
@@ -1604,12 +1582,9 @@ private struct LibraryAlertPresentation: ViewModifier {
             } message: { launch in
                 Text(launch.warning.message)
             }
-            .alert("Stop import?", isPresented: $showCancelValidationAlert) {
-                Button("Keep importing", role: .cancel) {}
-                Button("Stop import", role: .destructive, action: onCancelValidation)
-            } message: {
-                Text("XP Pocket is still checking this game. If you stop now, XP Pocket won't import it.")
-            }
+            .modifier(
+                StopValidationAlert(isPresented: $showCancelValidationAlert, onStop: onCancelValidation)
+            )
             .alert(
                 canClosePausedGame ? "Play \"\(pendingGame?.title ?? "")\"?" : "A game is paused",
                 isPresented: $showPausedGameAlert

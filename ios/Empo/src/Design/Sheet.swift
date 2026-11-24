@@ -19,18 +19,30 @@ import SwiftUI
 ///     SheetBodyText("What happened and why.")
 ///     SheetCard { /* rows */ }
 ///     SheetFootnote("The fine print.")
+/// } footer: {
 ///     SheetPrimaryButton("Done") { dismiss() }
 /// }
 /// ```
 
-/// A navigation-bar action on a sheet ("Cancel", "Close").
+/// The icon in the sheet's top-trailing corner. Close is the safe
+/// exit of the first step. Back returns to the step before.
 struct SheetBarAction {
+    enum Symbol { case close, back }
+
     let label: LocalizedStringResource
+    let symbol: Symbol
     let action: () -> Void
 
-    init(_ label: LocalizedStringResource, action: @escaping () -> Void) {
+    init(_ label: LocalizedStringResource, symbol: Symbol = .close, action: @escaping () -> Void) {
         self.label = label
+        self.symbol = symbol
         self.action = action
+    }
+
+    /// For text built at runtime, which has no translation key.
+    @_disfavoredOverload
+    init(_ label: String, symbol: Symbol = .close, action: @escaping () -> Void) {
+        self.init(LocalizedStringResource(String.LocalizationValue(label)), symbol: symbol, action: action)
     }
 }
 
@@ -48,34 +60,42 @@ enum SheetSurface {
 
 /// The standard content-sized Empo sheet.
 ///
-/// Two title styles, matching the two system sheet shapes:
+/// Two title styles:
 ///
-///   - No emblem: the title sits inline in the navigation bar
-///     (activity-summary style - image sources, build info).
+///   - No emblem: the title sits at the top of the content,
+///     leading, with the corner icon beside it.
 ///   - With `emblem:`: the title joins the symbol as ONE centered
-///     identity block at the top of the content (welcome-sheet
-///     style). Splitting them - a bar title plus a floating
-///     symbol - reads as two competing anchors. Never do that.
-struct StandardSheet<Content: View>: View {
+///     identity block (welcome-sheet style). The icon, when there
+///     is one, floats in a top corner over that block.
+///
+/// A multi-step sheet swaps the title, the icon and the content in
+/// one `withAnimation`. The detent follows the measured height with
+/// the same motion, so the sheet grows and shrinks with each step.
+struct StandardSheet<Content: View, Footer: View>: View {
     let title: LocalizedStringResource
     /// SF Symbol name for the identity block. A nil value keeps the
-    /// title in the navigation bar.
+    /// title leading at the top of the content.
     var emblem: String?
     var surface: SheetSurface = .grouped
-    /// Extra height for navigation chrome. A nil value derives it from
-    /// the bar: the full bar allowance with a bar, only the
-    /// grabber zone without one.
-    var chromeAllowance: CGFloat?
-    /// Optional top-trailing toolbar action.
-    var trailingButton: SheetBarAction?
+    /// Optional corner icon action.
+    var barAction: SheetBarAction?
     @ViewBuilder var content: Content
+    /// Stays at the bottom while the content scrolls.
+    @ViewBuilder var footer: Footer
 
     @State private var sheetSize = IntrinsicSheetSize()
+    @State private var headerHeight: CGFloat = 0
+    @State private var footerHeight: CGFloat = 0
+    @State private var bodyHeight: CGFloat = 0
+    @State private var fade = ScrollEdgeFade()
 
-    /// An identity-block sheet with no toolbar action has an empty
-    /// bar. Hiding it lets the sheet hug its content.
-    private var barHidden: Bool {
-        emblem != nil && trailingButton == nil
+    private var hasFooter: Bool { Footer.self != EmptyView.self }
+
+    /// A sheet with a footer keeps its header and footer in place
+    /// while the content scrolls. Large text on a short screen can
+    /// make them too tall for that, so they then scroll too.
+    private var pinsEdges: Bool {
+        hasFooter && headerHeight + footerHeight <= bodyHeight / 2
     }
 
     var body: some View {
@@ -83,44 +103,245 @@ struct StandardSheet<Content: View>: View {
         case .grouped:
             core.presentationBackground(Color(.systemGroupedBackground))
         case .material:
-            core
+            if #available(iOS 26.0, *) {
+                core
+            } else {
+                core.presentationBackground(.regularMaterial)
+            }
         }
     }
 
     private var core: some View {
-        NavigationStack {
-            // The scroll container does two jobs: content taller
-            // than the screen scrolls instead of clipping, and a
-            // sheet pulled past its detent keeps the content
-            // pinned to the top (a bare VStack centers in the
-            // stretched space).
-            ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.xl) {
-                    if let emblem {
-                        SheetIdentityBlock(systemName: emblem, title: title)
-                    }
-                    content
+        VStack(spacing: 0) {
+            if pinsEdges { headerBlock }
+            scroller
+            if pinsEdges { footerBlock }
+        }
+        .onGeometryChange(for: CGFloat.self) {
+            $0.size.height
+        } action: {
+            bodyHeight = $0
+        }
+        .intrinsicSheetDetent(size: $sheetSize, chromeAllowance: 0)
+        .tint(.brand)
+    }
+
+    /// The scroll container does two jobs: content taller than the
+    /// screen scrolls instead of clipping, and a sheet pulled past
+    /// its detent keeps the content pinned to the top (a bare VStack
+    /// centers in the stretched space).
+    @ViewBuilder private var scroller: some View {
+        let scroll = ScrollView {
+            VStack(spacing: 0) {
+                if !pinsEdges { headerBlock }
+                contentBlock
+                if !pinsEdges { footerBlock }
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .top)
+            // A view on its way out still takes its space until its
+            // transition ends, so the visible stack is the wrong thing
+            // to measure during a step change. The copy below has no
+            // animation, so it is already the size of the next step
+            // when the change begins.
+            .background {
+                VStack(spacing: 0) {
+                    headerBlock
+                        .onGeometryChange(for: CGFloat.self) {
+                            $0.size.height
+                        } action: {
+                            headerHeight = $0
+                        }
+                    contentBlock
+                    footerBlock
+                        .onGeometryChange(for: CGFloat.self) {
+                            $0.size.height
+                        } action: {
+                            footerHeight = $0
+                        }
                 }
-                .padding(Spacing.xl)
+                .hidden()
+                .accessibilityHidden(true)
+                .transaction { $0.animation = nil }
                 .intrinsicSheetContent(size: $sheetSize)
             }
-            .scrollBounceBehavior(.basedOnSize)
-            .navigationTitle(emblem == nil ? Text(title) : Text(verbatim: ""))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar(barHidden ? .hidden : .automatic, for: .navigationBar)
-            .toolbar {
-                if let trailingButton {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button(trailingButton.label, action: trailingButton.action)
-                    }
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        if hasFooter, #available(iOS 18.0, *) {
+            // The content fades out under the pinned header and footer
+            // only as far as it runs past them.
+            scroll
+                .onScrollGeometryChange(for: ScrollEdgeFade.self, of: ScrollEdgeFade.init) { _, new in
+                    fade = new
                 }
+                .mask { ScrollEdgeFadeMask(fade: fade).ignoresSafeArea() }
+        } else if hasFooter {
+            scroll
+        } else {
+            // During a detent change UIKit sizes this view to the new
+            // height at once and animates only the sheet's frame. With
+            // clipping on, the scroll view cuts the old step off in one
+            // frame. With it off, the sheet's moving edge does the cut.
+            scroll.scrollClipDisabled()
+        }
+    }
+
+    private var headerBlock: some View {
+        header
+            .padding(.horizontal, Spacing.xl)
+            .padding(.top, Spacing.xl + Spacing.md)
+            .padding(.bottom, Spacing.xl)
+    }
+
+    private var contentBlock: some View {
+        VStack(alignment: .leading, spacing: Spacing.xl) {
+            content
+        }
+        .padding(.horizontal, Spacing.xl)
+        // The home indicator's safe area already pads the bottom. A
+        // full gutter under it reads as a hole.
+        .padding(.bottom, hasFooter ? 0 : Spacing.sm)
+    }
+
+    @ViewBuilder private var footerBlock: some View {
+        if hasFooter {
+            VStack(spacing: Spacing.md) {
+                footer
+            }
+            .padding(.horizontal, Spacing.xl)
+            .padding(.top, Spacing.xl)
+            .padding(.bottom, Spacing.sm)
+        }
+    }
+
+    /// The title is centered. Back leads, close trails, level with
+    /// the title's first line.
+    @ViewBuilder private var header: some View {
+        if let emblem {
+            SheetIdentityBlock(systemName: emblem, title: title)
+                .overlay(alignment: .top) {
+                    if let barAction { placed(icon: barAction) }
+                }
+        } else {
+            ZStack(alignment: .top) {
+                Text(title)
+                    .font(.title2.bold())
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 44 + Spacing.lg)
+                    .id(String(localized: title))
+                    .transition(.sheetStep)
+                if let barAction { placed(icon: barAction) }
             }
         }
-        .intrinsicSheetDetent(
-            size: $sheetSize,
-            chromeAllowance: chromeAllowance ?? (barHidden ? 28 : 64)
-        )
-        .tint(.brand)
+    }
+
+    /// Back leads, close trails. A step change swaps one for the
+    /// other with the same blur as the rest of the sheet.
+    private func placed(icon action: SheetBarAction) -> some View {
+        icon(action)
+            .frame(maxWidth: .infinity, alignment: action.symbol == .back ? .leading : .trailing)
+            .id(action.symbol)
+            .transition(.sheetStep)
+    }
+
+    private func icon(_ action: SheetBarAction) -> some View {
+        Button(action: action.action) {
+            Image(systemName: action.symbol == .close ? "xmark.circle.fill" : "chevron.left.circle.fill")
+                .font(.title2)
+                .foregroundStyle(.secondary)
+                .frame(width: 44, height: 44, alignment: .top)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(action.label))
+    }
+}
+
+extension StandardSheet {
+    /// For text built at runtime, which has no translation key.
+    @_disfavoredOverload
+    init(
+        title: String,
+        emblem: String? = nil,
+        surface: SheetSurface = .grouped,
+        barAction: SheetBarAction? = nil,
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        self.init(
+            title: LocalizedStringResource(String.LocalizationValue(title)), emblem: emblem,
+            surface: surface, barAction: barAction, content: content, footer: footer)
+    }
+}
+
+extension StandardSheet where Footer == EmptyView {
+    /// For text built at runtime, which has no translation key.
+    @_disfavoredOverload
+    init(
+        title: String,
+        emblem: String? = nil,
+        surface: SheetSurface = .grouped,
+        barAction: SheetBarAction? = nil,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.init(
+            title: LocalizedStringResource(String.LocalizationValue(title)), emblem: emblem,
+            surface: surface, barAction: barAction, content: content)
+    }
+
+    init(
+        title: LocalizedStringResource,
+        emblem: String? = nil,
+        surface: SheetSurface = .grouped,
+        barAction: SheetBarAction? = nil,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.init(
+            title: title, emblem: emblem, surface: surface, barAction: barAction,
+            content: content, footer: { EmptyView() })
+    }
+}
+
+/// How far the content runs past each edge of a sheet's scroll view,
+/// from 0 at the edge to 1 at `length` points or more.
+private struct ScrollEdgeFade: Equatable {
+    static let length: CGFloat = 24
+
+    var top: CGFloat = 0
+    var bottom: CGFloat = 0
+
+    init() {}
+
+    @available(iOS 18.0, *)
+    init(_ geometry: ScrollGeometry) {
+        // `visibleRect` includes the safe area insets, and
+        // `containerSize` does not.
+        let hiddenAbove = geometry.visibleRect.minY
+        let hiddenBelow = geometry.contentSize.height - geometry.visibleRect.maxY
+        top = min(max(hiddenAbove / Self.length, 0), 1)
+        bottom = min(max(hiddenBelow / Self.length, 0), 1)
+    }
+}
+
+/// Fades the content out at an edge only as far as it runs past that
+/// edge, so the fade grows as the user scrolls.
+private struct ScrollEdgeFadeMask: View {
+    let fade: ScrollEdgeFade
+
+    var body: some View {
+        VStack(spacing: 0) {
+            LinearGradient(
+                colors: [.black.opacity(1 - fade.top), .black], startPoint: .top, endPoint: .bottom
+            )
+            .frame(height: ScrollEdgeFade.length)
+            Rectangle()
+            LinearGradient(
+                colors: [.black, .black.opacity(1 - fade.bottom)], startPoint: .top, endPoint: .bottom
+            )
+            .frame(height: ScrollEdgeFade.length)
+        }
     }
 }
 
@@ -148,11 +369,28 @@ private struct SheetIdentityBlock: View {
     }
 }
 
-/// Leading-aligned explanation text under the emblem.
+/// Leading-aligned explanation text under the title.
 struct SheetBodyText: View {
-    let text: LocalizedStringResource
+    let text: AttributedString
 
-    init(_ text: LocalizedStringResource) { self.text = text }
+    init(_ text: LocalizedStringResource) { self.text = AttributedString(localized: text) }
+
+    /// For text built at runtime, which has no translation key.
+    @_disfavoredOverload
+    init(_ text: String) { self.text = AttributedString(text) }
+
+    /// `name` is the game or target the line talks about. It reads in
+    /// the primary color and a heavier weight, so it stands out of
+    /// the secondary text around it.
+    init(_ text: String, naming name: String) {
+        var attributed = AttributedString(text)
+        for range in text.ranges(of: name) {
+            guard let marked = Range(range, in: attributed) else { continue }
+            attributed[marked].foregroundColor = .primary
+            attributed[marked].font = .subheadline.weight(.semibold)
+        }
+        self.text = attributed
+    }
 
     var body: some View {
         Text(text)
@@ -168,6 +406,10 @@ struct SheetFootnote: View {
     let text: LocalizedStringResource
 
     init(_ text: LocalizedStringResource) { self.text = text }
+
+    /// For text built at runtime, which has no translation key.
+    @_disfavoredOverload
+    init(_ text: String) { self.init(LocalizedStringResource(String.LocalizationValue(text))) }
 
     var body: some View {
         Text(text)
@@ -205,6 +447,33 @@ struct SheetRowSeparator: View {
     }
 }
 
+/// A card row that the person taps: an icon and a label, with the full
+/// row as the hit target.
+struct SheetRow: View {
+    let icon: String
+    let label: LocalizedStringResource
+    var iconColor: Color = .primary
+    var role: ButtonRole?
+    let action: () -> Void
+
+    var body: some View {
+        Button(role: role, action: action) {
+            HStack(spacing: Spacing.lg) {
+                Image(systemName: icon)
+                    .foregroundStyle(role == .destructive ? .red : iconColor)
+                    .frame(width: 24)
+                Text(label)
+                    .foregroundStyle(role == .destructive ? .red : .primary)
+                    .multilineTextAlignment(.leading)
+                Spacer()
+            }
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.lg)
+            .contentShape(Rectangle())
+        }
+    }
+}
+
 /// The sheet's one full-width primary action, at the bottom.
 struct SheetPrimaryButton: View {
     let title: LocalizedStringResource
@@ -215,10 +484,87 @@ struct SheetPrimaryButton: View {
         self.action = action
     }
 
+    /// For text built at runtime, which has no translation key.
+    @_disfavoredOverload
+    init(_ title: String, action: @escaping () -> Void) {
+        self.init(LocalizedStringResource(String.LocalizationValue(title)), action: action)
+    }
+
     var body: some View {
         Button(action: action) {
             Text(title).frame(maxWidth: .infinity)
         }
         .buttonStyle(PrimaryButtonStyle())
     }
+}
+
+/// The step toward a destructive answer, or any second choice that
+/// needs no weight of its own. Plain text, full width, 44pt tall.
+struct SheetQuietButton: View {
+    let title: LocalizedStringResource
+    let action: () -> Void
+
+    init(_ title: LocalizedStringResource, action: @escaping () -> Void) {
+        self.title = title
+        self.action = action
+    }
+
+    /// For text built at runtime, which has no translation key.
+    @_disfavoredOverload
+    init(_ title: String, action: @escaping () -> Void) {
+        self.init(LocalizedStringResource(String.LocalizationValue(title)), action: action)
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// The one destructive answer of a confirmation step. Red, full
+/// width, and never the brand primary.
+struct SheetDestructiveButton: View {
+    let title: LocalizedStringResource
+    let action: () -> Void
+
+    init(_ title: LocalizedStringResource, action: @escaping () -> Void) {
+        self.title = title
+        self.action = action
+    }
+
+    /// For text built at runtime, which has no translation key.
+    @_disfavoredOverload
+    init(_ title: String, action: @escaping () -> Void) {
+        self.init(LocalizedStringResource(String.LocalizationValue(title)), action: action)
+    }
+
+    var body: some View {
+        Button(role: .destructive, action: action) {
+            Text(title).frame(maxWidth: .infinity)
+        }
+        .buttonStyle(PrimaryButtonStyle(tint: .destructive))
+    }
+}
+
+/// The way one step of a sheet gives way to the next: the old
+/// content blurs and fades out while the new one blurs and fades in.
+private struct SheetStepFade: ViewModifier {
+    let radius: CGFloat
+    let opacity: Double
+
+    func body(content: Content) -> some View {
+        content.blur(radius: radius).opacity(opacity)
+    }
+}
+
+extension AnyTransition {
+    static let sheetStep = AnyTransition.modifier(
+        active: SheetStepFade(radius: 12, opacity: 0),
+        identity: SheetStepFade(radius: 0, opacity: 1))
 }

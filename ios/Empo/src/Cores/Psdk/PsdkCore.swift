@@ -10,8 +10,9 @@ import SwiftUI
 ///
 /// Each framework carries SFML's SFView, SFViewController and
 /// SFAppDelegate, and Objective-C keeps one class for each name in a
-/// process. That holds only while a PSDK core can't kill its game
-/// (`canKillSession`), so that no second PSDK core opens after it.
+/// process. That holds because a PSDK core can't kill its game in the
+/// app (`canKillSession`), so no second PSDK core opens after it there.
+/// A game process runs one core.
 struct PsdkCore: GameCore {
     let ruby: String
     let gamesLine: String
@@ -101,13 +102,15 @@ struct PsdkCore: GameCore {
     // ponytail: reads all of Data/Scripts.dat at each launch, 0.05 s
     // for Edelweiss Chronicles on an iPhone 13 Pro. Run it once at import
     // and keep a mark if a game shows the wait.
-    func launch(_ container: GameContainer) {
+    func launch(_ container: GameContainer) -> [CoreSetting] {
         PsdkGame.matchFileNameCase(in: container.gameURL)
         let settings = GameSettings.load(from: container.playerDataURL)
-        let smooth = settings.smoothScaling ?? GameConfigDefaults.engineSmoothScaling
-        let fixed = settings.fixedAspectRatio ?? GameConfigDefaults.engineFixedAspectRatio
-        gamecore_setSetting("smoothScaling", smooth ? "1" : "0")
-        gamecore_setSetting("fixedAspectRatio", fixed ? "1" : "0")
+        return [
+            smoothScaling(settings),
+            CoreSetting(
+                GAMECORE_SETTING_FIXED_ASPECT_RATIO,
+                settings.fixedAspectRatio ?? GameConfigDefaults.engineFixedAspectRatio),
+        ]
     }
 
     /// A PSDK game ships no Game.ini, and its app_data.json holds
@@ -119,6 +122,7 @@ struct PsdkCore: GameCore {
             Group {
                 GameplaySettingsSection(model: model)
                 DisplaySettingsSection(model: model, fields: [.smoothScaling, .fixedAspectRatio])
+                #if os(iOS)
                 LayoutSettingsSection(model: model)
                 Section {
                     TouchMouseToggle(model: model)
@@ -127,6 +131,7 @@ struct PsdkCore: GameCore {
                 } footer: {
                     Text("This works only in games that use a mouse.")
                 }
+                #endif
             })
     }
 }

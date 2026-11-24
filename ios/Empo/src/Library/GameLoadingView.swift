@@ -11,12 +11,21 @@ struct GameLoadingView: View {
     /// the pause can pop it and play the zoom in reverse, but it
     /// draws nothing: the Ken Burns pan and the container fill would
     /// otherwise composite over the embedded game view.
-    var dormant: Bool = false
+    let dormant: Bool
     @Environment(\.appState) private var appState
     @Environment(\.engineState) private var engineState
     @Environment(\.pauseManager) private var pauseManager
 
-    private var mode: Mode { pauseManager.pauseSnapshot != nil ? .resuming : .loading }
+    /// Fixed when the view is pushed. A resume leaves the phase nil
+    /// until the zoom ends, and a lost snapshot must not turn it into
+    /// a loading screen.
+    @State private var mode: Mode
+
+    init(game: GameEntry, dormant: Bool, mode: Mode) {
+        self.game = game
+        self.dormant = dormant
+        _mode = State(initialValue: mode)
+    }
 
     @State private var kenBurns = false
     @State private var appearedAt: ContinuousClock.Instant?
@@ -103,7 +112,7 @@ struct GameLoadingView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbarBackground(.hidden, for: .navigationBar)
-        .containerBackground(isPlayingPhase ? .clear : .black, for: .navigation)
+        .navigationBackground(isPlayingPhase ? .clear : .black)
         // The pause sets the phase inside an animation. The black
         // must not fade in with it: `AppWindow` paints the root
         // background for the zoom transition, and a fade shows that
@@ -170,7 +179,7 @@ struct GameLoadingView: View {
             withAnimation(.spring(duration: duration, bounce: 0)) {
                 appState.phase = .playing
             }
-            AppWindow.resignKeyToSDL()
+            AppWindow.resignKeyToGame()
         }
     }
 
@@ -195,6 +204,12 @@ struct GameLoadingView: View {
                     .padding(.top, Spacing.md)
             } else {
                 messageLine("To play again, close XP Pocket from the app switcher, then open it again.")
+            }
+            if !clean, let report = GameReport.last, report.isShareable {
+                ShareLink(item: report, preview: SharePreview("\(AppInfo.name) report for \(game.title)")) {
+                    Label("Share Report", systemImage: "square.and.arrow.up")
+                }
+                .buttonStyle(.secondary)
             }
             if !clean {
                 reportLine
@@ -252,19 +267,28 @@ struct GameLoadingView: View {
         // Suppress the hint once an error alert is presenting or the
         // game ended: the screen already tells the user what to do, so
         // the "if loading is stuck..." line only clutters it.
-        if cancelVisible && appState.errorMessage == nil && !isEnded {
-            // A static label, not a button. Empo has no quit path,
-            // and an app may not close itself: App Store guideline
-            // 2.5.1 forbids it. So the label tells the user to close
-            // Empo from the app switcher, which is the way iOS
-            // allows. See `ios/Empo/docs/multi-session.md`.
-            Text("If loading is stuck, close XP Pocket from the app switcher, then reopen it.")
-                .font(.system(size: 14))
-                .foregroundStyle(.white.opacity(0.8))
-                .multilineTextAlignment(.center)
-                .centeredMessageWidth()
-                .padding(.bottom, Spacing.xl)
-                .transition(.opacity.combined(with: .offset(y: 8)))
+        if cancelVisible && appState.shownError == nil && !isEnded {
+            if appState.canEndStuckGame {
+                Button("Stop Loading") { appState.cancelLoading() }
+                    .buttonStyle(.secondary)
+                    .padding(.horizontal, Spacing.xl)
+                    .padding(.bottom, Spacing.xl)
+                    .transition(.opacity.combined(with: .offset(y: 8)))
+            } else {
+                // A static label, not a button. A game in the app
+                // can't stop, and an app may not close itself: App
+                // Store guideline 2.5.1 forbids it. So the label tells
+                // the user to close XP Pocket from the app switcher, which
+                // is the way iOS allows. See
+                // `ios/Empo/docs/multi-session.md`.
+                Text("If loading is stuck, close XP Pocket from the app switcher, then reopen it.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.white.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                    .centeredMessageWidth()
+                    .padding(.bottom, Spacing.xl)
+                    .transition(.opacity.combined(with: .offset(y: 8)))
+            }
         }
     }
 

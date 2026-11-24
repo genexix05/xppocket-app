@@ -7,12 +7,12 @@ description: The two pause modes, and the frozen-frame snapshots that bridge the
 
 The app has two pause modes:
 
-1. **Manual pause.** The user taps the pause button in the toolbar. The engine stops, the UI goes back to the library, and the game card shows a pause indicator. A tap on the card resumes the game with a hero zoom animation.
+1. **Manual pause.** The user taps the pause button in the toolbar. The engine stops, the UI goes back to the library, and the game card shows a pause indicator. A tap on the card resumes the game with a hero zoom animation. Before iOS 18 the player opens with the standard push.
 2. **Background pause.** The app moves to the background. The engine stops with no UI change, and the player view stays mounted. The game resumes when the app comes back to the foreground.
 
 Both modes use the same engine pause. They differ in how the UI responds. The Ruby cores block the game thread on a condition variable. The MV/MZ core stops the game in its web page.
 
-The app calls the `gamecore_*` functions. `GameCoreForwarders.c` sends each call to the core of the game, so the app uses the same flow for every core.
+The app calls the `gamecore_*` functions. `AppCoreForwarders.c` sends each call to the core of the game, so the app uses the same flow for every core.
 
 ---
 
@@ -132,7 +132,7 @@ The hero zoom from the game card to `GameLoadingView` needs a visible library. S
 | `cores/psdk/psdk_app_bridge.cpp`    | The same pause, audio, and snapshot code for the PSDK cores                   |
 | `cores/mvmz/mvmz_app_bridge.m`              | Pause, resume, and snapshot for the MV/MZ core                                |
 | `mvmz-apple-mobile/src/runtime.js`             | Keeps the frames and pauses the audio in the page                             |
-| `ios/Empo/src/App/GameCoreForwarders.c`        | Sends each `gamecore_*` call to the core of the game                          |
+| `ios/Empo/src/App/AppCoreForwarders.c`         | Sends each `gamecore_*` call to the core of the game                          |
 | `ios/Empo/src/App/PauseManager.swift`          | `pausedGame`, `pauseSnapshot`, `snapshotCanFade`                              |
 | `ios/Empo/src/App/AppState.swift`              | `requestPause()`, `handlePause(snapshot:)`, `resumePausedGame()`             |
 | `ios/Empo/src/App/EngineSessionCoordinator.swift` | Paused callback, `capturePauseSnapshot()`, frame-rendered callback         |

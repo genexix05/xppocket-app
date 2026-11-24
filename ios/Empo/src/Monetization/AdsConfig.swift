@@ -40,6 +40,11 @@ enum AdsConfig {
         #endif
     }
 
+    /// Play time between two interstitials. The ad shows when a game has
+    /// run for this long since the last ad. Game launches and this ad ignore
+    /// the cooldown below.
+    static let playTimeInterval: TimeInterval = 30 * 60
+
     /// Minimum seconds between interstitials (free tier). Game launches ignore it.
     static let interstitialCooldown: TimeInterval = 10 * 60
 

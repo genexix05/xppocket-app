@@ -30,15 +30,14 @@ struct GameplaySettingsSection: View {
                             }
                         }
                     ),
-                    description:
-                        "Show a Fast forward switch in the More menu while you play. When the switch is on, the game runs at the speed below."
+                    description: fastForwardDescription
                 )
 
                 if model.fastForwardEnabled {
                     HStack {
                         Text("Speed")
                         Spacer()
-                        Text("\(model.effectiveSpeedMultiplier)x", comment: "Fast forward speed, such as 4x")
+                        Text("\(model.effectiveSpeedMultiplier)×", comment: "Fast forward speed, such as 4×")
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
                     }
@@ -58,6 +57,14 @@ struct GameplaySettingsSection: View {
         } footer: {
             Text("How you play the game.")
         }
+    }
+
+    private var fastForwardDescription: LocalizedStringResource {
+        #if os(macOS)
+        "Add Fast Forward to the Game menu while you play. When it's on, the game runs at the speed below."
+        #else
+        "Show a Fast forward switch in the More menu while you play. When the switch is on, the game runs at the speed below."
+        #endif
     }
 }
 
@@ -135,6 +142,7 @@ extension DisplaySettingsSection where Extra == EmptyView {
     }
 }
 
+#if os(iOS)
 /// One section for the layout profile, which sets the controls and
 /// where the game sits on screen.
 struct LayoutSettingsSection: View {
@@ -143,16 +151,8 @@ struct LayoutSettingsSection: View {
 
     var body: some View {
         Section {
-            Button {
+            SettingsValueButton(title: "Layout profile", value: currentPinLabel) {
                 showLayoutProfilePicker = true
-            } label: {
-                HStack {
-                    Text("Layout profile")
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Text(currentPinLabel)
-                        .foregroundStyle(.secondary)
-                }
             }
             .sheet(
                 isPresented: $showLayoutProfilePicker,
@@ -192,6 +192,8 @@ struct LayoutSettingsSection: View {
         }
     }
 }
+
+#endif
 
 struct TouchMouseToggle: View {
     let model: GameSettingsModel
@@ -233,5 +235,51 @@ struct SettingRow<Content: View>: View {
                 }
             }
         }
+    }
+}
+
+struct ResetSettingsSection: View {
+    let model: GameSettingsModel
+    let gameTitle: String
+    @State private var showsConfirmation = false
+
+    var body: some View {
+        content
+            .alert("Reset all settings?", isPresented: $showsConfirmation) {
+                #if os(macOS)
+                Button("Reset") { model.resetToDefaults() }
+                #else
+                Button("Reset", role: .destructive) { withAnimation { model.resetToDefaults() } }
+                #endif
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This clears every change you made to \"\(gameTitle)\". You can't undo this.")
+            }
+    }
+
+    @ViewBuilder private var content: some View {
+        #if os(macOS)
+        Section {
+            LabeledContent {
+                Button("Reset to Defaults…") { showsConfirmation = true }
+                    .disabled(!model.hasAnyCustomizations || model.coreSettings?.isBusy == true)
+            } label: {
+                footer.foregroundStyle(.secondary)
+            }
+        }
+        #else
+        if model.hasAnyCustomizations {
+            Section {
+                Button("Reset to defaults", role: .destructive) { showsConfirmation = true }
+                    .disabled(model.coreSettings?.isBusy == true)
+            } footer: {
+                footer
+            }
+        }
+        #endif
+    }
+
+    private var footer: Text {
+        Text("Clears every change you made and uses the game's original values.")
     }
 }

@@ -30,6 +30,8 @@ Internal checklists for rebranding this fork, GPL compliance, App Store submissi
 | [`importing-games.mdx`](importing-games.mdx) | The accepted file types, and what happens to an installed game.    |
 | [`playing.mdx`](playing.mdx)                 | The library, the touch controls, controllers, and game settings.   |
 | [`saves.mdx`](saves.mdx)                     | Where saves live, what updates and deletes do, moving saves.       |
+| [`backups.mdx`](backups.mdx)                 | Backup locations, when backups run, restore, export, and settings sync. |
+| [`plus.mdx`](plus.mdx)                       | What Empo Plus adds, how to join on Patreon, and what stays free.  |
 | [`troubleshooting.mdx`](troubleshooting.mdx) | Frequent problems and their fixes.                                 |
 | [`faq.mdx`](faq.mdx)                         | Short answers before you install.                                  |
 | `community.mdx`                              | Generated from [`SUPPORT.md`](../SUPPORT.md) by `tools/root-pages.ts` at build time. Not checked in. |
@@ -45,6 +47,7 @@ Reference docs for shipping or adapting an RPG Maker game for Empo:
 | ------------------------------------------ | -------------------------------------------------------------------------------------------- |
 | [`controls-format.md`](controls-format.md) | The `empo/controls.json` touch-controls manifest: format, validation codes, controller maps. |
 | [`config-format.md`](config-format.md)     | The JSON5 language that both the app and the engine parse, and its quirks.                   |
+| [`launcher-identity.md`](launcher-identity.md) | The Ruby globals that tell a game that Empo runs it, and the Empo version. |
 | [`patches-format.md`](https://github.com/mateo-m/mkxp-z-apple-mobile/blob/dev/docs/patches-format.md) (engine repo) | The `patches.json` script-patching system: format, matching semantics, when patches apply. |
 | [`schemas/`](schemas/)                     | JSON Schemas (e.g. `empo-controls.v1.schema.json`).                                          |
 | [`examples/`](examples/)                   | Worked examples (e.g. a complete `controls.json`).                                           |

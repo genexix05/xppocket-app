@@ -4,24 +4,11 @@
 import GameProbe
 import SwiftUI
 
-/// Edit-mode drag/resize gizmo for the screen region: the outline,
-/// the move surface, and the corner grabbers. Pure geometry: the
-/// parent supplies the rect to show and receives fraction regions
-/// through callbacks. ControlsLayout and the bridge applier stay in
-/// the parent's hands, so the same gizmo works in the player and on
-/// the profile editor's mock canvas. The chips are a separate view
-/// (`ScreenRegionChips`) so the player can layer them ABOVE the
-/// controls overlay while the gesture surfaces stay below it.
 struct ScreenRegionGizmo: View {
-    let canvasSize: CGSize
-    /// Where the region may live, in canvas points. The parent
-    /// passes the safe-area rect (matching the applier's clamp
-    /// policy), so the outline can never disagree with the clamped
-    /// region the engine draws.
+    static let moveAnimation = Animation.easeInOut(duration: 0.25)
+
+    let canvas: ScreenCanvas
     let allowedRect: CGRect
-    /// The rect to draw when no drag is in flight, in canvas points.
-    /// The parent derives it from the pending edit, the resolved
-    /// region, or the automatic placement.
     let baseRect: CGRect
     let onDragBegan: () -> Void
     let onDragChanged: (ScreenRegion) -> Void
@@ -32,49 +19,29 @@ struct ScreenRegionGizmo: View {
 
     @State private var draft: CGRect?
     @State private var anchorRect: CGRect?
-    /// GestureState resets when the system CANCELS a drag (an edge
-    /// swipe near the notification shade, an incoming call). The
-    /// onChange below then finishes the drag, because a stuck
-    /// `screenDragActive` would leave the edit toolbar disabled for
-    /// the rest of the session. Move and resize track separately,
-    /// so one gesture ending cannot finish the other's drag. The
-    /// owner token stops a second finger from clobbering the
-    /// in-flight anchor.
-    @GestureState private var moveGestureActive = false
-    @GestureState private var resizeGestureActive = false
-    @State private var dragOwner: Int?
-    private var gestureActive: Bool { moveGestureActive || resizeGestureActive }
+    /// A second finger cannot change the anchor or end the drag.
+    @State private var dragOwner: DragHandle?
 
     private var rect: CGRect { draft ?? baseRect }
-    private var minW: CGFloat { canvasSize.width * ScreenRegionGizmo.minFraction }
-    private var minH: CGFloat { canvasSize.height * ScreenRegionGizmo.minFraction }
+    private var minW: CGFloat { canvas.size.width * ScreenRegionGizmo.minFraction }
+    private var minH: CGFloat { canvas.size.height * ScreenRegionGizmo.minFraction }
     private static let minFraction = CGFloat(ScreenRegionFile.minFraction)
-    private static let handleSize: CGFloat = 28
+
+    private enum DragHandle: Equatable {
+        case move
+        case corner(Corner)
+    }
 
     var body: some View {
         surfaces
-            .onChange(of: gestureActive) { _, active in
-                if !active, anchorRect != nil {
-                    finishDrag()
-                }
-            }
     }
 
-    /// Captures the anchor on the first event of a drag, shrunk
-    /// into `allowedRect`. A stored rect that violates the limits
-    /// (cross-device restore, controls grown after authoring) must
-    /// not invert the clamps. Returns false for events from a
-    /// gesture that does not own the in-flight drag.
-    private func claimDrag(owner: Int) -> Bool {
+    /// Shrinks the anchor into `allowedRect`. A stored rect can break
+    /// the limits after a restore from another device, or after the
+    /// controls grow. Without the shrink, the clamps invert.
+    private func claimDrag(owner: DragHandle) -> Bool {
         if anchorRect == nil {
-            var anchor = rect
-            anchor.size.width = min(anchor.width, allowedRect.width)
-            anchor.size.height = min(anchor.height, allowedRect.height)
-            anchor.origin.x = min(
-                max(allowedRect.minX, anchor.origin.x), allowedRect.maxX - anchor.width)
-            anchor.origin.y = min(
-                max(allowedRect.minY, anchor.origin.y), allowedRect.maxY - anchor.height)
-            anchorRect = anchor
+            anchorRect = rect.kept(inside: allowedRect)
             dragOwner = owner
             onDragBegan()
         }
@@ -90,21 +57,13 @@ struct ScreenRegionGizmo: View {
             .frame(width: rect.width, height: rect.height)
             .position(x: rect.midX, y: rect.midY)
             .contentShape(Rectangle())
-            .gesture(moveGesture)
+            .editDrag(
+                minimumDistance: 2, onChanged: moveChanged,
+                onFinished: { finishDrag(owner: .move) }
+            )
             .accessibilityLabel("Game screen position")
             .accessibilityHint("Drag to move the game screen")
 
-            // Crop-style corner grabber: reads as "drag to resize"
-            // where the small circle did not. It sits ON the border
-            // corner (like a photo-crop handle on its frame), a
-            // touch thicker than the dashes, with a soft shadow so
-            // it separates from bright game content. The gesture
-            // surface is a larger invisible square so the target
-            // stays easy to hit.
-            // Brackets on ALL FOUR corners, all draggable. The
-            // photo-crop convention users already know. Each one
-            // sits fully inside the frame (the viewport edge can
-            // never trim it) with an invisible 44 pt touch square.
             ForEach(Corner.allCases, id: \.self) { corner in
                 CornerGrabber()
                     .stroke(
@@ -120,7 +79,10 @@ struct ScreenRegionGizmo: View {
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
                     .position(corner.point(in: rect, inset: 16))
-                    .gesture(resizeGesture(for: corner))
+                    .editDrag(
+                        minimumDistance: 2, onChanged: { resizeChanged($0, corner: corner) },
+                        onFinished: { finishDrag(owner: .corner(corner)) }
+                    )
                     .accessibilityLabel(corner.accessibilityLabel)
             }
         }
@@ -128,86 +90,63 @@ struct ScreenRegionGizmo: View {
 
     private static let grabberSide: CGFloat = 22
 
-    private var moveGesture: some Gesture {
-        DragGesture(minimumDistance: 2)
-            .updating($moveGestureActive) { _, state, _ in state = true }
-            .onChanged { value in
-                guard claimDrag(owner: 0), let anchor = anchorRect else { return }
-                var moved = anchor.offsetBy(
-                    dx: value.translation.width, dy: value.translation.height)
-                moved.origin.x = min(
-                    max(allowedRect.minX, moved.origin.x), allowedRect.maxX - moved.width)
-                moved.origin.y = min(
-                    max(allowedRect.minY, moved.origin.y), allowedRect.maxY - moved.height)
-                draft = moved
-                onDragChanged(region(from: moved))
-            }
-            .onEnded { _ in finishDrag() }
+    private func moveChanged(_ value: DragGesture.Value) {
+        guard claimDrag(owner: .move), let anchor = anchorRect else { return }
+        let moved = anchor.offsetBy(
+            dx: value.translation.width, dy: value.translation.height
+        ).kept(inside: allowedRect)
+        draft = moved
+        onDragChanged(canvas.region(for: moved, overlay: overlayOn))
     }
 
-    /// The dragged corner moves. The opposite corner anchors.
-    private func resizeGesture(for corner: Corner) -> some Gesture {
-        DragGesture(minimumDistance: 2)
-            .updating($resizeGestureActive) { _, state, _ in state = true }
-            .onChanged { value in
-                guard claimDrag(owner: 1 + corner.ownerIndex), let anchor = anchorRect
-                else { return }
-                var minX = anchor.minX
-                var minY = anchor.minY
-                var maxX = anchor.maxX
-                var maxY = anchor.maxY
-                switch corner {
-                case .topLeft:
-                    minX += value.translation.width
-                    minY += value.translation.height
-                case .topRight:
-                    maxX += value.translation.width
-                    minY += value.translation.height
-                case .bottomLeft:
-                    minX += value.translation.width
-                    maxY += value.translation.height
-                case .bottomRight:
-                    maxX += value.translation.width
-                    maxY += value.translation.height
-                }
-                // Bounds clamp first, then the minimum size pushes
-                // the MOVING edges back inward.
-                minX = max(allowedRect.minX, minX)
-                minY = max(allowedRect.minY, minY)
-                maxX = min(allowedRect.maxX, maxX)
-                maxY = min(allowedRect.maxY, maxY)
-                switch corner {
-                case .topLeft:
-                    minX = min(minX, maxX - minW)
-                    minY = min(minY, maxY - minH)
-                case .topRight:
-                    maxX = max(maxX, minX + minW)
-                    minY = min(minY, maxY - minH)
-                case .bottomLeft:
-                    minX = min(minX, maxX - minW)
-                    maxY = max(maxY, minY + minH)
-                case .bottomRight:
-                    maxX = max(maxX, minX + minW)
-                    maxY = max(maxY, minY + minH)
-                }
-                let resized = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
-                draft = resized
-                onDragChanged(region(from: resized))
-            }
-            .onEnded { _ in finishDrag() }
+    private func resizeChanged(_ value: DragGesture.Value, corner: Corner) {
+        guard claimDrag(owner: .corner(corner)), let anchor = anchorRect
+        else { return }
+        var minX = anchor.minX
+        var minY = anchor.minY
+        var maxX = anchor.maxX
+        var maxY = anchor.maxY
+        switch corner {
+        case .topLeft:
+            minX += value.translation.width
+            minY += value.translation.height
+        case .topRight:
+            maxX += value.translation.width
+            minY += value.translation.height
+        case .bottomLeft:
+            minX += value.translation.width
+            maxY += value.translation.height
+        case .bottomRight:
+            maxX += value.translation.width
+            maxY += value.translation.height
+        }
+        // Bounds clamp first, then the minimum size pushes
+        // the MOVING edges back inward.
+        minX = max(allowedRect.minX, minX)
+        minY = max(allowedRect.minY, minY)
+        maxX = min(allowedRect.maxX, maxX)
+        maxY = min(allowedRect.maxY, maxY)
+        switch corner {
+        case .topLeft:
+            minX = min(minX, maxX - minW)
+            minY = min(minY, maxY - minH)
+        case .topRight:
+            maxX = max(maxX, minX + minW)
+            minY = min(minY, maxY - minH)
+        case .bottomLeft:
+            minX = min(minX, maxX - minW)
+            maxY = max(maxY, minY + minH)
+        case .bottomRight:
+            maxX = max(maxX, minX + minW)
+            maxY = max(maxY, minY + minH)
+        }
+        let resized = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+        draft = resized
+        onDragChanged(canvas.region(for: resized, overlay: overlayOn))
     }
 
     private enum Corner: CaseIterable {
         case topLeft, topRight, bottomLeft, bottomRight
-
-        var ownerIndex: Int {
-            switch self {
-            case .topLeft: 0
-            case .topRight: 1
-            case .bottomLeft: 2
-            case .bottomRight: 3
-            }
-        }
 
         var accessibilityLabel: LocalizedStringResource {
             switch self {
@@ -239,44 +178,31 @@ struct ScreenRegionGizmo: View {
         }
     }
 
-    private func finishDrag() {
+    private func finishDrag(owner: DragHandle) {
+        guard dragOwner == owner else { return }
         if let draft {
-            onDragEnded(region(from: draft))
+            onDragEnded(canvas.region(for: draft, overlay: overlayOn))
         }
         anchorRect = nil
         draft = nil
         dragOwner = nil
     }
-
-    private func region(from rect: CGRect) -> ScreenRegion {
-        // The overlay flag rides along: a drag must not strip the
-        // choice the toggle just made.
-        ScreenRegion(
-            x: rect.minX / canvasSize.width,
-            y: rect.minY / canvasSize.height,
-            w: rect.width / canvasSize.width,
-            h: rect.height / canvasSize.height,
-            overlay: overlayOn)
-    }
 }
 
-/// The gizmo's floating chips: the "Screen" label, the reset chip,
-/// and the overlay toggle. A separate view from the gesture
-/// surfaces, so the player can render the chips above the controls
-/// overlay (overlay mode puts controls on the game area) while the
-/// drag surfaces stay below it. The parent positions both from the
-/// same effective rect, so the chips follow a drag live.
+/// The player draws the chips above the controls overlay and the
+/// gizmo below it, so they are two views.
 struct ScreenRegionChips: View {
-    /// The region rect on the canvas, in canvas points.
     let rect: CGRect
-    /// Shows the "Reset screen" chip: an entry or a pending
-    /// non-auto edit exists for this orientation.
     let showsReset: Bool
     let onReset: () -> Void
-    /// "Controls over game" toggle. nil hides the chip (the profile
-    /// editor's mock canvas has no controls zone to flip).
     var overlayOn: Bool = false
     var onToggleOverlay: (() -> Void)?
+
+    /// The chips stack down from the top edge of the region, one row
+    /// for each chip.
+    private func chipY(row: Int) -> CGFloat {
+        rect.minY + 14 + 30 * CGFloat(row)
+    }
 
     var body: some View {
         ZStack {
@@ -303,7 +229,7 @@ struct ScreenRegionChips: View {
                 // Top area, below the "Screen" label: the bottom
                 // corner belongs to the resize grabber, and at the
                 // minimum region size a bottom chip would overlap it.
-                .position(x: rect.midX, y: rect.minY + 44)
+                .position(x: rect.midX, y: chipY(row: 1))
                 .accessibilityLabel("Reset screen to automatic placement")
             }
 
@@ -322,7 +248,7 @@ struct ScreenRegionChips: View {
                     .foregroundStyle(overlayOn ? Color.brand : .white)
                     .xpGlassChrome(in: Capsule())
                 }
-                .position(x: rect.midX, y: rect.minY + (showsReset ? 74 : 44))
+                .position(x: rect.midX, y: chipY(row: showsReset ? 2 : 1))
                 .accessibilityLabel("Controls over game")
                 .accessibilityValue(
                     overlayOn
@@ -330,16 +256,10 @@ struct ScreenRegionChips: View {
                         : Text("Off", comment: "Spoken state of a switch."))
             }
         }
-        // Pin the glass chips to the dark variant like the rest of
-        // the player chrome.
         .darkGlass()
     }
 }
 
-/// Crop-style L bracket for the resize corner: a square corner
-/// stroke (matching the square outline) that opens toward the
-/// region's inside. The round line caps and join keep it soft
-/// without lying about the corner shape.
 private struct CornerGrabber: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
@@ -350,12 +270,9 @@ private struct CornerGrabber: Shape {
     }
 }
 
-/// The gizmo border. SQUARE corners. The game picture has square
-/// edges, so a rounded frame would lie about the content. Each edge
-/// starts and ends with a HALF dash, so adjacent edges meet in a
-/// crisp L-shaped corner dash and all four corners look identical
-/// at any size (a plain dashed stroke starts its pattern at one
-/// corner only).
+/// Each edge starts and ends with a half dash, so all four corners
+/// look the same. A plain dashed stroke starts its pattern at one
+/// corner only.
 private struct GizmoOutline: View {
     private static let lineWidth: CGFloat = 2
     private static let dashUnit: CGFloat = 8

@@ -4,31 +4,26 @@
 import GameProbe
 import SwiftUI
 
-/// D-pad + action buttons layer. Rendering, drag gestures, and edit
-/// affordances (tap-to-edit, delete chip, drag scale) live here so
-/// PlayerView only has to toggle visibility and own the edit state
-/// that the edit dialogs consume.
-
 struct PlayerControlsOverlay: View {
     @Bindable var layout: ControlsLayout
     var actions: PlayerActionRegistry
     let geo: GeometryProxy
     let controlsMinY: CGFloat
     let editMode: Bool
-    /// Injected so the profile editor can fake per-orientation
-    /// insets. The player passes the live window value.
+    /// The profile editor gives the insets of each orientation.
     let safeArea: EdgeInsets
-    /// The out-of-player editor: every action renders as
-    /// available and no hit regions are published.
+    /// The profile editor: each action shows as available, and the
+    /// controls publish no hit regions.
     var isPreview = false
-    @Binding var editingButton: ButtonModel?
-    @Binding var editingActionButton: ActionButtonModel?
-    @Binding var editingDPad: Bool
-    @Binding var draggingDPad: Bool
-    @Binding var draggingButtonID: UUID?
+    @Binding var editDialog: ControlsEditDialog?
+    let keys: HeldKeys<KeyHolder>
 
-    /// Edit-mode drag snapping. Shared with the edit toolbar's
-    /// toggle through UserDefaults, so both surfaces stay in sync.
+    /// A second finger on another control waits until the drag ends.
+    @State private var dragOwner: EditDragSubject?
+    /// The collision solve uses the last center as side memory, so a
+    /// control cannot go through the center of an obstacle.
+    @State private var lastDragResolved: CGPoint?
+
     @AppStorage(DefaultsKey.controlsEditSnapToGrid) private var snapToGrid = false
 
     var body: some View {
@@ -38,13 +33,10 @@ struct PlayerControlsOverlay: View {
         }
         let separatedPositions = layout.separatedDisplayPositions(
             for: geo.size, safeArea: safeArea, controlsMinY: controlsMinY,
-            // The separation pass stays off ONLY while a CONTROL
-            // drags (neighbors must not move under the finger, the
-            // rigid collision owns that case). Everywhere else it
-            // runs, so a crushed zone rearranges its controls
-            // instead of clamping them into a stack.
-            separate: draggingButtonID == nil && !draggingDPad,
-            includeActionButton: { isPreview || editMode || actions.isAvailable($0.action) })
+            // During a drag, the neighbors must not move under the
+            // finger. Then the collision solve keeps the controls apart.
+            separate: dragOwner == nil,
+            includeActionButton: { showsActionButton($0.action) })
         ZStack {
             if let frame = skin?.frame {
                 Image(uiImage: frame)
@@ -57,38 +49,36 @@ struct PlayerControlsOverlay: View {
             }
             editGridOverlay
             dpadView(skin: skin)
-            ForEach(Array(layout.buttons.enumerated()), id: \.element.id) { index, button in
+            ForEach(layout.buttons) { button in
                 actionButton(
-                    button: button, index: index, displayPosition: separatedPositions[button.id],
-                    skin: skin)
+                    button: button, displayPosition: separatedPositions[button.id], skin: skin)
             }
             ForEach(layout.actionButtons) { button in
-                // Unavailable actions (fast forward in a game with no
-                // multiplier) hide during play. Edit mode keeps them
-                // visible with a badge so they can move or delete.
-                if isPreview || editMode || actions.isAvailable(button.action) {
+                if showsActionButton(button.action) {
                     functionButton(button: button, displayPosition: separatedPositions[button.id])
                 }
             }
         }
-        // The add flow solves spawn placement against this canvas,
-        // so a fresh control cannot land under the chrome. One
-        // onChange on the value itself covers appear + every input
-        // that can move the lattice (canvas size, safe area, zone).
-        .onChange(
-            of: ControlsLayout.EditGeometry(
-                geoSize: geo.size, safeArea: safeArea,
-                controlsMinY: controlsMinY),
-            initial: true
-        ) { _, geometry in
+        // The add flow places a new control against this canvas, so it
+        // cannot go under the chrome.
+        .onChange(of: editGeometry, initial: true) { _, geometry in
             layout.editGeometry = geometry
         }
     }
 
-    /// The snap lattice, drawn only while edit mode and the toggle
-    /// are both on. Anchored at the zone's top-left, the same origin
-    /// snappedToEditGrid rounds against, so every line is a legal
-    /// snap line. Under the controls, never hit-testable.
+    /// An unavailable action, such as fast forward in a game with no
+    /// multiplier, hides during play. Edit mode shows it with a badge,
+    /// so the user can move or delete it.
+    private func showsActionButton(_ action: String) -> Bool {
+        isPreview || editMode || actions.isAvailable(action)
+    }
+
+    private var editGeometry: ControlsLayout.EditGeometry {
+        ControlsLayout.EditGeometry(geoSize: geo.size, safeArea: safeArea, controlsMinY: controlsMinY)
+    }
+
+    /// The lines start at the top-left corner of the zone, the origin
+    /// of `snappedToEditGrid`.
     @ViewBuilder
     private var editGridOverlay: some View {
         if editMode && snapToGrid {
@@ -116,42 +106,22 @@ struct PlayerControlsOverlay: View {
         }
     }
 
-    @ViewBuilder
     private func dpadView(skin: ControlSkinFile.Resolved?) -> some View {
         let size = layout.dpadSize
-        let pos = ControlsZone.absolutePosition(
-            for: layout.dpadRelativeCenter, in: geo.size, controlSize: CGSize(width: size, height: size),
-            safeArea: safeArea, controlsMinY: controlsMinY, keepout: layout.toolbarKeepout)
-        let anchor = UnitPoint(x: pos.x / geo.size.width, y: pos.y / geo.size.height)
-        movementControl(size: size, skin: skin)
-            .frame(width: size, height: size)
-            // Measure the region BEFORE .position: position()
-            // expands to the full proposed space, so a region attached
-            // after it would cover the whole screen.
-            .chromeHitRegion("controls.dpad", enabled: !isPreview)
-            .opacity(layout.dpadOpacity)
-            .scaleEffect(draggingDPad ? ControlsZone.dragScaleFactor : 1.0)
-            .animation(Motion.snappy, value: draggingDPad)
-            .position(pos)
-            .transition(.controlAppear(anchor: anchor))
-            // Tap-to-edit and drag-to-reposition are edit-mode
-            // affordances, so mask them out entirely during play.
-            // An always-live tap recognizer here (even one whose
-            // action no-ops) forces SwiftUI's tap-vs-drag
-            // disambiguation onto every touch aimed at the control
-            // below, deferring its touch-down until the finger moves
-            // or lifts. `.subviews` (not `.none`, which also disables
-            // the subview hierarchy's gestures) keeps the control's
-            // own input path untouched.
-            .gesture(
-                TapGesture().onEnded { editingDPad = true },
-                including: editMode ? .all : .subviews
-            )
-            .gesture(dpadDragGesture, including: editMode ? .all : .subviews)
+        return editableControl(
+            movementControl(size: size, skin: skin),
+            subject: .dpad,
+            size: size,
+            opacity: layout.dpadOpacity,
+            position: ControlsZone.absolutePosition(
+                for: layout.dpadRelativeCenter, in: geo.size, controlSize: size,
+                safeArea: safeArea, controlsMinY: controlsMinY, keepout: layout.sensorStripKeepout),
+            onTapEdit: { editDialog = .sheet(.dpad) },
+            onDelete: nil,
+            update: { layout.dpadRelativeCenter = $0 }
+        )
     }
 
-    /// The movement control renders per style. Everything around it
-    /// (position, drag, edit gestures, hit region) is shared.
     @ViewBuilder
     private func movementControl(size: CGFloat, skin: ControlSkinFile.Resolved?) -> some View {
         switch layout.dpadStyle {
@@ -159,59 +129,64 @@ struct PlayerControlsOverlay: View {
             DPad(
                 size: size,
                 editing: editMode,
+                onDirection: sendDirection,
                 skinImage: skin?.dpad,
                 skinPressedImage: skin?.dpadPressed)
         case .stick:
-            Joystick(size: size, editing: editMode)
+            Joystick(size: size, editing: editMode, onDirection: sendDirection)
         }
     }
 
-    private var dpadDragGesture: some Gesture {
-        DragGesture()
-            .onChanged { value in
-                if !draggingDPad {
-                    layout.recordEditSnapshot()
-                    draggingDPad = true
-                    lastDragResolved.removeValue(forKey: dragKey(draggedID: nil))
-                }
-                let resolved = resolvedDragPosition(
-                    value.location, draggedID: nil, draggedIsDPad: true,
-                    size: layout.dpadSize)
-                layout.dpadRelativeCenter = CGPoint(
-                    x: resolved.x / geo.size.width,
-                    y: resolved.y / geo.size.height
-                )
-            }
-            .onEnded { _ in
-                draggingDPad = false
-                lastDragResolved.removeValue(forKey: dragKey(draggedID: nil))
-                layout.save()
-            }
+    private func sendDirection(_ direction: ControlDirection, pressed: Bool) {
+        send(direction.scancode, pressed: pressed, by: .touch("dpad:\(direction)"))
+    }
+
+    private func send(_ scancode: Int32, pressed: Bool, by holder: KeyHolder) {
+        if pressed {
+            keys.hold(scancode, by: holder)
+        } else {
+            keys.release(scancode, by: holder)
+        }
+    }
+
+    /// The first control to move owns the drag and records the undo
+    /// step. Returns false for every other control.
+    private func claimDrag(_ key: EditDragSubject) -> Bool {
+        if dragOwner == nil {
+            layout.recordEditSnapshot()
+            dragOwner = key
+            lastDragResolved = nil
+        }
+        return dragOwner == key
+    }
+
+    private func finishDrag(_ key: EditDragSubject) {
+        guard dragOwner == key else { return }
+        dragOwner = nil
+        lastDragResolved = nil
+        try? layout.save()
     }
 
     @ViewBuilder
     private func actionButton(
-        button: ButtonModel,
-        index: Int,
-        displayPosition: CGPoint?,
-        skin: ControlSkinFile.Resolved?
+        button: ButtonModel, displayPosition: CGPoint?, skin: ControlSkinFile.Resolved?
     ) -> some View {
         let keyCode = KeyCodeTable.code(for: button.scancode)
-        editableControl(
+        return editableControl(
             ActionButton(
                 label: button.label,
-                scancode: button.scancode,
                 size: button.size,
                 editing: editMode,
+                onPress: { send(button.scancode, pressed: true, by: .touch("button:\(button.id)")) },
+                onRelease: { send(button.scancode, pressed: false, by: .touch("button:\(button.id)")) },
                 skinImage: skin?.buttonImage(keyCode: keyCode, label: button.label)
             ),
-            id: button.id,
+            subject: .control(button.id),
             size: button.size,
             opacity: button.opacity,
             position: resolvedPosition(
                 displayPosition, center: button.relativeCenter, size: button.size),
-            hitRegionKey: "controls.button.\(button.id.uuidString)",
-            onTapEdit: { editingButton = button },
+            onTapEdit: { editDialog = .sheet(.button(button.id)) },
             onDelete: { layout.removeButton(id: button.id) },
             update: { layout.updateButton(id: button.id, relativeCenter: $0) }
         )
@@ -219,8 +194,8 @@ struct PlayerControlsOverlay: View {
 
     @ViewBuilder
     private func functionButton(button: ActionButtonModel, displayPosition: CGPoint?) -> some View {
-        // The loader skips unknown actions (W004) and the picker only
-        // offers catalog entries, so the lookup always succeeds.
+        // The loader skips unknown actions, and the picker shows only
+        // catalog entries.
         if let action = EmpoActionCatalog.action(id: button.action) {
             functionButton(button: button, action: action, displayPosition: displayPosition)
         }
@@ -240,8 +215,10 @@ struct PlayerControlsOverlay: View {
                 onRelease: { actions.handle(button.action, pressed: false) }
             )
             .overlay(alignment: .bottom) {
-                if editMode && !isPreview && !actions.isAvailable(button.action) {
-                    Text("Turn this on in this game's settings")
+                if editMode && !isPreview && !actions.isAvailable(button.action),
+                    let requirement = PlayerActionRegistry.requirement(of: button.action)
+                {
+                    Text(requirement.editModeNote)
                         .font(.system(size: 9, weight: .medium))
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 4)
@@ -252,150 +229,70 @@ struct PlayerControlsOverlay: View {
                         .allowsHitTesting(false)
                 }
             },
-            id: button.id,
+            subject: .control(button.id),
             size: button.size,
             opacity: button.opacity,
             position: resolvedPosition(
                 displayPosition, center: button.relativeCenter, size: button.size),
-            hitRegionKey: "controls.actionButton.\(button.id.uuidString)",
-            onTapEdit: { editingActionButton = button },
+            onTapEdit: { editDialog = .sheet(.actionButton(button.id)) },
             onDelete: { layout.removeActionButton(id: button.id) },
             update: { layout.updateActionButton(id: button.id, relativeCenter: $0) }
         )
     }
 
-    /// Last resolved center of each drag in flight, keyed per
-    /// control (the d-pad uses its own key). The collision solve
-    /// uses it as side memory (no tunneling through an obstacle's
-    /// center), and the clamp+collide loop keeps a control squeezed
-    /// between a wall and a neighbor on its own side instead of
-    /// re-clamping into overlap. Keyed, so two simultaneous finger
-    /// drags cannot clobber each other's memory.
-    @State private var lastDragResolved: [AnyHashable: CGPoint] = [:]
-
-    /// A nil ID always means the d-pad: it is the one draggable
-    /// control without a UUID.
-    private func dragKey(draggedID: UUID?) -> AnyHashable {
-        draggedID.map(AnyHashable.init) ?? AnyHashable("dpad")
-    }
-
-    /// The dragged control's stored center in absolute space. The
-    /// side memory seeds from it so the drag's FIRST event already
-    /// knows its approach side.
-    private func currentAbsoluteCenter(
-        draggedID: UUID?, draggedIsDPad: Bool
-    ) -> CGPoint? {
-        let relative: CGPoint
-        let size: CGFloat
-        if draggedIsDPad {
-            relative = layout.dpadRelativeCenter
-            size = layout.dpadSize
-        } else if let button = layout.buttons.first(where: { $0.id == draggedID }) {
-            relative = button.relativeCenter
-            size = button.size
-        } else if let button = layout.actionButtons.first(where: { $0.id == draggedID }) {
-            relative = button.relativeCenter
-            size = button.size
-        } else {
-            return nil
-        }
-        return ControlsZone.absolutePosition(
-            for: relative, in: geo.size, controlSize: CGSize(width: size, height: size),
-            safeArea: safeArea, controlsMinY: controlsMinY, keepout: layout.toolbarKeepout)
-    }
-
-    /// Shared drag pipeline: alternate the zone clamp and the rigid
-    /// collision until stable. Either alone can undo the other at
-    /// the zone edges. An update that STILL collides after the
-    /// solve (no free space on the approach side) is rejected: the
-    /// control holds its last valid position instead of entering
-    /// the obstacle.
     private func resolvedDragPosition(
-        _ location: CGPoint, draggedID: UUID?, draggedIsDPad: Bool, size: CGFloat
+        _ location: CGPoint, subject: EditDragSubject, size: CGFloat
     ) -> CGPoint {
-        let key = dragKey(draggedID: draggedID)
-        if lastDragResolved[key] == nil {
-            lastDragResolved[key] = currentAbsoluteCenter(
-                draggedID: draggedID, draggedIsDPad: draggedIsDPad)
+        if lastDragResolved == nil {
+            lastDragResolved = layout.absoluteCenter(of: subject, in: editGeometry)
         }
-        // Snap BEFORE the solve, so clamp and collision run against
-        // on-grid targets. The solve may still leave the control
-        // off-grid at a wall or against a neighbor; a valid position
-        // beats an exact one.
-        let target =
-            snapToGrid
-            ? ControlsZone.snappedToEditGrid(
-                location, controlSize: size, geoSize: geo.size,
-                safeArea: safeArea, controlsMinY: controlsMinY)
-            : location
-        var center = ControlsZone.clampToSafeArea(
-            target, controlSize: size, geoSize: geo.size, safeArea: safeArea,
-            controlsMinY: controlsMinY, keepout: layout.toolbarKeepout)
-        for _ in 0..<3 {
-            center = layout.collisionResolvedCenter(
-                center, previous: lastDragResolved[key], draggedID: draggedID,
-                draggedIsDPad: draggedIsDPad,
-                controlSize: size, geoSize: geo.size, safeArea: safeArea,
-                controlsMinY: controlsMinY)
-            center = ControlsZone.clampToSafeArea(
-                center, controlSize: size, geoSize: geo.size, safeArea: safeArea,
-                controlsMinY: controlsMinY, keepout: layout.toolbarKeepout)
-        }
-        if layout.dragPositionCollides(
-            center, draggedID: draggedID, draggedIsDPad: draggedIsDPad,
-            controlSize: size, geoSize: geo.size, safeArea: safeArea,
-            controlsMinY: controlsMinY),
-            let held = lastDragResolved[key]
-        {
-            return held
-        }
-        lastDragResolved[key] = center
+        let center = layout.resolvedDragCenter(
+            location, previous: lastDragResolved, subject: subject, size: size, in: editGeometry)
+        lastDragResolved = center
         return center
     }
 
-    /// displayPosition is already absolute and separation-adjusted
-    /// (post-clamp). The fallback only covers the empty-layout case.
+    /// The fallback is for an empty layout.
     private func resolvedPosition(
         _ displayPosition: CGPoint?, center: CGPoint, size: CGFloat
     ) -> CGPoint {
         displayPosition
             ?? ControlsZone.absolutePosition(
                 for: center, in: geo.size,
-                controlSize: CGSize(width: size, height: size),
+                controlSize: size,
                 safeArea: safeArea,
-                controlsMinY: controlsMinY, keepout: layout.toolbarKeepout)
+                controlsMinY: controlsMinY, keepout: layout.sensorStripKeepout)
     }
 
-    /// The edit chrome every draggable button shares: tap-to-edit,
-    /// delete chip, hit region, drag scale, appear transition, and
-    /// ONE drag gesture whose `update` closure routes to the right
-    /// mutator. Key buttons and action buttons cannot drift apart.
     private func editableControl<Control: View>(
         _ control: Control,
-        id: UUID,
+        subject: EditDragSubject,
         size: CGFloat,
         opacity: Double,
         position: CGPoint,
-        hitRegionKey: String,
         onTapEdit: @escaping () -> Void,
-        onDelete: @escaping () -> Void,
+        onDelete: (() -> Void)?,
         update: @escaping (CGPoint) -> Void
     ) -> some View {
-        let isDragging = draggingButtonID == id
+        let isDragging = dragOwner == subject
         let anchor = UnitPoint(
             x: position.x / geo.size.width, y: position.y / geo.size.height)
         return
             control
             .frame(width: size, height: size)
             .opacity(opacity)
-            // Edit-mode-only, same masking rationale as the D-pad's
-            // tap-to-edit gesture above.
+            // A live tap recognizer, also one that does nothing, makes
+            // SwiftUI wait to tell a tap from a drag on each touch. The
+            // control then gets its touch-down only when the finger
+            // moves or lifts. `.subviews` keeps the input of the
+            // control. `.none` also turns off the gestures of the
+            // subviews.
             .gesture(
                 TapGesture().onEnded { onTapEdit() },
                 including: editMode ? .all : .subviews
             )
             .overlay(alignment: .topTrailing) {
-                if editMode && !isDragging {
+                if editMode && !isDragging, let onDelete {
                     Button {
                         withAnimation(Motion.snappy) {
                             onDelete()
@@ -406,42 +303,75 @@ struct PlayerControlsOverlay: View {
                     .transition(.scale.combined(with: .opacity))
                 }
             }
-            .chromeHitRegion(hitRegionKey, enabled: !isPreview)
+            // `.position` fills the full proposed space, so a region
+            // measured after it covers the whole screen.
+            .chromeHitRegion(enabled: !isPreview)
             .scaleEffect(isDragging ? ControlsZone.dragScaleFactor : 1.0)
             .animation(Motion.snappy, value: isDragging)
             .position(position)
             .transition(.controlAppear(anchor: anchor))
-            .gesture(
-                controlDragGesture(id: id, size: size, update: update),
-                including: editMode ? .all : .subviews)
+            .editDrag(
+                including: editMode ? .all : .subviews,
+                onChanged: { value in
+                    guard claimDrag(subject) else { return }
+                    let resolved = resolvedDragPosition(value.location, subject: subject, size: size)
+                    update(
+                        CGPoint(
+                            x: resolved.x / geo.size.width,
+                            y: resolved.y / geo.size.height
+                        ))
+                },
+                onFinished: { finishDrag(subject) }
+            )
+            // An undo can remove the control during a drag. Its gesture
+            // then does not end, so the drag ends here.
+            .onDisappear { finishDrag(subject) }
     }
+}
 
-    /// One drag gesture for both button kinds, on the shared
-    /// clamp+collide pipeline.
-    private func controlDragGesture(
-        id: UUID, size: CGFloat, update: @escaping (CGPoint) -> Void
-    ) -> some Gesture {
-        DragGesture()
-            .onChanged { value in
-                if draggingButtonID != id {
-                    layout.recordEditSnapshot()
-                    draggingButtonID = id
-                    lastDragResolved.removeValue(
-                        forKey: dragKey(draggedID: id))
-                }
-                let resolved = resolvedDragPosition(
-                    value.location, draggedID: id, draggedIsDPad: false, size: size)
-                update(
-                    CGPoint(
-                        x: resolved.x / geo.size.width,
-                        y: resolved.y / geo.size.height
-                    ))
+extension View {
+    /// A drag that reports its end also when the system cancels it.
+    /// A cancel skips `onEnded`, but it resets the gesture state.
+    func editDrag(
+        minimumDistance: CGFloat = 10,
+        including mask: GestureMask = .all,
+        onChanged: @escaping (DragGesture.Value) -> Void,
+        onFinished: @escaping () -> Void
+    ) -> some View {
+        modifier(
+            EditDragModifier(
+                minimumDistance: minimumDistance, mask: mask,
+                onChanged: onChanged, onFinished: onFinished))
+    }
+}
+
+private struct EditDragModifier: ViewModifier {
+    let minimumDistance: CGFloat
+    let mask: GestureMask
+    let onChanged: (DragGesture.Value) -> Void
+    let onFinished: () -> Void
+
+    @GestureState private var active = false
+
+    func body(content: Content) -> some View {
+        content
+            .gesture(
+                DragGesture(minimumDistance: minimumDistance)
+                    .updating($active) { _, state, _ in state = true }
+                    .onChanged(onChanged),
+                including: mask
+            )
+            .onChange(of: active) { _, isActive in
+                if !isActive { onFinished() }
             }
-            .onEnded { _ in
-                draggingButtonID = nil
-                lastDragResolved.removeValue(
-                    forKey: dragKey(draggedID: id))
-                layout.save()
-            }
+    }
+}
+
+extension ActionRequirement {
+    var editModeNote: String {
+        switch self {
+        case .cheats: String(localized: "This game has no cheats.")
+        case .fastForward: String(localized: "Turn this on in this game's settings")
+        }
     }
 }
